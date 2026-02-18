@@ -1,0 +1,384 @@
+     * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #ece8e0;  /* soft greige */
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            padding: 2rem 2rem;
+            color: #2c3e3a;
+            line-height: 1.5;
+        }
+
+        .dashboard {
+            max-width: 1440px;
+            margin: 0 auto;
+        }
+
+        /* header — clean, minimal */
+        .top-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2.5rem;
+        }
+
+        .logo h1 {
+            font-weight: 430;
+            font-size: 2.1rem;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #2a5f52, #4f6d7a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            border-left: 4px solid #b1cfc0;
+            padding-left: 1.2rem;
+        }
+
+        .logo span {
+            font-size: 0.9rem;
+            font-weight: 350;
+            color: #738d86;
+            margin-left: 1rem;
+        }
+
+        .utility-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            background: white;
+            border: 1px solid #cdd9d2;
+            padding: 0.6rem 1.6rem;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #2d5b50;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 6px rgba(30, 40, 30, 0.02);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: #386a5e;
+            border: 1px solid #2d5b50;
+            color: white;
+            box-shadow: 0 8px 16px -8px #3463574d;
+        }
+
+        .btn-primary:hover {
+            background: #235347;
+            border-color: #1c4239;
+        }
+
+        .btn:hover {
+            background: #f9fffd;
+            border-color: #9fb7ae;
+        }
+
+        /* search & filter row — fresh */
+        .search-section {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(4px);
+            padding: 1.2rem 2rem;
+            border-radius: 48px;
+            box-shadow: 0 12px 26px -14px #4a5f5570;
+            margin-bottom: 2.2rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 1.5rem;
+            border: 1px solid #d2e0d6;
+        }
+
+        .search-wrapper {
+            flex: 3 1 260px;
+            display: flex;
+            align-items: center;
+            background: #ffffff;
+            border-radius: 40px;
+            padding: 0.3rem 1.2rem;
+            border: 1px solid #c3d4cb;
+            transition: 0.2s;
+        }
+        .search-wrapper:focus-within {
+            border-color: #608b7c;
+            box-shadow: 0 0 0 3px #e1f2ea;
+        }
+
+        .search-wrapper input {
+            border: none;
+            background: transparent;
+            padding: 0.7rem 0.3rem;
+            width: 100%;
+            font-size: 0.95rem;
+            outline: none;
+            color: #1a3e3a;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-badge {
+            background: #ecf4ef;
+            border-radius: 32px;
+            padding: 0.3rem 1.2rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #205346;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            border: 1px solid #c3d9cf;
+        }
+        .filter-badge select {
+            background: transparent;
+            border: none;
+            font-weight: 500;
+            color: inherit;
+            outline: none;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+        .filter-badge option {
+            background: white;
+            color: #1e3b3b;
+        }
+
+        /* inventory card — spacious */
+        .inventory-card {
+            background: #ffffffec;
+            backdrop-filter: blur(2px);
+            border-radius: 38px;
+            box-shadow: 0 22px 44px -16px #4d6b6180;
+            overflow: hidden;
+            padding: 2rem 1.5rem 2rem 2rem;
+            border: 1px solid #dfece3;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 22px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            min-width: 1000px;
+        }
+
+        th {
+            text-align: left;
+            padding: 0.9rem 0.6rem 0.9rem 0;
+            font-weight: 600;
+            color: #38635a;
+            border-bottom: 1.5px solid #cde0d7;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 1.1rem 0.6rem 1.1rem 0;
+            border-bottom: 1px solid #e5f0ea;
+            color: #234b42;
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* status: only Available / Sold */
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.35rem 1.2rem 0.35rem 1rem;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 550;
+            width: fit-content;
+            border: 1px solid transparent;
+        }
+        .status-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .status.available {
+            background: #def3e8;
+            color: #0a6b48;
+            border-color: #b8e3d0;
+        }
+        .status.available .status-dot {
+            background: #1d9b66;
+            box-shadow: 0 0 0 2px #c1f0db;
+        }
+        .status.sold {
+            background: #f7e9e4;
+            color: #ac4d35;
+            border-color: #ebccbc;
+        }
+        .status.sold .status-dot {
+            background: #c4553a;
+            box-shadow: 0 0 0 2px #fadcd2;
+        }
+
+        .row-actions {
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            color: #6d9487;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 4px 6px 2px 6px;
+            border-radius: 10px;
+            transition: 0.15s;
+        }
+        .icon-btn:hover {
+            color: #2a6d5a;
+            background: #e5f3ed;
+        }
+
+        /* empty state — graceful */
+        .empty-row td {
+            padding: 3.5rem;
+            text-align: center;
+            color: #7f9c90;
+            font-size: 1rem;
+            font-style: italic;
+            background: #fbfefd;
+        }
+
+        /* MODAL — elevated, airy */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(35, 55, 45, 0.5);
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+        .modal-overlay.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .modal-card {
+            background: #fbfcf9;
+            border-radius: 50px;
+            width: 90%;
+            max-width: 680px;
+            padding: 2.5rem 3rem;
+            box-shadow: 0 40px 60px -20px #20352ecc, 0 0 0 1px #e7f3ea inset;
+            border: 1px solid #ffffffd0;
+        }
+
+        .modal-card h2 {
+            font-weight: 400;
+            font-size: 2.1rem;
+            color: #2f6b5a;
+            margin-bottom: 2rem;
+            letter-spacing: -0.4px;
+            border-bottom: 2px solid #d2eadf;
+            padding-bottom: 0.7rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.2rem 2rem;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .field label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            color: #6e9488;
+            font-weight: 600;
+        }
+
+        .field input, .field select {
+            padding: 0.8rem 1.2rem;
+            border: 1px solid #cbd9d0;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            background: #ffffff;
+            transition: 0.15s;
+            font-family: inherit;
+            box-shadow: inset 0 1px 4px #00000008;
+        }
+
+        .field input:focus, .field select:focus {
+            border-color: #5b8b7a;
+            outline: none;
+            background: white;
+            box-shadow: 0 0 0 4px #d9f3e8;
+        }
+
+        .status-hint {
+            grid-column: span 2;
+            font-size: 0.8rem;
+            background: #eaf7f1;
+            padding: 0.7rem 1.5rem;
+            border-radius: 40px;
+            color: #2f6d5b;
+            margin: 0.5rem 0 0;
+            text-align: center;
+            border: 1px dashed #a3cfbe;
+        }
+
+        .modal-actions {
+            margin-top: 2.2rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        .inline-alert {
+            font-size: 0.8rem;
+            background: #e4f1ea;
+            padding: 0.7rem 1.5rem;
+            border-radius: 40px;
+            color: #286353;
+            margin-top: 1.2rem;
+            text-align: center;
+            word-break: break-word;
+        }
+
+        .footer-note {
+            margin-top: 1.5rem;
+            font-size: 0.75rem;
+            color: #7b9b8f;
+            display: flex;
+            justify-content: center;
+        }

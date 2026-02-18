@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CictechInventory · live edge</title>
+    <!-- clean, refined typography & API-ready layout -->
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+<div class="dashboard">
+
+    <!-- header -->
+    <div class="top-bar">
+        <div class="logo">
+            <h1>CictechInventory</h1>
+        </div>
+        <div class="utility-actions">
+            <button class="btn" id="refreshBtn">↻ sync</button>
+            <button class="btn btn-primary" id="addNewBtn">New Laptop</button>
+        </div>
+    </div>
+
+    <!-- search & filter -->
+    <div class="search-section">
+        <div class="search-wrapper">
+            <input type="text" id="searchInput" placeholder="Search serial, brand, model...">
+        </div>
+        <div class="filter-group">
+            <div class="filter-badge">
+                <span>status</span>
+                <select id="statusFilter">
+                    <option value="">all</option>
+                    <option value="Available">Available</option>
+                    <option value="Sold">Sold</option>
+                </select>
+            </div>
+            <div class="filter-badge">
+                <span>ram</span>
+                <select id="ramFilter">
+                    <option value="">any</option>
+                    <option value="8GB">8GB</option>
+                    <option value="16GB">16GB</option>
+                    <option value="32GB">32GB</option>
+                    <option value="64GB">64GB</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- inventory card (empty by default) -->
+    <div class="inventory-card">
+        <div class="table-responsive">
+            <table id="laptopTable">
+                <thead>
+                    <tr>
+                        <th>Serial</th><th>Brand</th><th>Model</th><th>Processor</th>
+                        <th>RAM</th><th>Storage</th><th>Purchase date</th><th>Status</th><th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- empty state will show after load -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="footer-note">⚡ connected to http://localhost:3000/products</div>
+</div>
+
+<!-- MODAL for add / edit -->
+<div class="modal-overlay" id="modal">
+    <div class="modal-card">
+        <h2 id="modalTitle">➕ add laptop</h2>
+        <div class="form-grid" id="modalForm"></div>
+        <div class="status-hint" id="statusRuleHint">✨ default: <strong>Available</strong> (can be toggled to Sold when editing)</div>
+        <div class="modal-actions">
+            <button class="btn" id="modalCancel">cancel</button>
+            <button class="btn btn-primary" id="modalSave">save changes</button>
+        </div>
+        <div class="inline-alert" id="modalHint">⚙️ API base: http://localhost:3000/products</div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ---------- real API endpoint (your local server) ----------
+        const API_BASE = 'http://localhost:3000/products';   // exactly as specified
+
+        // internal state
+        let laptops = [];             // will be filled from GET
+        let filteredLaptops = [];
+        let editingId = null;          // null = create mode
+
+        // DOM elements
+        const tbody = document.getElementById('tableBody');
+        const searchInput = document.getElementById('searchInput');
+        const statusFilter = document.getElementById('statusFilter');
+        const ramFilter = document.getElementById('ramFilter');
+        const modalOverlay = document.getElementById('modal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalForm = document.getElementById('modalForm');
+        const modalHint = document.getElementById('modalHint');
+        const statusRuleHint = document.getElementById('statusRuleHint');
+
+        // ---------- helper: render table from laptops[] ----------
+        function renderTable() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const statusVal = statusFilter.value;
+            const ramVal = ramFilter.value;
+
+            filteredLaptops = laptops.filter(lap => {
+                const matchesSearch = (lap.serial?.toLowerCase() || '').includes(searchTerm) ||
+                                      (lap.brand?.toLowerCase() || '').includes(searchTerm) ||
+                                      (lap.model?.toLowerCase() || '').includes(searchTerm);
+                const matchesStatus = statusVal ? lap.status === statusVal : true;
+                const matchesRam = ramVal ? lap.ram === ramVal : true;
+                return matchesSearch && matchesStatus && matchesRam;
+            });
+
+            if (!laptops.length) {
+                tbody.innerHTML = `<tr class="empty-row"><td colspan="9">📭 inventory is empty — add your first laptop</td></tr>`;
+                return;
+            }
+
+            if (filteredLaptops.length === 0) {
+                tbody.innerHTML = `<tr class="empty-row"><td colspan="9">🔍 no matching laptops — adjust filters</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            filteredLaptops.forEach(lap => {
+                const statusClass = (lap.status || 'Available').toLowerCase();
+                html += `<tr>
+                    <td>${lap.serial || ''}</td>
+                    <td>${lap.brand || ''}</td>
+                    <td>${lap.model || ''}</td>
+                    <td>${lap.processor || ''}</td>
+                    <td>${lap.ram || ''}</td>
+                    <td>${lap.storage || ''}</td>
+                    <td>${lap.purchaseDate ? lap.purchaseDate.slice(0,10) : ''}</td>
+                    <td><span class="status ${statusClass}"><span class="status-dot"></span> ${lap.status || 'Available'}</span></td>
+                    <td>
+                        <div class="row-actions">
+                            <button class="icon-btn edit-btn" data-id="${lap._id || lap.id}">✎</button>
+                            <button class="icon-btn delete-btn" data-id="${lap._id || lap.id}">🗑</button>
+                        </div>
+                    </td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+
+            // attach edit/delete events (use _id or id returned by server)
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = e.currentTarget.dataset.id;
+                    openEditModal(id);
+                });
+            });
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = e.currentTarget.dataset.id;
+                    deleteLaptopFlow(id);
+                });
+            });
+        }
+
+            // ---------- API calls (real fetch) ----------
+            async function fetchLaptops() {
+                try {
+                    const res = await fetch(API_BASE);
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    const data = await res.json();
+                    // handle both array and wrapped response; assume array
+                    laptops = Array.isArray(data) ? data : (data.data || []);
+                    renderTable();
+                    modalHint.innerText = `✅ GET ${API_BASE} · ${laptops.length} records`;
+                } catch (err) {
+                    console.warn('fetch error', err);
+                    laptops = [];
+                    renderTable();
+                    modalHint.innerText = `⚠️ cannot reach ${API_BASE} — check server`;
+                }
+            }
+
+            async function createLaptop(laptopData) {
+                try {
+                    // Remove dateSold if it exists (shouldn't for new products)
+                    const { dateSold, ...createData } = laptopData;
+                    
+                    const res = await fetch(API_BASE, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(createData)
+                    });
+                    if (!res.ok) throw new Error(`POST failed: ${res.status}`);
+                    const newLap = await res.json();
+                    // add to local state (use _id from mongo if present)
+                    laptops.push(newLap);
+                    renderTable();
+                    modalHint.innerText = `✅ created via POST ${API_BASE}`;
+                    modalOverlay.classList.remove('show');
+                } catch (err) {
+                    modalHint.innerText = `❌ create error: ${err.message}`;
+                }
+            }
+
+            async function updateLaptop(id, laptopData) {
+                try {
+                    const res = await fetch(`${API_BASE}/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(laptopData)
+                    });
+                    if (!res.ok) throw new Error(`PUT failed: ${res.status}`);
+                    const updated = await res.json();
+                    laptops = laptops.map(l => (l._id === id || l.id === id) ? updated : l);
+                    renderTable();
+                    modalHint.innerText = `✅ updated via PUT ${API_BASE}/${id}`;
+                    modalOverlay.classList.remove('show');
+                } catch (err) {
+                    modalHint.innerText = `❌ update error: ${err.message}`;
+                }
+            }
+
+            async function deleteLaptop(id) {
+                try {
+                    const res = await fetch(`${API_BASE}/${id}`, { method: 'DELETE' });
+                    if (!res.ok) throw new Error(`DELETE failed: ${res.status}`);
+                    laptops = laptops.filter(l => (l._id !== id && l.id !== id));
+                    renderTable();
+                    modalHint.innerText = `🗑 deleted via DELETE ${API_BASE}/${id}`;
+                } catch (err) {
+                    modalHint.innerText = `❌ delete error: ${err.message}`;
+                }
+            }
+
+            // ---------- modal flows ----------
+            function openEditModal(id) {
+                const laptop = laptops.find(l => (l._id === id || l.id === id));
+                if (!laptop) return;
+                editingId = id;
+                modalTitle.innerText = '✏️ edit laptop';
+                buildEditModalForm(laptop);
+                statusRuleHint.innerHTML = '✨ you can switch between <strong>Available</strong> or <strong>Sold</strong>';
+                modalOverlay.classList.add('show');
+            }
+
+            function openCreateModal() {
+                editingId = null;
+                modalTitle.innerText = '➕ add laptop';
+                // default values: status = Available, no dateSold field
+                buildCreateModalForm({ 
+                    serial: '', 
+                    brand: 'Dell', 
+                    model: '', 
+                    processor: 'i5', 
+                    ram: '8GB', 
+                    storage: '256GB', 
+                    purchaseDate: '', 
+                    status: 'Available' 
+                });
+                statusRuleHint.innerHTML = '✨ default status: <strong>Available</strong> (date sold not needed for new products)';
+                modalOverlay.classList.add('show');
+            }
+
+            function buildModalValues(isEdit = false) {
+                const values = {
+                    serial: document.getElementById('fSerial')?.value.trim(),
+                    brand: document.getElementById('fBrand')?.value,
+                    model: document.getElementById('fModel')?.value.trim(),
+                    processor: document.getElementById('fProcessor')?.value,
+                    ram: document.getElementById('fRam')?.value,
+                    storage: document.getElementById('fStorage')?.value,
+                    purchaseDate: document.getElementById('fPurDate')?.value,
+                    status: document.getElementById('fStatus')?.value,
+                };
+                
+                // Only include dateSold in update operations if the field exists
+                if (isEdit) {
+                    const dateSoldInput = document.getElementById('fDateSold');
+                    if (dateSoldInput) {
+                        values.dateSold = dateSoldInput.value || null;
+                    }
+                }
+                
+                return values;
+            }
+
+            function buildCreateModalForm(values) {
+                const brandOptions = ['Dell','HP','Lenovo','Apple','Asus','Acer','MSI','Microsoft'];
+                const ramOptions = ['4GB','8GB','16GB','32GB','64GB'];
+                const processorOptions = ['i3','i5','i7','i9','Ryzen 3','Ryzen 5','Ryzen 7','Ryzen 9'];
+                const storageOptions = ['128GB','256GB','320GB','500GB','512GB','720GB','1TB','2TB'];
+                const statusOptions = ['Available', 'Sold'];
+                
+                modalForm.innerHTML = `
+                    <div class="field"><label>Serial *</label><input id="fSerial" value="${values.serial || ''}" placeholder="SN-1234"></div>
+                    <div class="field"><label>Brand</label><select id="fBrand">${brandOptions.map(b => `<option ${values.brand === b ? 'selected' : ''}>${b}</option>`).join('')}</select></div>
+                    <div class="field"><label>Model</label><input id="fModel" value="${values.model || ''}"></div>
+                    <div class="field"><label>Processor</label><select id="fProcessor">${processorOptions.map(p => `<option ${values.processor === p ? 'selected' : ''}>${p}</option>`).join('')}</select></div>
+                    <div class="field"><label>RAM</label><select id="fRam">${ramOptions.map(r => `<option ${values.ram === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
+                    <div class="field"><label>Storage</label><select id="fStorage">${storageOptions.map(s => `<option ${values.storage === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+                    <div class="field"><label>Status</label><select id="fStatus">${statusOptions.map(s => `<option ${values.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+                `;
+            }
+
+            function buildEditModalForm(values) {
+                const brandOptions = ['Dell','HP','Lenovo','Apple','Asus','Acer','MSI','Microsoft'];
+                const ramOptions = ['4GB','8GB','16GB','32GB','64GB'];
+                const processorOptions = ['i3','i5','i7','i9','Ryzen 3','Ryzen 5','Ryzen 7','Ryzen 9'];
+                const storageOptions = ['128GB','256GB','320GB','500GB','512GB','720GB','1TB','2TB'];
+                const statusOptions = ['Available', 'Sold'];
+                
+                // Format dateSold for input if it exists
+                const dateSoldValue = values.dateSold ? values.dateSold.slice(0,10) : '';
+                
+                modalForm.innerHTML = `
+                    <div class="field"><label>Serial *</label><input id="fSerial" value="${values.serial || ''}" placeholder="SN-1234"></div>
+                    <div class="field"><label>Brand</label><select id="fBrand">${brandOptions.map(b => `<option ${values.brand === b ? 'selected' : ''}>${b}</option>`).join('')}</select></div>
+                    <div class="field"><label>Model</label><input id="fModel" value="${values.model || ''}"></div>
+                    <div class="field"><label>Processor</label><select id="fProcessor">${processorOptions.map(p => `<option ${values.processor === p ? 'selected' : ''}>${p}</option>`).join('')}</select></div>
+                    <div class="field"><label>RAM</label><select id="fRam">${ramOptions.map(r => `<option ${values.ram === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
+                    <div class="field"><label>Storage</label><select id="fStorage">${storageOptions.map(s => `<option ${values.storage === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+                    <div class="field"><label>Purchase date</label><input id="fPurDate" type="date" value="${values.purchaseDate ? values.purchaseDate.slice(0,10) : ''}"></div>
+                    <div class="field"><label>Status</label><select id="fStatus">${statusOptions.map(s => `<option ${values.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+                    
+                `;
+            }
+
+            // Update the modal save event listener
+            document.getElementById('modalSave').addEventListener('click', () => {
+                const isEdit = editingId !== null;
+                const payload = buildModalValues(isEdit);
+                
+                if (!payload.serial) { 
+                    alert('Serial number required'); 
+                    return; 
+                }
+
+                if (isEdit) {
+                    updateLaptop(editingId, payload);
+                } else {
+                    createLaptop(payload);
+                }
+            });
+        // ----- event listeners -----
+
+
+        document.getElementById('modalCancel').addEventListener('click', () => {
+            modalOverlay.classList.remove('show');
+        });
+        window.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) modalOverlay.classList.remove('show');
+        });
+
+        function deleteLaptopFlow(id) {
+            if (!confirm('Delete this laptop permanently?')) return;
+            deleteLaptop(id);
+        }
+
+        // refresh button
+        document.getElementById('refreshBtn').addEventListener('click', fetchLaptops);
+        document.getElementById('addNewBtn').addEventListener('click', openCreateModal);
+
+        // filter triggers
+        searchInput.addEventListener('input', renderTable);
+        statusFilter.addEventListener('change', renderTable);
+        ramFilter.addEventListener('change', renderTable);
+
+        // initial load from real API (empty until you add)
+        fetchLaptops();
+    })();
+</script>
+</body>
+</html>
