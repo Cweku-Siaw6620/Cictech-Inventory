@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CictechInventory · live edge</title>
-    <!-- clean, refined typography & API-ready layout -->
     <link rel="stylesheet" href="index.css">
 </head>
 <body>
@@ -13,7 +12,7 @@
     <!-- header -->
     <div class="top-bar">
         <div class="logo">
-            <h1>CictechInventory</h1>
+            <img src="./assets/logo.jpg" alt="logo">
         </div>
         <div class="utility-actions">
             <button class="btn" id="refreshBtn">↻ sync</button>
@@ -55,7 +54,7 @@
                 <thead>
                     <tr>
                         <th>Serial</th><th>Brand</th><th>Model</th><th>Processor</th>
-                        <th>RAM</th><th>Storage</th><th>Purchase date</th><th>Status</th><th>Actions</th>
+                        <th>RAM</th><th>Storage</th><th>Purchase date</th><th>Image</th><th>Status</th><th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
@@ -64,32 +63,94 @@
             </table>
         </div>
     </div>
-    <div class="footer-note">⚡ connected to http://localhost:3000/products</div>
+    <div class="footer-note">⚡ connected to https://cictechinventory.onrender.com/products</div>
 </div>
 
 <!-- MODAL for add / edit -->
 <div class="modal-overlay" id="modal">
     <div class="modal-card">
-        <h2 id="modalTitle">➕ add laptop</h2>
+        <h2 id="modalTitle">➕ Add laptop</h2>
         <div class="form-grid" id="modalForm"></div>
         <div class="status-hint" id="statusRuleHint">✨ default: <strong>Available</strong> (can be toggled to Sold when editing)</div>
         <div class="modal-actions">
             <button class="btn" id="modalCancel">cancel</button>
             <button class="btn btn-primary" id="modalSave">save changes</button>
         </div>
-        <div class="inline-alert" id="modalHint">⚙️ API base: http://localhost:3000/products</div>
+        <div class="inline-alert" id="modalHint">⚙️ API base: https://cictechinventory.onrender.com/products</div>
+    </div>
+</div>
+
+<div id="imageNotification" class="image-notification">
+    ✅ Image added successfully
+</div>
+
+<!-- NOTIFICATION SYSTEM -->
+<div id="notificationContainer" class="notification-container"></div>
+
+<!-- CONFIRMATION MODAL -->
+<div class="confirm-overlay" id="confirmModal">
+    <div class="confirm-card">
+        <div class="confirm-icon">🗑️</div>
+        <h3 id="confirmTitle">Delete Laptop</h3>
+        <p id="confirmMessage">Are you sure you want to delete this laptop? This action cannot be undone.</p>
+        <div class="confirm-actions">
+            <button class="btn" id="confirmCancel">cancel</button>
+            <button class="btn btn-danger" id="confirmDelete">
+                <span class="btn-text">delete permanently</span>
+                <span class="btn-loader" style="display: none;"></span>
+            </button>
+        </div>
     </div>
 </div>
 
 <script>
     (function() {
         // ---------- real API endpoint (your local server) ----------
-        const API_BASE = 'http://localhost:3000/products';   // exactly as specified
+        const API_BASE = 'https://cictechinventory.onrender.com/products';   // exactly as specified
 
         // internal state
         let laptops = [];             // will be filled from GET
         let filteredLaptops = [];
         let editingId = null;          // null = create mode
+        let pendingDeleteId = null;   // id waiting for confirm modal
+
+        // ---------- helper: show toast notification ----------
+        function showNotification(message, type = 'info', duration = 4000) {
+            const container = document.getElementById('notificationContainer');
+            const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <span class="toast-icon">${icons[type] || 'ℹ️'}</span>
+                <span class="toast-message">${message}</span>
+                <button class="toast-close" aria-label="close">✕</button>
+            `;
+            container.appendChild(toast);
+            requestAnimationFrame(() => requestAnimationFrame(() => toast.classList.add('show')));
+
+            const dismiss = () => {
+                clearTimeout(timer);
+                toast.classList.add('hiding');
+                setTimeout(() => toast.remove(), 280);
+            };
+            const timer = setTimeout(dismiss, duration);
+            toast.querySelector('.toast-close').addEventListener('click', dismiss);
+        }
+
+        // ---------- helper: toggle button loading state ----------
+        function setButtonLoading(btn, isLoading, loadingText = '') {
+            if (!btn) return;
+            if (isLoading) {
+                btn.dataset.originalHtml = btn.innerHTML;
+                btn.classList.add('loading');
+                btn.innerHTML = `<span class="btn-spinner"></span>${loadingText ? ' ' + loadingText : ''}`;
+                btn.disabled = true;
+            } else {
+                btn.classList.remove('loading');
+                btn.innerHTML = btn.dataset.originalHtml || btn.innerHTML;
+                btn.disabled = false;
+            }
+        }
 
         // DOM elements
         const tbody = document.getElementById('tableBody');
@@ -117,6 +178,12 @@
                 return matchesSearch && matchesStatus && matchesRam;
             });
 
+            // If laptops is null/undefined (hasn't even tried to load yet)
+            if (laptops === null) {
+                tbody.innerHTML = `<tr><td colspan="10" class="loading-container"><div class="spinner"></div> Connecting to database...</td></tr>`;
+                return;
+            }
+
             if (!laptops.length) {
                 tbody.innerHTML = `<tr class="empty-row"><td colspan="9">📭 inventory is empty — add your first laptop</td></tr>`;
                 return;
@@ -138,6 +205,7 @@
                     <td>${lap.ram || ''}</td>
                     <td>${lap.storage || ''}</td>
                     <td>${lap.purchaseDate ? lap.purchaseDate.slice(0,10) : ''}</td>
+                    <td>${lap.imageUrl && lap.imageUrl.trim() !== '' ? '<span class="image-confirmed">✅</span>' : '-'}</td>
                     <td><span class="status ${statusClass}"><span class="status-dot"></span> ${lap.status || 'Available'}</span></td>
                     <td>
                         <div class="row-actions">
@@ -166,25 +234,35 @@
 
             // ---------- API calls (real fetch) ----------
             async function fetchLaptops() {
+                const refreshBtn = document.getElementById('refreshBtn');
+                setButtonLoading(refreshBtn, true, 'syncing...');
                 try {
+                    tbody.innerHTML = `<tr><td colspan="10" class="loading-container"><div class="spinner"></div> Loading inventory...</td></tr>`;
+                    
                     const res = await fetch(API_BASE);
                     if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    
                     const data = await res.json();
-                    // handle both array and wrapped response; assume array
                     laptops = Array.isArray(data) ? data : (data.data || []);
+                    
                     renderTable();
                     modalHint.innerText = `✅ GET ${API_BASE} · ${laptops.length} records`;
+                    showNotification(`Synced — ${laptops.length} laptop${laptops.length !== 1 ? 's' : ''} loaded`, 'success', 3000);
                 } catch (err) {
                     console.warn('fetch error', err);
                     laptops = [];
                     renderTable();
                     modalHint.innerText = `⚠️ cannot reach ${API_BASE} — check server`;
+                    showNotification('Could not reach the server. Check your connection.', 'error');
+                } finally {
+                    setButtonLoading(refreshBtn, false);
                 }
             }
 
             async function createLaptop(laptopData) {
+                const saveBtn = document.getElementById('modalSave');
+                setButtonLoading(saveBtn, true, 'saving...');
                 try {
-                    // Remove dateSold if it exists (shouldn't for new products)
                     const { dateSold, ...createData } = laptopData;
                     
                     const res = await fetch(API_BASE, {
@@ -194,17 +272,22 @@
                     });
                     if (!res.ok) throw new Error(`POST failed: ${res.status}`);
                     const newLap = await res.json();
-                    // add to local state (use _id from mongo if present)
                     laptops.push(newLap);
                     renderTable();
                     modalHint.innerText = `✅ created via POST ${API_BASE}`;
                     modalOverlay.classList.remove('show');
+                    showNotification(`${newLap.serial || newLap.model || 'Laptop'} added to inventory`, 'success');
                 } catch (err) {
                     modalHint.innerText = `❌ create error: ${err.message}`;
+                    showNotification(`Failed to save: ${err.message}`, 'error');
+                } finally {
+                    setButtonLoading(saveBtn, false);
                 }
             }
 
             async function updateLaptop(id, laptopData) {
+                const saveBtn = document.getElementById('modalSave');
+                setButtonLoading(saveBtn, true, 'updating...');
                 try {
                     const res = await fetch(`${API_BASE}/${id}`, {
                         method: 'PUT',
@@ -217,8 +300,18 @@
                     renderTable();
                     modalHint.innerText = `✅ updated via PUT ${API_BASE}/${id}`;
                     modalOverlay.classList.remove('show');
+
+                    if (laptopData.imageUrl && laptopData.imageUrl.trim() !== "") {
+                        showNotification(`Image added to ${updated.serial || updated.model || 'laptop'}`, 'success');
+                        setTimeout(() => window.location.reload(), 1800);
+                    } else {
+                        showNotification(`${updated.serial || updated.model || 'Laptop'} updated successfully`, 'success');
+                    }
                 } catch (err) {
                     modalHint.innerText = `❌ update error: ${err.message}`;
+                    showNotification(`Failed to update: ${err.message}`, 'error');
+                } finally {
+                    setButtonLoading(saveBtn, false);
                 }
             }
 
@@ -226,11 +319,15 @@
                 try {
                     const res = await fetch(`${API_BASE}/${id}`, { method: 'DELETE' });
                     if (!res.ok) throw new Error(`DELETE failed: ${res.status}`);
+                    const deleted = laptops.find(l => l._id === id || l.id === id);
                     laptops = laptops.filter(l => (l._id !== id && l.id !== id));
                     renderTable();
                     modalHint.innerText = `🗑 deleted via DELETE ${API_BASE}/${id}`;
+                    showNotification(`${deleted?.serial || 'Laptop'} removed from inventory`, 'success');
                 } catch (err) {
                     modalHint.innerText = `❌ delete error: ${err.message}`;
+                    showNotification(`Failed to delete: ${err.message}`, 'error');
+                    throw err; // re-throw so caller can reset button
                 }
             }
 
@@ -273,6 +370,7 @@
                     storage: document.getElementById('fStorage')?.value,
                     purchaseDate: document.getElementById('fPurDate')?.value,
                     status: document.getElementById('fStatus')?.value,
+                    imageUrl: document.getElementById('fImageUrl')?.value.trim(),
                 };
                 
                 // Only include dateSold in update operations if the field exists
@@ -323,6 +421,7 @@
                     <div class="field"><label>Storage</label><select id="fStorage">${storageOptions.map(s => `<option ${values.storage === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
                     <div class="field"><label>Purchase date</label><input id="fPurDate" type="date" value="${values.purchaseDate ? values.purchaseDate.slice(0,10) : ''}"></div>
                     <div class="field"><label>Status</label><select id="fStatus">${statusOptions.map(s => `<option ${values.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+                    <div class="field"><label>Image URL (Model Image)</label><input id="fImageUrl" placeholder="https://cloud.com/image.jpg"></div>
                     
                 `;
             }
@@ -333,7 +432,7 @@
                 const payload = buildModalValues(isEdit);
                 
                 if (!payload.serial) { 
-                    alert('Serial number required'); 
+                    showNotification('Serial number is required', 'warning');
                     return; 
                 }
 
@@ -353,10 +452,38 @@
             if (e.target === modalOverlay) modalOverlay.classList.remove('show');
         });
 
+        // ----- confirm delete modal -----
+        const confirmModal = document.getElementById('confirmModal');
+
         function deleteLaptopFlow(id) {
-            if (!confirm('Delete this laptop permanently?')) return;
-            deleteLaptop(id);
+            pendingDeleteId = id;
+            confirmModal.classList.add('show');
         }
+
+        document.getElementById('confirmCancel').addEventListener('click', () => {
+            pendingDeleteId = null;
+            confirmModal.classList.remove('show');
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === confirmModal) {
+                pendingDeleteId = null;
+                confirmModal.classList.remove('show');
+            }
+        });
+
+        document.getElementById('confirmDelete').addEventListener('click', async () => {
+            if (!pendingDeleteId) return;
+            const deleteBtn = document.getElementById('confirmDelete');
+            setButtonLoading(deleteBtn, true, 'deleting...');
+            try {
+                await deleteLaptop(pendingDeleteId);
+            } finally {
+                setButtonLoading(deleteBtn, false);
+                pendingDeleteId = null;
+                confirmModal.classList.remove('show');
+            }
+        });
 
         // refresh button
         document.getElementById('refreshBtn').addEventListener('click', fetchLaptops);
