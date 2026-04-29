@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>CictechInventory · live edge</title>
     <link rel="stylesheet" href="index.css">
 </head>
@@ -47,7 +47,7 @@
         </div>
     </div>
 
-    <!-- inventory card (empty by default) -->
+    <!-- inventory card -->
     <div class="inventory-card">
         <div class="table-responsive">
             <table id="laptopTable">
@@ -69,6 +69,9 @@
 <!-- MODAL for add / edit -->
 <div class="modal-overlay" id="modal">
     <div class="modal-card">
+        <div class="modal-toolbar">
+            <button class="btn" id="openBulkBtn" type="button">add bulk</button>
+        </div>
         <h2 id="modalTitle">➕ Add laptop</h2>
         <div class="form-grid" id="modalForm"></div>
         <div class="status-hint" id="statusRuleHint">✨ default: <strong>Available</strong> (can be toggled to Sold when editing)</div>
@@ -77,6 +80,20 @@
             <button class="btn btn-primary" id="modalSave">save changes</button>
         </div>
         <div class="inline-alert" id="modalHint">⚙️ API base: https://cictechinventory.onrender.com/products</div>
+    </div>
+</div>
+
+<!-- MODAL for bulk add -->
+<div class="modal-overlay" id="bulkModal">
+    <div class="modal-card bulk-modal-card">
+        <h2>📦 add products in bulk</h2>
+        <div class="bulk-help">Fill up to 15 products. Rows with no details are ignored when saving.</div>
+        <div class="bulk-rows" id="bulkRows"></div>
+        <div class="modal-actions">
+            <button class="btn" id="bulkCancel">cancel</button>
+            <button class="btn btn-primary" id="bulkSave">save products</button>
+        </div>
+        <div class="inline-alert" id="bulkModalHint">⚙️ bulk create uses POST https://cictechinventory.onrender.com/products/bulk</div>
     </div>
 </div>
 
@@ -105,16 +122,23 @@
 
 <script>
     (function() {
-        // ---------- real API endpoint (your local server) ----------
-        const API_BASE = 'https://cictechinventory.onrender.com/products';   // exactly as specified
+        // ---------- API endpoint ----------
+        const API_BASE = 'https://cictech-inventory-2se4.vercel.app/products';
+        const BULK_LIMIT = 15;
+
+        const BRAND_OPTIONS = ['Dell','HP','Lenovo','Apple','Asus','Acer','MSI','Microsoft'];
+        const RAM_OPTIONS = ['4GB','8GB','16GB','32GB','64GB'];
+        const PROCESSOR_OPTIONS = ['i3','i5','i7','i9','Ryzen 3','Ryzen 5','Ryzen 7','Ryzen 9'];
+        const STORAGE_OPTIONS = ['128GB','256GB','320GB','500GB','512GB','720GB','1TB','2TB'];
+        const STATUS_OPTIONS = ['Available', 'Sold'];
 
         // internal state
-        let laptops = [];             // will be filled from GET
+        let laptops = [];
         let filteredLaptops = [];
-        let editingId = null;          // null = create mode
-        let pendingDeleteId = null;   // id waiting for confirm modal
+        let editingId = null;
+        let pendingDeleteId = null;
 
-        // ---------- helper: show toast notification ----------
+        // ---------- show toast notification ----------
         function showNotification(message, type = 'info', duration = 4000) {
             const container = document.getElementById('notificationContainer');
             const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
@@ -137,7 +161,7 @@
             toast.querySelector('.toast-close').addEventListener('click', dismiss);
         }
 
-        // ---------- helper: toggle button loading state ----------
+        // ---------- toggle button loading state ----------
         function setButtonLoading(btn, isLoading, loadingText = '') {
             if (!btn) return;
             if (isLoading) {
@@ -162,8 +186,13 @@
         const modalForm = document.getElementById('modalForm');
         const modalHint = document.getElementById('modalHint');
         const statusRuleHint = document.getElementById('statusRuleHint');
+        const openBulkBtn = document.getElementById('openBulkBtn');
+        const bulkModal = document.getElementById('bulkModal');
+        const bulkRows = document.getElementById('bulkRows');
+        const bulkModalHint = document.getElementById('bulkModalHint');
+        const bulkSaveBtn = document.getElementById('bulkSave');
 
-        // ---------- helper: render table from laptops[] ----------
+        // ---------- render table ----------
         function renderTable() {
             const searchTerm = searchInput.value.toLowerCase();
             const statusVal = statusFilter.value;
@@ -178,19 +207,18 @@
                 return matchesSearch && matchesStatus && matchesRam;
             });
 
-            // If laptops is null/undefined (hasn't even tried to load yet)
             if (laptops === null) {
                 tbody.innerHTML = `<tr><td colspan="10" class="loading-container"><div class="spinner"></div> Connecting to database...</td></tr>`;
                 return;
             }
 
             if (!laptops.length) {
-                tbody.innerHTML = `<tr class="empty-row"><td colspan="9">📭 inventory is empty — add your first laptop</td></tr>`;
+                tbody.innerHTML = `<tr class="empty-row"><td colspan="10">📭 inventory is empty — add your first laptop</td></tr>`;
                 return;
             }
 
             if (filteredLaptops.length === 0) {
-                tbody.innerHTML = `<tr class="empty-row"><td colspan="9">🔍 no matching laptops — adjust filters</td></tr>`;
+                tbody.innerHTML = `<tr class="empty-row"><td colspan="10">🔍 no matching laptops — adjust filters</td></tr>`;
                 return;
             }
 
@@ -217,7 +245,6 @@
             });
             tbody.innerHTML = html;
 
-            // attach edit/delete events (use _id or id returned by server)
             document.querySelectorAll('.edit-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const id = e.currentTarget.dataset.id;
@@ -232,227 +259,338 @@
             });
         }
 
-            // ---------- API calls (real fetch) ----------
-            async function fetchLaptops() {
-                const refreshBtn = document.getElementById('refreshBtn');
-                setButtonLoading(refreshBtn, true, 'syncing...');
-                try {
-                    tbody.innerHTML = `<tr><td colspan="10" class="loading-container"><div class="spinner"></div> Loading inventory...</td></tr>`;
-                    
-                    const res = await fetch(API_BASE);
-                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                    
-                    const data = await res.json();
-                    laptops = Array.isArray(data) ? data : (data.data || []);
-                    
-                    renderTable();
-                    modalHint.innerText = `✅ GET ${API_BASE} · ${laptops.length} records`;
-                    showNotification(`Synced — ${laptops.length} laptop${laptops.length !== 1 ? 's' : ''} loaded`, 'success', 3000);
-                } catch (err) {
-                    console.warn('fetch error', err);
-                    laptops = [];
-                    renderTable();
-                    modalHint.innerText = `⚠️ cannot reach ${API_BASE} — check server`;
-                    showNotification('Could not reach the server. Check your connection.', 'error');
-                } finally {
-                    setButtonLoading(refreshBtn, false);
-                }
+        // ---------- API calls ----------
+        async function fetchLaptops() {
+            const refreshBtn = document.getElementById('refreshBtn');
+            setButtonLoading(refreshBtn, true, 'syncing...');
+            try {
+                tbody.innerHTML = `<tr><td colspan="10" class="loading-container"><div class="spinner"></div> Loading inventory...</td></tr>`;
+                
+                const res = await fetch(API_BASE);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                
+                const data = await res.json();
+                laptops = Array.isArray(data) ? data : (data.data || []);
+                
+                renderTable();
+                modalHint.innerText = `✅ GET ${API_BASE} · ${laptops.length} records`;
+                showNotification(`Synced — ${laptops.length} laptop${laptops.length !== 1 ? 's' : ''} loaded`, 'success', 3000);
+            } catch (err) {
+                console.warn('fetch error', err);
+                laptops = [];
+                renderTable();
+                modalHint.innerText = `⚠️ cannot reach ${API_BASE} — check server`;
+                showNotification('Could not reach the server. Check your connection.', 'error');
+            } finally {
+                setButtonLoading(refreshBtn, false);
             }
+        }
 
-            async function createLaptop(laptopData) {
-                const saveBtn = document.getElementById('modalSave');
-                setButtonLoading(saveBtn, true, 'saving...');
-                try {
-                    const { dateSold, ...createData } = laptopData;
-                    
-                    const res = await fetch(API_BASE, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(createData)
-                    });
-                    if (!res.ok) throw new Error(`POST failed: ${res.status}`);
-                    const newLap = await res.json();
-                    laptops.push(newLap);
-                    renderTable();
-                    modalHint.innerText = `✅ created via POST ${API_BASE}`;
-                    modalOverlay.classList.remove('show');
-                    showNotification(`${newLap.serial || newLap.model || 'Laptop'} added to inventory`, 'success');
-                } catch (err) {
-                    modalHint.innerText = `❌ create error: ${err.message}`;
-                    showNotification(`Failed to save: ${err.message}`, 'error');
-                } finally {
-                    setButtonLoading(saveBtn, false);
-                }
-            }
-
-            async function updateLaptop(id, laptopData) {
-                const saveBtn = document.getElementById('modalSave');
-                setButtonLoading(saveBtn, true, 'updating...');
-                try {
-                    const res = await fetch(`${API_BASE}/${id}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(laptopData)
-                    });
-                    if (!res.ok) throw new Error(`PUT failed: ${res.status}`);
-                    const updated = await res.json();
-                    laptops = laptops.map(l => (l._id === id || l.id === id) ? updated : l);
-                    renderTable();
-                    modalHint.innerText = `✅ updated via PUT ${API_BASE}/${id}`;
-                    modalOverlay.classList.remove('show');
-
-                    if (laptopData.imageUrl && laptopData.imageUrl.trim() !== "") {
-                        showNotification(`Image added to ${updated.serial || updated.model || 'laptop'}`, 'success');
-                        setTimeout(() => window.location.reload(), 1800);
-                    } else {
-                        showNotification(`${updated.serial || updated.model || 'Laptop'} updated successfully`, 'success');
-                    }
-                } catch (err) {
-                    modalHint.innerText = `❌ update error: ${err.message}`;
-                    showNotification(`Failed to update: ${err.message}`, 'error');
-                } finally {
-                    setButtonLoading(saveBtn, false);
-                }
-            }
-
-            async function deleteLaptop(id) {
-                try {
-                    const res = await fetch(`${API_BASE}/${id}`, { method: 'DELETE' });
-                    if (!res.ok) throw new Error(`DELETE failed: ${res.status}`);
-                    const deleted = laptops.find(l => l._id === id || l.id === id);
-                    laptops = laptops.filter(l => (l._id !== id && l.id !== id));
-                    renderTable();
-                    modalHint.innerText = `🗑 deleted via DELETE ${API_BASE}/${id}`;
-                    showNotification(`${deleted?.serial || 'Laptop'} removed from inventory`, 'success');
-                } catch (err) {
-                    modalHint.innerText = `❌ delete error: ${err.message}`;
-                    showNotification(`Failed to delete: ${err.message}`, 'error');
-                    throw err; // re-throw so caller can reset button
-                }
-            }
-
-            // ---------- modal flows ----------
-            function openEditModal(id) {
-                const laptop = laptops.find(l => (l._id === id || l.id === id));
-                if (!laptop) return;
-                editingId = id;
-                modalTitle.innerText = '✏️ edit laptop';
-                buildEditModalForm(laptop);
-                statusRuleHint.innerHTML = '✨ you can switch between <strong>Available</strong> or <strong>Sold</strong>';
-                modalOverlay.classList.add('show');
-            }
-
-            function openCreateModal() {
-                editingId = null;
-                modalTitle.innerText = '➕ add laptop';
-                // default values: status = Available, no dateSold field
-                buildCreateModalForm({ 
-                    serial: '', 
-                    brand: 'Dell', 
-                    model: '', 
-                    processor: 'i5', 
-                    ram: '8GB', 
-                    storage: '256GB', 
-                    purchaseDate: '', 
-                    status: 'Available' 
+        async function createLaptop(laptopData) {
+            const saveBtn = document.getElementById('modalSave');
+            setButtonLoading(saveBtn, true, 'saving...');
+            try {
+                const { dateSold, ...createData } = laptopData;
+                
+                const res = await fetch(API_BASE, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(createData)
                 });
-                statusRuleHint.innerHTML = '✨ default status: <strong>Available</strong> (date sold not needed for new products)';
-                modalOverlay.classList.add('show');
+                if (!res.ok) throw new Error(`POST failed: ${res.status}`);
+                const newLap = await res.json();
+                laptops.push(newLap);
+                renderTable();
+                modalHint.innerText = `✅ created via POST ${API_BASE}`;
+                modalOverlay.classList.remove('show');
+                showNotification(`${newLap.serial || newLap.model || 'Laptop'} added to inventory`, 'success');
+            } catch (err) {
+                modalHint.innerText = `❌ create error: ${err.message}`;
+                showNotification(`Failed to save: ${err.message}`, 'error');
+            } finally {
+                setButtonLoading(saveBtn, false);
             }
+        }
 
-            function buildModalValues(isEdit = false) {
-                const values = {
-                    serial: document.getElementById('fSerial')?.value.trim(),
-                    brand: document.getElementById('fBrand')?.value,
-                    model: document.getElementById('fModel')?.value.trim(),
-                    processor: document.getElementById('fProcessor')?.value,
-                    ram: document.getElementById('fRam')?.value,
-                    storage: document.getElementById('fStorage')?.value,
-                    purchaseDate: document.getElementById('fPurDate')?.value,
-                    status: document.getElementById('fStatus')?.value,
-                    imageUrl: document.getElementById('fImageUrl')?.value.trim(),
-                };
-                
-                // Only include dateSold in update operations if the field exists
-                if (isEdit) {
-                    const dateSoldInput = document.getElementById('fDateSold');
-                    if (dateSoldInput) {
-                        values.dateSold = dateSoldInput.value || null;
-                    }
-                }
-                
-                return values;
-            }
+        async function updateLaptop(id, laptopData) {
+            const saveBtn = document.getElementById('modalSave');
+            setButtonLoading(saveBtn, true, 'updating...');
+            try {
+                const res = await fetch(`${API_BASE}/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(laptopData)
+                });
+                if (!res.ok) throw new Error(`PUT failed: ${res.status}`);
+                const updated = await res.json();
+                laptops = laptops.map(l => (l._id === id || l.id === id) ? updated : l);
+                renderTable();
+                modalHint.innerText = `✅ updated via PUT ${API_BASE}/${id}`;
+                modalOverlay.classList.remove('show');
 
-            function buildCreateModalForm(values) {
-                const brandOptions = ['Dell','HP','Lenovo','Apple','Asus','Acer','MSI','Microsoft'];
-                const ramOptions = ['4GB','8GB','16GB','32GB','64GB'];
-                const processorOptions = ['i3','i5','i7','i9','Ryzen 3','Ryzen 5','Ryzen 7','Ryzen 9'];
-                const storageOptions = ['128GB','256GB','320GB','500GB','512GB','720GB','1TB','2TB'];
-                const statusOptions = ['Available', 'Sold'];
-                
-                modalForm.innerHTML = `
-                    <div class="field"><label>Serial *</label><input id="fSerial" value="${values.serial || ''}" placeholder="SN-1234"></div>
-                    <div class="field"><label>Brand</label><select id="fBrand">${brandOptions.map(b => `<option ${values.brand === b ? 'selected' : ''}>${b}</option>`).join('')}</select></div>
-                    <div class="field"><label>Model</label><input id="fModel" value="${values.model || ''}"></div>
-                    <div class="field"><label>Processor</label><select id="fProcessor">${processorOptions.map(p => `<option ${values.processor === p ? 'selected' : ''}>${p}</option>`).join('')}</select></div>
-                    <div class="field"><label>RAM</label><select id="fRam">${ramOptions.map(r => `<option ${values.ram === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
-                    <div class="field"><label>Storage</label><select id="fStorage">${storageOptions.map(s => `<option ${values.storage === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
-                    <div class="field"><label>Status</label><select id="fStatus">${statusOptions.map(s => `<option ${values.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
-                `;
-            }
-
-            function buildEditModalForm(values) {
-                const brandOptions = ['Dell','HP','Lenovo','Apple','Asus','Acer','MSI','Microsoft'];
-                const ramOptions = ['4GB','8GB','16GB','32GB','64GB'];
-                const processorOptions = ['i3','i5','i7','i9','Ryzen 3','Ryzen 5','Ryzen 7','Ryzen 9'];
-                const storageOptions = ['128GB','256GB','320GB','500GB','512GB','720GB','1TB','2TB'];
-                const statusOptions = ['Available', 'Sold'];
-                
-                // Format dateSold for input if it exists
-                const dateSoldValue = values.dateSold ? values.dateSold.slice(0,10) : '';
-                
-                modalForm.innerHTML = `
-                    <div class="field"><label>Serial *</label><input id="fSerial" value="${values.serial || ''}" placeholder="SN-1234"></div>
-                    <div class="field"><label>Brand</label><select id="fBrand">${brandOptions.map(b => `<option ${values.brand === b ? 'selected' : ''}>${b}</option>`).join('')}</select></div>
-                    <div class="field"><label>Model</label><input id="fModel" value="${values.model || ''}"></div>
-                    <div class="field"><label>Processor</label><select id="fProcessor">${processorOptions.map(p => `<option ${values.processor === p ? 'selected' : ''}>${p}</option>`).join('')}</select></div>
-                    <div class="field"><label>RAM</label><select id="fRam">${ramOptions.map(r => `<option ${values.ram === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
-                    <div class="field"><label>Storage</label><select id="fStorage">${storageOptions.map(s => `<option ${values.storage === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
-                    <div class="field"><label>Purchase date</label><input id="fPurDate" type="date" value="${values.purchaseDate ? values.purchaseDate.slice(0,10) : ''}"></div>
-                    <div class="field"><label>Status</label><select id="fStatus">${statusOptions.map(s => `<option ${values.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
-                    <div class="field"><label>Image URL (Model Image)</label><input id="fImageUrl" placeholder="https://cloud.com/image.jpg"></div>
-                    
-                `;
-            }
-
-            // Update the modal save event listener
-            document.getElementById('modalSave').addEventListener('click', () => {
-                const isEdit = editingId !== null;
-                const payload = buildModalValues(isEdit);
-                
-                if (!payload.serial) { 
-                    showNotification('Serial number is required', 'warning');
-                    return; 
-                }
-
-                if (isEdit) {
-                    updateLaptop(editingId, payload);
+                if (laptopData.imageUrl && laptopData.imageUrl.trim() !== "") {
+                    showNotification(`Image added to ${updated.serial || updated.model || 'laptop'}`, 'success');
+                    setTimeout(() => window.location.reload(), 1800);
                 } else {
-                    createLaptop(payload);
+                    showNotification(`${updated.serial || updated.model || 'Laptop'} updated successfully`, 'success');
                 }
-            });
-        // ----- event listeners -----
+            } catch (err) {
+                modalHint.innerText = `❌ update error: ${err.message}`;
+                showNotification(`Failed to update: ${err.message}`, 'error');
+            } finally {
+                setButtonLoading(saveBtn, false);
+            }
+        }
 
+        async function deleteLaptop(id) {
+            try {
+                const res = await fetch(`${API_BASE}/${id}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error(`DELETE failed: ${res.status}`);
+                const deleted = laptops.find(l => l._id === id || l.id === id);
+                laptops = laptops.filter(l => (l._id !== id && l.id !== id));
+                renderTable();
+                modalHint.innerText = `🗑 deleted via DELETE ${API_BASE}/${id}`;
+                showNotification(`${deleted?.serial || 'Laptop'} removed from inventory`, 'success');
+            } catch (err) {
+                modalHint.innerText = `❌ delete error: ${err.message}`;
+                showNotification(`Failed to delete: ${err.message}`, 'error');
+                throw err;
+            }
+        }
+
+        // ---------- modal flows ----------
+        function openEditModal(id) {
+            const laptop = laptops.find(l => (l._id === id || l.id === id));
+            if (!laptop) return;
+            editingId = id;
+            modalTitle.innerText = '✏️ edit laptop';
+            openBulkBtn.style.display = 'none';
+            buildEditModalForm(laptop);
+            statusRuleHint.innerHTML = '✨ you can switch between <strong>Available</strong> or <strong>Sold</strong>';
+            modalOverlay.classList.add('show');
+        }
+
+        function openCreateModal() {
+            editingId = null;
+            modalTitle.innerText = '➕ add laptop';
+            openBulkBtn.style.display = 'inline-flex';
+            buildCreateModalForm({ 
+                serial: '', 
+                brand: 'Dell', 
+                model: '', 
+                processor: 'i5', 
+                ram: '8GB', 
+                storage: '256GB', 
+                purchaseDate: '', 
+                status: 'Available' 
+            });
+            statusRuleHint.innerHTML = '✨ default status: <strong>Available</strong> (date sold not needed for new products)';
+            modalOverlay.classList.add('show');
+        }
+
+        function buildModalValues(isEdit = false) {
+            const values = {
+                serial: document.getElementById('fSerial')?.value.trim(),
+                brand: document.getElementById('fBrand')?.value,
+                model: document.getElementById('fModel')?.value.trim(),
+                processor: document.getElementById('fProcessor')?.value,
+                ram: document.getElementById('fRam')?.value,
+                storage: document.getElementById('fStorage')?.value,
+                purchaseDate: document.getElementById('fPurDate')?.value,
+                status: document.getElementById('fStatus')?.value,
+                imageUrl: document.getElementById('fImageUrl')?.value.trim(),
+            };
+            
+            if (isEdit) {
+                const dateSoldInput = document.getElementById('fDateSold');
+                if (dateSoldInput) {
+                    values.dateSold = dateSoldInput.value || null;
+                }
+            }
+            
+            return values;
+        }
+
+        function buildCreateModalForm(values) {
+            modalForm.innerHTML = `
+                <div class="field"><label>Serial *</label><input id="fSerial" value="${values.serial || ''}" placeholder="SN-1234"></div>
+                <div class="field"><label>Brand</label><select id="fBrand">${BRAND_OPTIONS.map(b => `<option ${values.brand === b ? 'selected' : ''}>${b}</option>`).join('')}</select></div>
+                <div class="field"><label>Model</label><input id="fModel" value="${values.model || ''}"></div>
+                <div class="field"><label>Processor</label><select id="fProcessor">${PROCESSOR_OPTIONS.map(p => `<option ${values.processor === p ? 'selected' : ''}>${p}</option>`).join('')}</select></div>
+                <div class="field"><label>RAM</label><select id="fRam">${RAM_OPTIONS.map(r => `<option ${values.ram === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
+                <div class="field"><label>Storage</label><select id="fStorage">${STORAGE_OPTIONS.map(s => `<option ${values.storage === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+                <div class="field"><label>Status</label><select id="fStatus">${STATUS_OPTIONS.map(s => `<option ${values.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+                <div class="field"><label>Purchase date</label><input id="fPurDate" type="date" value="${values.purchaseDate || ''}"></div>
+                <div class="field"><label>Image URL</label><input id="fImageUrl" value="${values.imageUrl || ''}" placeholder="https://..."></div>
+            `;
+        }
+
+        function buildEditModalForm(values) {
+            modalForm.innerHTML = `
+                <div class="field"><label>Serial *</label><input id="fSerial" value="${values.serial || ''}" placeholder="SN-1234"></div>
+                <div class="field"><label>Brand</label><select id="fBrand">${BRAND_OPTIONS.map(b => `<option ${values.brand === b ? 'selected' : ''}>${b}</option>`).join('')}</select></div>
+                <div class="field"><label>Model</label><input id="fModel" value="${values.model || ''}"></div>
+                <div class="field"><label>Processor</label><select id="fProcessor">${PROCESSOR_OPTIONS.map(p => `<option ${values.processor === p ? 'selected' : ''}>${p}</option>`).join('')}</select></div>
+                <div class="field"><label>RAM</label><select id="fRam">${RAM_OPTIONS.map(r => `<option ${values.ram === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
+                <div class="field"><label>Storage</label><select id="fStorage">${STORAGE_OPTIONS.map(s => `<option ${values.storage === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+                <div class="field"><label>Purchase date</label><input id="fPurDate" type="date" value="${values.purchaseDate ? values.purchaseDate.slice(0,10) : ''}"></div>
+                <div class="field"><label>Status</label><select id="fStatus">${STATUS_OPTIONS.map(s => `<option ${values.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+                <div class="field"><label>Image URL (Model Image)</label><input id="fImageUrl" value="${values.imageUrl || ''}" placeholder="https://cloud.com/image.jpg"></div>
+            `;
+        }
+
+        function buildBulkRows() {
+            let rowsHtml = '';
+            for (let i = 1; i <= BULK_LIMIT; i++) {
+                rowsHtml += `
+                    <div class="bulk-row" data-row="${i}">
+                        <div class="bulk-row-head">Product ${i}</div>
+                        <div class="bulk-row-grid">
+                            <input class="bulk-serial" placeholder="Serial * (e.g. SN-${1000 + i})">
+                            <select class="bulk-brand">${BRAND_OPTIONS.map(b => `<option value="${b}">${b}</option>`).join('')}</select>
+                            <input class="bulk-model" placeholder="Model">
+                            <select class="bulk-processor">${PROCESSOR_OPTIONS.map(p => `<option value="${p}">${p}</option>`).join('')}</select>
+                            <select class="bulk-ram">${RAM_OPTIONS.map(r => `<option value="${r}">${r}</option>`).join('')}</select>
+                            <select class="bulk-storage">${STORAGE_OPTIONS.map(s => `<option value="${s}">${s}</option>`).join('')}</select>
+                            <select class="bulk-status">${STATUS_OPTIONS.map(s => `<option value="${s}">${s}</option>`).join('')}</select>
+                        </div>
+                    </div>
+                `;
+            }
+            bulkRows.innerHTML = rowsHtml;
+        }
+
+        function openBulkModal() {
+            if (editingId !== null) return;
+            buildBulkRows();
+            bulkModalHint.innerText = `⚙️ bulk create uses POST ${API_BASE}/bulk`;
+            modalOverlay.classList.remove('show');
+            bulkModal.classList.add('show');
+        }
+
+        function collectBulkPayloads() {
+            const rows = bulkRows.querySelectorAll('.bulk-row');
+            const items = [];
+            const invalidRows = [];
+
+            rows.forEach((row, index) => {
+                const serial = row.querySelector('.bulk-serial')?.value.trim() || '';
+                const model = row.querySelector('.bulk-model')?.value.trim() || '';
+                const hasAnyData = Boolean(serial || model);
+
+                if (!hasAnyData) return;
+
+                if (!serial) {
+                    invalidRows.push(index + 1);
+                    return;
+                }
+
+                items.push({
+                    serial,
+                    brand: row.querySelector('.bulk-brand')?.value || 'Dell',
+                    model,
+                    processor: row.querySelector('.bulk-processor')?.value || 'i5',
+                    ram: row.querySelector('.bulk-ram')?.value || '8GB',
+                    storage: row.querySelector('.bulk-storage')?.value || '256GB',
+                    status: row.querySelector('.bulk-status')?.value || 'Available'
+                });
+            });
+
+            return { items, invalidRows };
+        }
+
+        async function createBulkLaptops(payloads) {
+            setButtonLoading(bulkSaveBtn, true, 'saving products...');
+            try {
+                const res = await fetch(`${API_BASE}/bulk`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ products: payloads })
+                });
+                
+                const data = await res.json();
+                
+                if (res.status === 207 || res.ok) {
+                    if (data.results && data.results.successful) {
+                        laptops.push(...data.results.successful);
+                        renderTable();
+                    }
+                    
+                    if (data.results.successful.length === payloads.length) {
+                        bulkModal.classList.remove('show');
+                        showNotification(`${data.results.successful.length} products added successfully!`, 'success');
+                    } else {
+                        const successCount = data.results.successful.length;
+                        const failCount = data.results.failed.length;
+                        bulkModalHint.innerText = `⚠️ saved ${successCount} products, ${failCount} failed`;
+                        showNotification(`Saved ${successCount}, failed ${failCount}. Check console for details.`, 'warning');
+                        console.warn('Bulk save failures:', data.results.failed);
+                    }
+                    
+                    modalHint.innerText = `✅ bulk create: ${data.results.successful.length} products added`;
+                } else {
+                    throw new Error(data.message || 'Bulk creation failed');
+                }
+            } catch (err) {
+                bulkModalHint.innerText = `❌ bulk create error: ${err.message}`;
+                showNotification(`Bulk save failed: ${err.message}`, 'error');
+            } finally {
+                setButtonLoading(bulkSaveBtn, false);
+            }
+        }
+
+        // ---------- Event Listeners ----------
+        document.getElementById('modalSave').addEventListener('click', () => {
+            const isEdit = editingId !== null;
+            const payload = buildModalValues(isEdit);
+            
+            if (!payload.serial) { 
+                showNotification('Serial number is required', 'warning');
+                return; 
+            }
+
+            if (isEdit) {
+                updateLaptop(editingId, payload);
+            } else {
+                createLaptop(payload);
+            }
+        });
 
         document.getElementById('modalCancel').addEventListener('click', () => {
             modalOverlay.classList.remove('show');
         });
+        
         window.addEventListener('click', (e) => {
             if (e.target === modalOverlay) modalOverlay.classList.remove('show');
         });
 
-        // ----- confirm delete modal -----
+        openBulkBtn.addEventListener('click', openBulkModal);
+        
+        document.getElementById('bulkCancel').addEventListener('click', () => {
+            bulkModal.classList.remove('show');
+        });
+        
+        window.addEventListener('click', (e) => {
+            if (e.target === bulkModal) bulkModal.classList.remove('show');
+        });
+        
+        bulkSaveBtn.addEventListener('click', () => {
+            const { items, invalidRows } = collectBulkPayloads();
+
+            if (!items.length && !invalidRows.length) {
+                showNotification('Enter at least one product row to save', 'warning');
+                return;
+            }
+
+            if (invalidRows.length) {
+                showNotification(`Serial number is required for row${invalidRows.length > 1 ? 's' : ''} ${invalidRows.join(', ')}`, 'warning');
+                return;
+            }
+
+            createBulkLaptops(items);
+        });
+
+        // confirm delete modal
         const confirmModal = document.getElementById('confirmModal');
 
         function deleteLaptopFlow(id) {
@@ -485,16 +623,13 @@
             }
         });
 
-        // refresh button
         document.getElementById('refreshBtn').addEventListener('click', fetchLaptops);
         document.getElementById('addNewBtn').addEventListener('click', openCreateModal);
 
-        // filter triggers
         searchInput.addEventListener('input', renderTable);
         statusFilter.addEventListener('change', renderTable);
         ramFilter.addEventListener('change', renderTable);
 
-        // initial load from real API (empty until you add)
         fetchLaptops();
     })();
 </script>
