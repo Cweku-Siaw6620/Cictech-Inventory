@@ -69,6 +69,7 @@
 <!-- MODAL for add / edit -->
 <div class="modal-overlay" id="modal">
     <div class="modal-card">
+        <button class="icon-btn modal-back" id="modalBack" aria-label="back">←</button>
         <div class="modal-toolbar">
             <button class="btn" id="openBulkBtn" type="button">add bulk</button>
         </div>
@@ -86,6 +87,7 @@
 <!-- MODAL for bulk add -->
 <div class="modal-overlay" id="bulkModal">
     <div class="modal-card bulk-modal-card">
+        <button class="icon-btn modal-back" id="bulkBack" aria-label="back">←</button>
         <h2>📦 add products in bulk</h2>
         <div class="bulk-help">Fill up to 15 products. Rows with no details are ignored when saving.</div>
         <div class="bulk-rows" id="bulkRows"></div>
@@ -107,6 +109,7 @@
 <!-- CONFIRMATION MODAL -->
 <div class="confirm-overlay" id="confirmModal">
     <div class="confirm-card">
+        <button class="icon-btn modal-back" id="confirmBack" aria-label="back">←</button>
         <div class="confirm-icon">🗑️</div>
         <h3 id="confirmTitle">Delete Laptop</h3>
         <p id="confirmMessage">Are you sure you want to delete this laptop? This action cannot be undone.</p>
@@ -191,6 +194,9 @@
         const bulkRows = document.getElementById('bulkRows');
         const bulkModalHint = document.getElementById('bulkModalHint');
         const bulkSaveBtn = document.getElementById('bulkSave');
+        const modalBack = document.getElementById('modalBack');
+        const bulkBack = document.getElementById('bulkBack');
+        const confirmBack = document.getElementById('confirmBack');
 
         // ---------- render table ----------
         function renderTable() {
@@ -559,6 +565,7 @@
         document.getElementById('modalCancel').addEventListener('click', () => {
             modalOverlay.classList.remove('show');
         });
+        if (modalBack) modalBack.addEventListener('click', () => modalOverlay.classList.remove('show'));
         
         window.addEventListener('click', (e) => {
             if (e.target === modalOverlay) modalOverlay.classList.remove('show');
@@ -568,6 +575,11 @@
         
         document.getElementById('bulkCancel').addEventListener('click', () => {
             bulkModal.classList.remove('show');
+        });
+        if (bulkBack) bulkBack.addEventListener('click', () => {
+            bulkModal.classList.remove('show');
+            // reopen the main modal when back is pressed (if it was the origin)
+            modalOverlay.classList.add('show');
         });
         
         window.addEventListener('click', (e) => {
@@ -599,6 +611,10 @@
         }
 
         document.getElementById('confirmCancel').addEventListener('click', () => {
+            pendingDeleteId = null;
+            confirmModal.classList.remove('show');
+        });
+        if (confirmBack) confirmBack.addEventListener('click', () => {
             pendingDeleteId = null;
             confirmModal.classList.remove('show');
         });

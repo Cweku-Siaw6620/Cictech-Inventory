@@ -370,10 +370,35 @@ tr:last-child td {
     border: 1px solid var(--border-light);
     transform: scale(0.95);
     transition: transform 0.2s;
+    position: relative;
 }
 
 .modal-overlay.show .modal-card {
     transform: scale(1);
+}
+
+/* Back button inside modals (top-left) */
+.modal-back {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-light);
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+    cursor: pointer;
+    color: var(--text-muted);
+    z-index: 30;
+    transition: transform 0.12s ease, background 0.12s ease;
+}
+
+.modal-back:hover {
+    transform: scale(1.03);
+    color: var(--primary);
 }
 
 .modal-card h2 {
@@ -654,6 +679,7 @@ tr:last-child td {
     border: 1px solid var(--border-light);
     transform: scale(0.92);
     transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
 }
 
 .confirm-overlay.show .confirm-card {
