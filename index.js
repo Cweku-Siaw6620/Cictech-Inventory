@@ -21,6 +21,24 @@
         let editingId = null;
         let pendingDeleteId = null;
 
+        function normalizeText(value) {
+            return String(value || '').trim().toLowerCase();
+        }
+
+        function toProductPayload(record) {
+            const { _id, id, __v, createdAt, updatedAt, ...payload } = record || {};
+            return payload;
+        }
+
+        function isSameProductInstance(a, b) {
+            return normalizeText(a?.brand) === normalizeText(b?.brand)
+                && normalizeText(a?.model) === normalizeText(b?.model)
+                && normalizeText(a?.processor) === normalizeText(b?.processor)
+                && normalizeText(a?.gen) === normalizeText(b?.gen)
+                && normalizeText(a?.ram) === normalizeText(b?.ram)
+                && normalizeText(a?.storage) === normalizeText(b?.storage);
+        }
+
         // ---------- show toast notification ----------
         function showNotification(message, type = 'info', duration = 4000) {
             const container = document.getElementById('notificationContainer');
@@ -312,6 +330,10 @@
             const saveBtn = document.getElementById('modalSave');
             setButtonLoading(saveBtn, true, 'updating...');
             try {
+                const previous = laptops.find(l => (l._id === id || l.id === id));
+                const previousPrice = String(previous?.price ?? '').trim();
+                const nextPrice = String(laptopData?.price ?? '').trim();
+
                 const res = await fetch(`${API_BASE}/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json', 'pin': pin },
@@ -320,8 +342,46 @@
                 if (!res.ok) throw new Error(`PUT failed: ${res.status}`);
                 const updated = await res.json();
                 laptops = laptops.map(l => (l._id === id || l.id === id) ? updated : l);
+
+                let propagatedCount = 0;
+
+                // If price changed, push the same price to all matching product instances in this branch.
+                if (previous && previousPrice !== nextPrice) {
+                    const matches = laptops.filter(l => {
+                        const recordId = l._id || l.id;
+                        return recordId !== id && isSameProductInstance(l, previous);
+                    });
+
+                    if (matches.length) {
+                        const updateResults = await Promise.allSettled(
+                            matches.map(async (item) => {
+                                const itemId = item._id || item.id;
+                                const payload = { ...toProductPayload(item), price: nextPrice };
+                                const itemRes = await fetch(`${API_BASE}/${itemId}`, {
+                                    method: 'PUT',
+                                    headers: { 'Content-Type': 'application/json', 'pin': pin },
+                                    body: JSON.stringify(payload)
+                                });
+                                if (!itemRes.ok) throw new Error(`PUT failed: ${itemRes.status}`);
+                                const itemUpdated = await itemRes.json();
+                                return { itemId, itemUpdated };
+                            })
+                        );
+
+                        updateResults.forEach((result) => {
+                            if (result.status === 'fulfilled') {
+                                propagatedCount += 1;
+                                const { itemId, itemUpdated } = result.value;
+                                laptops = laptops.map(l => (l._id === itemId || l.id === itemId) ? itemUpdated : l);
+                            }
+                        });
+                    }
+                }
+
                 renderTable();
-                modalHint.innerText = `✅ updated via PUT ${API_BASE}/${id}`;
+                modalHint.innerText = propagatedCount > 0
+                    ? `✅ updated ${propagatedCount + 1} matching product instance(s)`
+                    : `✅ updated via PUT ${API_BASE}/${id}`;
                 modalOverlay.classList.remove('show');
                 showNotification(`${updated.serial || updated.model || 'Laptop'} updated successfully`, 'success');
             } catch (err) {
@@ -421,7 +481,6 @@
                 <div class="field"><label>RAM</label><select id="fRam">${RAM_OPTIONS.map(r => `<option ${values.ram === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
                 <div class="field"><label>Storage</label><select id="fStorage">${STORAGE_OPTIONS.map(s => `<option ${values.storage === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
                 <div class="field"><label>Status</label><select id="fStatus">${STATUS_OPTIONS.map(s => `<option ${values.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
-                <div class="field"><label>Price (GHS)</label><input id="fPrice" type="number" value="${values.price || ''}" placeholder="e.g., 2500"></div>
             `;
         }
 
