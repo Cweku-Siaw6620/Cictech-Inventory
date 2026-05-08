@@ -10,7 +10,8 @@
 
         const BRAND_OPTIONS = ['Dell','HP','Lenovo','Apple','Asus','Acer','Samsung','MSI','Microsoft','LG','Toshiba','Huawei'];
         const RAM_OPTIONS = ['4GB','8GB','16GB','32GB','64GB'];
-        const PROCESSOR_OPTIONS = ['i3','i5','i7','i9','Ryzen 3','Ryzen 5','Ryzen 7','Ryzen 9'];
+        const PROCESSOR_OPTIONS = ['i3','i5','i7','i9',"AMD"];
+        const GEN_OPTIONS = ['4th Gen', '5th Gen', '6th Gen', '7th Gen', '8th Gen', '9th Gen', '10th Gen', '11th Gen', '12th Gen', 'Ryzen 3','Ryzen 5','Ryzen 7'];
         const STORAGE_OPTIONS = ['128GB','256GB','320GB','500GB','512GB','720GB','1TB','2TB'];
         const STATUS_OPTIONS = ['Available', 'Sold'];
 
@@ -85,12 +86,12 @@
             const ramVal = ramFilter.value;
 
             if (laptops === null) {
-                tbody.innerHTML = `<tr><td colspan="10" class="loading-container"><div class="spinner"></div> Connecting to database...</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="11" class="loading-container"><div class="spinner"></div> Connecting to database...</td></tr>`;
                 return;
             }
 
             if (!laptops.length) {
-                tbody.innerHTML = `<tr class="empty-row"><td colspan="10">📭 inventory is empty — add your first laptop</td></tr>`;
+                tbody.innerHTML = `<tr class="empty-row"><td colspan="11">📭 inventory is empty — add your first laptop</td></tr>`;
                 return;
             }
 
@@ -105,7 +106,7 @@
             });
 
             if (filteredLaptops.length === 0) {
-                tbody.innerHTML = `<tr class="empty-row"><td colspan="10">🔍 no matching laptops — adjust filters</td></tr>`;
+                tbody.innerHTML = `<tr class="empty-row"><td colspan="11">🔍 no matching laptops — adjust filters</td></tr>`;
                 return;
             }
 
@@ -114,14 +115,15 @@
             filteredLaptops.forEach(lap => {
                 const statusClass = (lap.status || 'Available').toLowerCase();
                 html += `<tr>
-                    <td>${lap.serial || ''}</td>
                     <td>${lap.brand || ''}</td>
                     <td>${lap.model || ''}</td>
                     <td>${lap.processor || ''}</td>
+                    <td>${lap.gen || ''}</td>
                     <td>${lap.ram || ''}</td>
                     <td>${lap.storage || ''}</td>
+                    <td>${lap.serial || ''}</td>
+                    <td>${lap.price ? 'GHS ' + lap.price : '-'}</td>
                     <td>${lap.purchaseDate ? lap.purchaseDate.slice(0,10) : ''}</td>
-                    <td>${lap.imageUrl && lap.imageUrl.trim() !== '' ? '<span class="image-confirmed">✅</span>' : '-'}</td>
                     <td><span class="status ${statusClass}"><span class="status-dot"></span> ${lap.status || 'Available'}</span></td>
                     <td>
                         <div class="row-actions">
@@ -243,7 +245,7 @@
             const refreshBtn = document.getElementById('refreshBtn');
             setButtonLoading(refreshBtn, true, 'syncing...');
             try {
-                tbody.innerHTML = `<tr><td colspan="10" class="loading-container"><div class="spinner"></div> Loading inventory...</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="11" class="loading-container"><div class="spinner"></div> Loading inventory...</td></tr>`;
                 
                 const res = await fetch(BRANCH_API + currentBranch,{
                     headers:{
@@ -321,13 +323,7 @@
                 renderTable();
                 modalHint.innerText = `✅ updated via PUT ${API_BASE}/${id}`;
                 modalOverlay.classList.remove('show');
-
-                if (laptopData.imageUrl && laptopData.imageUrl.trim() !== "") {
-                    showNotification(`Image added to ${updated.serial || updated.model || 'laptop'}`, 'success');
-                    setTimeout(() => window.location.reload(), 1800);
-                } else {
-                    showNotification(`${updated.serial || updated.model || 'Laptop'} updated successfully`, 'success');
-                }
+                showNotification(`${updated.serial || updated.model || 'Laptop'} updated successfully`, 'success');
             } catch (err) {
                 modalHint.innerText = `❌ update error: ${err.message}`;
                 showNotification(`Failed to update: ${err.message}`, 'error');
@@ -380,7 +376,8 @@
                 serial: '', 
                 brand: 'Dell', 
                 model: '', 
-                processor: 'i5', 
+                processor: 'i5',
+                gen: '10th Gen', 
                 ram: '8GB', 
                 storage: '256GB', 
                 purchaseDate: '', 
@@ -396,11 +393,12 @@
                 brand: document.getElementById('fBrand')?.value,
                 model: document.getElementById('fModel')?.value.trim(),
                 processor: document.getElementById('fProcessor')?.value,
+                gen: document.getElementById('fGen')?.value,
                 ram: document.getElementById('fRam')?.value,
                 storage: document.getElementById('fStorage')?.value,
                 purchaseDate: document.getElementById('fPurDate')?.value,
                 status: document.getElementById('fStatus')?.value,
-                imageUrl: document.getElementById('fImageUrl')?.value.trim(),
+                price: document.getElementById('fPrice')?.value.trim(),
             };
             
             if (isEdit) {
@@ -419,11 +417,11 @@
                 <div class="field"><label>Brand</label><select id="fBrand">${BRAND_OPTIONS.map(b => `<option ${values.brand === b ? 'selected' : ''}>${b}</option>`).join('')}</select></div>
                 <div class="field"><label>Model</label><input id="fModel" value="${values.model || ''}"></div>
                 <div class="field"><label>Processor</label><select id="fProcessor">${PROCESSOR_OPTIONS.map(p => `<option ${values.processor === p ? 'selected' : ''}>${p}</option>`).join('')}</select></div>
+                <div class="field"><label>Gen</label><select id="fGen">${GEN_OPTIONS.map(g => `<option ${values.gen === g ? 'selected' : ''}>${g}</option>`).join('')}</select></div>
                 <div class="field"><label>RAM</label><select id="fRam">${RAM_OPTIONS.map(r => `<option ${values.ram === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
                 <div class="field"><label>Storage</label><select id="fStorage">${STORAGE_OPTIONS.map(s => `<option ${values.storage === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
                 <div class="field"><label>Status</label><select id="fStatus">${STATUS_OPTIONS.map(s => `<option ${values.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
-                <div class="field"><label>Purchase date</label><input id="fPurDate" type="date" value="${values.purchaseDate || ''}"></div>
-                <div class="field"><label>Image URL</label><input id="fImageUrl" value="${values.imageUrl || ''}" placeholder="https://..."></div>
+                <div class="field"><label>Price (GHS)</label><input id="fPrice" type="number" value="${values.price || ''}" placeholder="e.g., 2500"></div>
             `;
         }
 
@@ -433,11 +431,12 @@
                 <div class="field"><label>Brand</label><select id="fBrand">${BRAND_OPTIONS.map(b => `<option ${values.brand === b ? 'selected' : ''}>${b}</option>`).join('')}</select></div>
                 <div class="field"><label>Model</label><input id="fModel" value="${values.model || ''}"></div>
                 <div class="field"><label>Processor</label><select id="fProcessor">${PROCESSOR_OPTIONS.map(p => `<option ${values.processor === p ? 'selected' : ''}>${p}</option>`).join('')}</select></div>
+                <div class="field"><label>Gen</label><select id="fGen">${GEN_OPTIONS.map(g => `<option ${values.gen === g ? 'selected' : ''}>${g}</option>`).join('')}</select></div>
                 <div class="field"><label>RAM</label><select id="fRam">${RAM_OPTIONS.map(r => `<option ${values.ram === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
                 <div class="field"><label>Storage</label><select id="fStorage">${STORAGE_OPTIONS.map(s => `<option ${values.storage === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
                 <div class="field"><label>Purchase date</label><input id="fPurDate" type="date" value="${values.purchaseDate ? values.purchaseDate.slice(0,10) : ''}"></div>
                 <div class="field"><label>Status</label><select id="fStatus">${STATUS_OPTIONS.map(s => `<option ${values.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
-                <div class="field"><label>Image URL (Model Image)</label><input id="fImageUrl" value="${values.imageUrl || ''}" placeholder="https://cloud.com/image.jpg"></div>
+                <div class="field"><label>Price (GHS)</label><input id="fPrice" type="number" value="${values.price || ''}" placeholder="e.g., 2500"></div>
             `;
         }
 
@@ -452,6 +451,7 @@
                             <select class="bulk-brand">${BRAND_OPTIONS.map(b => `<option value="${b}">${b}</option>`).join('')}</select>
                             <input class="bulk-model" placeholder="Model">
                             <select class="bulk-processor">${PROCESSOR_OPTIONS.map(p => `<option value="${p}">${p}</option>`).join('')}</select>
+                            <select class="bulk-gen">${GEN_OPTIONS.map(g => `<option value="${g}">${g}</option>`).join('')}</select>
                             <select class="bulk-ram">${RAM_OPTIONS.map(r => `<option value="${r}">${r}</option>`).join('')}</select>
                             <select class="bulk-storage">${STORAGE_OPTIONS.map(s => `<option value="${s}">${s}</option>`).join('')}</select>
                             <select class="bulk-status">${STATUS_OPTIONS.map(s => `<option value="${s}">${s}</option>`).join('')}</select>
@@ -492,6 +492,7 @@
                     brand: row.querySelector('.bulk-brand')?.value || 'Dell',
                     model,
                     processor: row.querySelector('.bulk-processor')?.value || 'i5',
+                    gen: row.querySelector('.bulk-gen')?.value || '10th Gen',
                     ram: row.querySelector('.bulk-ram')?.value || '8GB',
                     storage: row.querySelector('.bulk-storage')?.value || '256GB',
                     status: row.querySelector('.bulk-status')?.value || 'Available'
