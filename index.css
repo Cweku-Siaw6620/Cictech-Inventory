@@ -462,6 +462,28 @@ tr:last-child td {
     box-shadow: 0 0 0 2px #fde68a;
 }
 
+/* N/A status */
+.status.na {
+    background-color: #fa5151; /* light gray */
+    color: #374151; /* slate-700 */
+}
+
+.status.na .status-dot {
+    background-color: #a80505; /* gray */
+    box-shadow: 0 0 0 2px #f39281;
+}
+
+/* Taken away status */
+.status.taken-away {
+    background-color: #f5f3ff; /* light indigo */
+    color: #4c1d95; /* indigo-800 */
+}
+
+.status.taken-away .status-dot {
+    background-color: #7c3aed; /* indigo */
+    box-shadow: 0 0 0 2px #e9d5ff;
+}
+
 /* Image confirmed indicator */
 .image-confirmed {
     font-size: 1.2rem;

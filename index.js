@@ -13,7 +13,7 @@
         const PROCESSOR_OPTIONS = ['i3','i5','i7','i9',"AMD"];
         const GEN_OPTIONS = ['4th Gen', '5th Gen', '6th Gen', '7th Gen', '8th Gen', '9th Gen', '10th Gen', '11th Gen', '12th Gen', 'Ryzen 3','Ryzen 5','Ryzen 7'];
         const STORAGE_OPTIONS = ['128GB','256GB','320GB','500GB','512GB','720GB','1TB','2TB'];
-        const STATUS_OPTIONS = ['Available', 'Sold'];
+        const STATUS_OPTIONS = ['Available', 'Sold', 'N/A', 'Taken Away']; // edit the taken away into somthing more appropriate like "for repair" or "with employee" if needed
 
         // internal state
         let laptops = [];
@@ -131,7 +131,8 @@
            
             let html = '';
             filteredLaptops.forEach(lap => {
-                const statusClass = (lap.status || 'Available').toLowerCase();
+                const statusClassRaw = (lap.status || 'Available').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+                const statusClass = statusClassRaw === 'n-a' ? 'na' : statusClassRaw;
                 html += `<tr>
                     <td>${lap.brand || ''}</td>
                     <td>${lap.model || ''}</td>
