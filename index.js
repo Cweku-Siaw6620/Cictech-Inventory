@@ -20,8 +20,9 @@
         let filteredLaptops = [];
         let editingId = null;
         let pendingDeleteId = null;
-        let allBranchData = {};   // { Central: [...], Amanfrom: [...], 'East-Legon': [...] }
-        let adminCharts = {};     // holds Chart.js instances so we can destroy/redraw
+        let allBranchData = {};
+        let adminCharts = {};
+        let approvedIds = new Set(JSON.parse(localStorage.getItem('approvedIds') || '[]'));
 
         function normalizeText(value) {
             return String(value || '').trim().toLowerCase();
@@ -130,16 +131,20 @@
                 return;
             }
 
-           
+            // Ensure approved items are shown after unapproved ones
+            const unapprovedLaps = filteredLaptops.filter(l => !approvedIds.has(l._id || l.id));
+            const approvedLaps = filteredLaptops.filter(l => approvedIds.has(l._id || l.id));
+            const orderedLaptops = [...unapprovedLaps, ...approvedLaps];
+
             let html = '';
-            filteredLaptops.forEach(lap => {
+            orderedLaptops.forEach(lap => {
+                const id = lap._id || lap.id;
                 const statusClassRaw = (lap.status || 'Available').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
                 const statusClass = statusClassRaw === 'n-a' ? 'na' : statusClassRaw;
+                const isApproved = approvedIds.has(id);
+                const canEdit = (userRole === 'admin' || currentBranch === currentUser?.branch) && !isApproved;
 
-                // ✅ show action buttons only if admin OR viewing own branch
-                const canEdit = userRole === 'admin' || currentBranch === currentUser?.branch;
-
-                html += `<tr>
+                html += `<tr${isApproved ? ' class="row-approved"' : ''}>
                     <td>${lap.brand || ''}</td>
                     <td>${lap.model || ''}</td>
                     <td>${lap.processor || ''}</td>
@@ -152,9 +157,13 @@
                     <td><span class="status ${statusClass}"><span class="status-dot"></span> ${lap.status || 'Available'}</span></td>
                     <td>
                         <div class="row-actions">
-                            ${canEdit ? `<button class="icon-btn edit-btn" data-id="${lap._id || lap.id}">✎</button>` : ''}
-                            ${canEdit ? `<button class="icon-btn delete-btn" data-id="${lap._id || lap.id}">🗑</button>` : ''}
-                            ${!canEdit ? `<span style="font-size:0.75rem;color:var(--text-muted)">view only</span>` : ''}
+                            ${isApproved
+                                ? '<span class="approval-badge approved" style="font-size:0.72rem">✔ Approved</span>'
+                                : canEdit
+                                    ? `<button class="icon-btn edit-btn" data-id="${id}">✎</button>
+                                       <button class="icon-btn delete-btn" data-id="${id}">🗑</button>`
+                                    : '<span style="font-size:0.75rem;color:var(--text-muted)">view only</span>'
+                            }
                         </div>
                     </td>
                 </tr>`;
@@ -349,10 +358,159 @@
             try {
                 allBranchData = await fetchAllBranchData();
                 renderAdminCharts(allBranchData);
+                renderAdminSoldTable();
             } catch(err) {
                 showNotification('Failed to load admin data', 'error');
             } finally {
                 setButtonLoading(refreshBtn, false);
+            }
+
+            const bf = document.getElementById('adminBranchFilter');
+            const af = document.getElementById('adminApprovalFilter');
+            if (bf) bf.onchange = renderAdminSoldTable;
+            if (af) af.onchange = renderAdminSoldTable;
+        }
+
+        function renderAdminSoldTable() {
+            const branchFilter = document.getElementById('adminBranchFilter')?.value || '';
+            const approvalFilter = document.getElementById('adminApprovalFilter')?.value;
+            const soldTbody = document.getElementById('adminSoldBody');
+            if (!soldTbody) return;
+
+            const branches = ['Central', 'Amanfrom', 'East-Legon'];
+            let soldItems = [];
+
+            branches.forEach(branch => {
+                (allBranchData[branch] || []).forEach(lap => {
+                    if (lap.status === 'Sold') soldItems.push({ ...lap, _branch: branch });
+                });
+            });
+
+            if (branchFilter) soldItems = soldItems.filter(l => l._branch === branchFilter);
+            if (approvalFilter === 'pending') soldItems = soldItems.filter(l => !approvedIds.has(l._id || l.id));
+            if (approvalFilter === 'approved') soldItems = soldItems.filter(l => approvedIds.has(l._id || l.id));
+
+            // Ensure approved sold items appear after pending/unapproved ones
+            const unapprovedSold = soldItems.filter(l => !approvedIds.has(l._id || l.id));
+            const approvedSold = soldItems.filter(l => approvedIds.has(l._id || l.id));
+            soldItems = [...unapprovedSold, ...approvedSold];
+
+            if (!soldItems.length) {
+                soldTbody.innerHTML = `<tr class="empty-row"><td colspan="10">✅ No sold machines match this filter</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            soldItems.forEach(lap => {
+                const id = lap._id || lap.id;
+                const isApproved = approvedIds.has(id);
+                html += `<tr class="${isApproved ? 'row-approved' : ''}">
+                    <td><span class="branch-pill branch-${(lap._branch || '').toLowerCase().replace('-', '')}">${lap._branch}</span></td>
+                    <td>${lap.brand || ''}</td>
+                    <td>${lap.model || ''}</td>
+                    <td>${lap.processor || ''} ${lap.gen || ''}</td>
+                    <td>${lap.ram || ''}</td>
+                    <td>${lap.storage || ''}</td>
+                    <td>${lap.serial || ''}</td>
+                    <td>${lap.price ? 'GHS ' + lap.price : '—'}</td>
+                    <td>
+                        ${isApproved
+                            ? '<span class="approval-badge approved">✔ Approved</span>'
+                            : '<span class="approval-badge pending">⏳ Pending</span>'
+                        }
+                    </td>
+                    <td>
+                        <div class="row-actions">
+                            <button class="icon-btn locate-btn" data-id="${id}" data-branch="${lap._branch}" title="Locate in branch tab">👁</button>
+                            <div class="approve-wrapper" style="position:relative">
+                                <button class="icon-btn approve-btn ${isApproved ? 'approved-active' : ''}" data-id="${id}" title="${isApproved ? 'Change approval' : 'Approve / Disapprove'}">✔</button>
+                                <div class="approve-dropdown" id="dd-${id}" style="display:none">
+                                    <button class="dd-option approve-option" data-id="${id}">✔ Approve</button>
+                                    <button class="dd-option disapprove-option" data-id="${id}">✖ Disapprove</button>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>`;
+            });
+            soldTbody.innerHTML = html;
+
+            soldTbody.querySelectorAll('.approve-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const dd = document.getElementById('dd-' + btn.dataset.id);
+                    soldTbody.querySelectorAll('.approve-dropdown').forEach(d => {
+                        if (d !== dd) d.style.display = 'none';
+                    });
+                    dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+                });
+            });
+
+            soldTbody.querySelectorAll('.approve-option').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const id = btn.dataset.id;
+                    await setApproval(id, true);
+                    document.getElementById('dd-' + id).style.display = 'none';
+                });
+            });
+
+            soldTbody.querySelectorAll('.disapprove-option').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const id = btn.dataset.id;
+                    await setApproval(id, false);
+                    document.getElementById('dd-' + id).style.display = 'none';
+                });
+            });
+
+            soldTbody.querySelectorAll('.locate-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const branch = btn.dataset.branch;
+                    const id = btn.dataset.id;
+                    hideAdminDashboard();
+                    document.querySelectorAll('.tab').forEach(t => {
+                        t.classList.toggle('active', t.dataset.branch === branch);
+                    });
+                    currentBranch = branch;
+                    fetchLaptops().then(() => {
+                        setTimeout(() => {
+                            const row = document.querySelector(`[data-id="${id}"]`)?.closest('tr');
+                            if (row) {
+                                row.classList.add('highlight-row');
+                                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+                        }, 400);
+                    });
+                });
+            });
+
+            document.addEventListener('click', () => {
+                document.querySelectorAll('.approve-dropdown').forEach(d => d.style.display = 'none');
+            }, { once: true });
+        }
+
+        async function setApproval(id, approved) {
+            const pin = localStorage.getItem('pin');
+            try {
+                const res = await fetch(`${API_BASE}/${id}/approve`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', 'pin': pin },
+                    body: JSON.stringify({ approved })
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+                if (approved) approvedIds.add(id);
+                else approvedIds.delete(id);
+                localStorage.setItem('approvedIds', JSON.stringify([...approvedIds]));
+
+                renderAdminSoldTable();
+                allBranchData = await fetchAllBranchData();
+                renderAdminCharts(allBranchData);
+
+                showNotification(approved ? '✔ Sale approved' : 'Sale disapproved', approved ? 'success' : 'warning');
+            } catch(err) {
+                showNotification('Approval failed: ' + err.message, 'error');
             }
         }
 

@@ -1429,3 +1429,42 @@ html {
     .kpi-row { grid-template-columns: repeat(2, 1fr); }
     .kpi-value { font-size: 1.5rem; }
 }
+
+/* Sold table section */
+.admin-sold-section { background: var(--card-white); border: 1px solid var(--border-light); border-radius: 20px; padding: 1.5rem; box-shadow: var(--shadow-sm); margin-bottom: 2rem; }
+.admin-sold-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap; }
+.admin-sold-title { font-size: 1rem; font-weight: 700; color: var(--text-dark); margin: 0 0 0.2rem; }
+.admin-sold-sub { font-size: 0.82rem; color: var(--text-muted); margin: 0; }
+.admin-sold-filter { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
+.admin-sold-filter select { padding: 0.45rem 0.75rem; border: 1px solid var(--border-light); border-radius: 10px; font-size: 0.85rem; color: var(--text-dark); background: var(--bg-light); cursor: pointer; }
+.admin-sold-filter select:focus { outline: none; border-color: var(--primary); }
+
+/* Branch pills */
+.branch-pill { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 100px; font-size: 0.75rem; font-weight: 600; }
+.branch-pill.branch-central { background: #dbeafe; color: #1e40af; }
+.branch-pill.branch-amanfrom { background: #d1fae5; color: #065f46; }
+.branch-pill.branch-eastlegon { background: #fef3c7; color: #92400e; }
+
+/* Approval badges */
+.approval-badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.25rem 0.7rem; border-radius: 100px; font-size: 0.78rem; font-weight: 600; }
+.approval-badge.approved { background: #d1fae5; color: #065f46; }
+.approval-badge.pending { background: #fef3c7; color: #92400e; }
+
+/* Approve dropdown */
+.approve-wrapper { position: relative; }
+.approve-btn { background: var(--bg-light) !important; border: 1px solid var(--border-light) !important; color: var(--text-muted) !important; font-size: 0.85rem !important; }
+.approve-btn.approved-active { background: #d1fae5 !important; color: #065f46 !important; border-color: #6ee7b7 !important; }
+.approve-dropdown { position: absolute; right: 0; top: calc(100% + 4px); background: white; border: 1px solid var(--border-light); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); min-width: 140px; z-index: 100; overflow: hidden; }
+.dd-option { display: block; width: 100%; padding: 0.65rem 1rem; font-size: 0.85rem; font-weight: 500; text-align: left; border: none; background: none; cursor: pointer; transition: background 0.15s; }
+.dd-option:hover { background: var(--bg-light); }
+.approve-option { color: #065f46; }
+.disapprove-option { color: #991b1b; }
+.locate-btn { font-size: 0.9rem !important; }
+
+/* Approved row styling */
+.row-approved td { opacity: 0.6; background: #f8fdf8; }
+.highlight-row td { background: #fffbeb !important; transition: background 1.5s; }
+
+@media (max-width: 900px) {
+    .admin-sold-header { flex-direction: column; }
+}
