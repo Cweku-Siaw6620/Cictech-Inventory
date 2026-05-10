@@ -359,6 +359,7 @@
                 allBranchData = await fetchAllBranchData();
                 renderAdminCharts(allBranchData);
                 renderAdminSoldTable();
+                renderRevenueCharts(allBranchData);
             } catch(err) {
                 showNotification('Failed to load admin data', 'error');
             } finally {
@@ -507,6 +508,7 @@
                 renderAdminSoldTable();
                 allBranchData = await fetchAllBranchData();
                 renderAdminCharts(allBranchData);
+                renderRevenueCharts(allBranchData);
 
                 showNotification(approved ? '✔ Sale approved' : 'Sale disapproved', approved ? 'success' : 'warning');
             } catch(err) {
@@ -657,6 +659,118 @@
                 BRANCHES.map(b => ({ bar: 'rgba(239,68,68,0.8)', border: '#EF4444' })),
                 'Sold'
             );
+        }
+
+        function renderRevenueCharts(data) {
+            const BRANCHES = ['Central', 'Amanfrom', 'East-Legon'];
+            const COLORS = [
+                { bg: '#0066CC', hover: '#004999' },
+                { bg: '#10B981', hover: '#059669' },
+                { bg: '#F59E0B', hover: '#D97706' },
+            ];
+
+            function fmt(n) {
+                if (n >= 1000000) return 'GHS ' + (n / 1000000).toFixed(1) + 'M';
+                if (n >= 1000) return 'GHS ' + (n / 1000).toFixed(1) + 'K';
+                return 'GHS ' + n.toLocaleString();
+            }
+
+            // Chart 1: total inventory value (all products regardless of status)
+            const totalRevByBranch = BRANCHES.map(b =>
+                (data[b] || []).reduce((sum, l) => sum + (parseFloat(l.price) || 0), 0)
+            );
+            const grandTotalRev = totalRevByBranch.reduce((a, b) => a + b, 0);
+
+            // Chart 2: approved sold value only
+            const approvedRevByBranch = BRANCHES.map(b =>
+                (data[b] || [])
+                    .filter(l => l.status === 'Sold' && approvedIds.has(l._id || l.id))
+                    .reduce((sum, l) => sum + (parseFloat(l.price) || 0), 0)
+            );
+            const grandApprovedRev = approvedRevByBranch.reduce((a, b) => a + b, 0);
+
+            // update KPI revenue cards
+            document.getElementById('revTotalVal').textContent = fmt(grandTotalRev);
+            document.getElementById('revApprovedVal').textContent = fmt(grandApprovedRev);
+
+            function drawDonut(canvasId, values, grandTotal, centerLabel) {
+                if (adminCharts[canvasId]) adminCharts[canvasId].destroy();
+                const ctx = document.getElementById(canvasId)?.getContext('2d');
+                if (!ctx) return;
+
+                adminCharts[canvasId] = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: BRANCHES,
+                        datasets: [{
+                            data: values,
+                            backgroundColor: COLORS.map(c => c.bg),
+                            hoverBackgroundColor: COLORS.map(c => c.hover),
+                            borderWidth: 3,
+                            borderColor: '#ffffff',
+                            hoverOffset: 8,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '68%',
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => {
+                                        const val = ctx.parsed;
+                                        const pct = grandTotal > 0 ? ((val / grandTotal) * 100).toFixed(1) : 0;
+                                        return ` ${fmt(val)}  (${pct}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    plugins: [{
+                        id: 'centerText',
+                        afterDraw(chart) {
+                            const chartArea = chart.chartArea;
+                            if (!chartArea) return;
+                            const cx = chartArea.left + chartArea.width / 2;
+                            const cy = chartArea.top + chartArea.height / 2;
+
+                            ctx.save();
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.fillStyle = '#64748B';
+                            ctx.font = '600 11px DM Sans, system-ui, sans-serif';
+                            ctx.fillText(centerLabel, cx, cy - 14);
+                            ctx.fillStyle = '#0a1628';
+                            ctx.font = 'bold 15px DM Sans, system-ui, sans-serif';
+                            ctx.fillText(fmt(grandTotal), cx, cy + 4);
+                            ctx.restore();
+                        }
+                    }]
+                });
+            }
+
+            drawDonut('chartRevTotal', totalRevByBranch, grandTotalRev, 'TOTAL VALUE');
+            drawDonut('chartRevApproved', approvedRevByBranch, grandApprovedRev, 'APPROVED SALES');
+
+            // render legend rows
+            ['revTotalLegend', 'revApprovedLegend'].forEach((legendId, ci) => {
+                const vals = ci === 0 ? totalRevByBranch : approvedRevByBranch;
+                const grand = ci === 0 ? grandTotalRev : grandApprovedRev;
+                const el = document.getElementById(legendId);
+                if (!el) return;
+                el.innerHTML = BRANCHES.map((b, i) => {
+                    const pct = grand > 0 ? ((vals[i] / grand) * 100).toFixed(1) : '0.0';
+                    return `<div class="rev-legend-item">
+                        <span class="rev-legend-dot" style="background:${COLORS[i].bg}"></span>
+                        <div class="rev-legend-info">
+                            <span class="rev-legend-branch">${b}</span>
+                            <span class="rev-legend-amount">${fmt(vals[i])} <em>(${pct}%)</em></span>
+                        </div>
+                    </div>`;
+                }).join('');
+            });
         }
 
         async function createLaptop(laptopData) {

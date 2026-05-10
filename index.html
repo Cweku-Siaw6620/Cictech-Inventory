@@ -106,6 +106,52 @@
                 </table>
             </div>
         </div>
+
+        <!-- Revenue Donut Charts -->
+        <div class="rev-section">
+            <div class="rev-section-header">
+                <h3 class="rev-section-title">&#128200; Financial Overview</h3>
+                <p class="rev-section-sub">Revenue contribution by branch</p>
+            </div>
+            <div class="rev-kpi-row">
+                <div class="rev-kpi-card">
+                    <span class="rev-kpi-label">Total Inventory Value</span>
+                    <span class="rev-kpi-val" id="revTotalVal">—</span>
+                </div>
+                <div class="rev-kpi-card rev-kpi-card--green">
+                    <span class="rev-kpi-label">Approved Sales Value</span>
+                    <span class="rev-kpi-val" id="revApprovedVal">—</span>
+                </div>
+            </div>
+            <div class="rev-charts-row">
+                <!-- Chart 1: all products -->
+                <div class="rev-chart-card">
+                    <div class="rev-chart-header">
+                        <span class="rev-chart-title">REVENUE CONTRIBUTION BY BRANCH</span>
+                        <span class="rev-chart-sub">All products · any status</span>
+                    </div>
+                    <div class="rev-chart-body">
+                        <div class="rev-donut-wrap">
+                            <canvas id="chartRevTotal"></canvas>
+                        </div>
+                        <div class="rev-legend" id="revTotalLegend"></div>
+                    </div>
+                </div>
+                <!-- Chart 2: approved sold only -->
+                <div class="rev-chart-card">
+                    <div class="rev-chart-header">
+                        <span class="rev-chart-title">APPROVED SALES BY BRANCH</span>
+                        <span class="rev-chart-sub">Sold &amp; approved machines only</span>
+                    </div>
+                    <div class="rev-chart-body">
+                        <div class="rev-donut-wrap">
+                            <canvas id="chartRevApproved"></canvas>
+                        </div>
+                        <div class="rev-legend" id="revApprovedLegend"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- search & filter -->
