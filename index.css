@@ -1310,3 +1310,122 @@ html {
         scroll-behavior: auto !important;
     }
 }
+
+/* ── Admin Dashboard ─────────────────────────────────────── */
+.admin-stats-header {
+    margin-bottom: 1.5rem;
+}
+.admin-stats-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0 0 0.2rem;
+}
+.admin-stats-sub {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* KPI cards */
+.kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.kpi-card {
+    background: var(--card-white);
+    border: 1px solid var(--border-light);
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.15s;
+}
+.kpi-card:hover { transform: translateY(-2px); }
+.kpi-icon { font-size: 1.4rem; }
+.kpi-value {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--text-dark);
+}
+.kpi-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.kpi-total    { border-top: 3px solid var(--primary); }
+.kpi-available{ border-top: 3px solid #10B981; }
+.kpi-sold     { border-top: 3px solid #EF4444; }
+.kpi-other    { border-top: 3px solid #94A3B8; }
+
+/* Charts grid */
+.charts-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+.chart-card {
+    background: var(--card-white);
+    border: 1px solid var(--border-light);
+    border-radius: 16px;
+    padding: 1.25rem;
+    box-shadow: var(--shadow-sm);
+}
+.chart-card canvas {
+    height: 200px !important;
+}
+.chart-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+.chart-card-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+.chart-card-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: var(--bg-light);
+    color: var(--text-muted);
+    padding: 0.2rem 0.65rem;
+    border-radius: 100px;
+    border: 1px solid var(--border-light);
+}
+.available-badge { background: #d1fae5; color: #065f46; border-color: #6ee7b7; }
+.sold-badge      { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+
+/* Admin tab special styling */
+.tab[data-branch="Admin"] {
+    background: linear-gradient(135deg, var(--primary), #0052a3);
+    color: white !important;
+    font-weight: 600;
+}
+.tab[data-branch="Admin"].active {
+    background: linear-gradient(135deg, #0052a3, #003d7a);
+    box-shadow: 0 2px 10px rgba(0,102,204,0.4);
+}
+.tab[data-branch="Admin"]:hover {
+    background: linear-gradient(135deg, #0052a3, #003d7a);
+    color: white !important;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .kpi-row { grid-template-columns: repeat(2, 1fr); }
+    .charts-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+    .kpi-row { grid-template-columns: repeat(2, 1fr); }
+    .kpi-value { font-size: 1.5rem; }
+}

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>CictechInventory · live edge</title>
     <link rel="stylesheet" href="index.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <div id="loginScreen" class="login-screen">
@@ -35,13 +36,80 @@
     </div>
 
     <div class="branch-tabs">
+        <button class="tab" data-branch="Admin" id="adminTab" style="display:none">&#9733; Admin</button>
         <button class="tab active" data-branch="Central">Central</button>
         <button class="tab" data-branch="Amanfrom">Amanfrom</button>
         <button class="tab" data-branch="East-Legon">East-Legon</button>
     </div>
 
+    <!-- ADMIN DASHBOARD -->
+    <div id="adminDashboard" style="display:none">
+        <div class="admin-stats-header">
+            <h2 class="admin-stats-title">Inventory Overview</h2>
+            <p class="admin-stats-sub">Live statistics across all branches</p>
+        </div>
+        <div class="kpi-row" id="kpiRow"></div>
+        <div class="charts-grid">
+            <div class="chart-card chart-card--wide">
+                <div class="chart-card-header">
+                    <span class="chart-card-title">Total Inventory by Branch</span>
+                    <span class="chart-card-badge" id="overallBadge">—</span>
+                </div>
+                <canvas id="chartOverall"></canvas>
+            </div>
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <span class="chart-card-title">Available Machines</span>
+                    <span class="chart-card-badge available-badge" id="availableBadge">—</span>
+                </div>
+                <canvas id="chartAvailable"></canvas>
+            </div>
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <span class="chart-card-title">Sold Machines</span>
+                    <span class="chart-card-badge sold-badge" id="soldBadge">—</span>
+                </div>
+                <canvas id="chartSold"></canvas>
+            </div>
+        </div>
+
+        <!-- Sold Approvals Table -->
+        <div class="admin-sold-section">
+            <div class="admin-sold-header">
+                <div>
+                    <h3 class="admin-sold-title">&#127991; Sold Machines — Approval Queue</h3>
+                    <p class="admin-sold-sub">Review and approve sold items per branch</p>
+                </div>
+                <div class="admin-sold-filter">
+                    <select id="adminBranchFilter">
+                        <option value="">All Branches</option>
+                        <option value="Central">Central</option>
+                        <option value="Amanfrom">Amanfrom</option>
+                        <option value="East-Legon">East-Legon</option>
+                    </select>
+                    <select id="adminApprovalFilter">
+                        <option value="pending">Pending approval</option>
+                        <option value="approved">Approved</option>
+                        <option value="">All sold</option>
+                    </select>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table id="adminSoldTable">
+                    <thead>
+                        <tr>
+                            <th>Branch</th><th>Brand</th><th>Model</th><th>Processor</th>
+                            <th>RAM</th><th>Storage</th><th>Serial</th><th>Price</th><th>Approval</th><th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminSoldBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <!-- search & filter -->
-    <div class="search-section">
+    <div class="search-section" id="searchSection">
         <div class="search-wrapper">
             <input type="text" id="searchInput" placeholder="Search serial, brand, model...">
         </div>

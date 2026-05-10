@@ -13,13 +13,15 @@
         const PROCESSOR_OPTIONS = ['i3','i5','i7','i9',"AMD"];
         const GEN_OPTIONS = ['4th Gen', '5th Gen', '6th Gen', '7th Gen', '8th Gen', '9th Gen', '10th Gen', '11th Gen', '12th Gen', 'Ryzen 3','Ryzen 5','Ryzen 7'];
         const STORAGE_OPTIONS = ['128GB','256GB','320GB','500GB','512GB','720GB','1TB','2TB'];
-        const STATUS_OPTIONS = ['Available', 'Sold', 'N/A', 'Taken Away']; // edit the taken away into somthing more appropriate like "for repair" or "with employee" if needed
+        const STATUS_OPTIONS = ['Available', 'Sold', 'N/A', 'Taken Away'];
 
         // internal state
         let laptops = [];
         let filteredLaptops = [];
         let editingId = null;
         let pendingDeleteId = null;
+        let allBranchData = {};   // { Central: [...], Amanfrom: [...], 'East-Legon': [...] }
+        let adminCharts = {};     // holds Chart.js instances so we can destroy/redraw
 
         function normalizeText(value) {
             return String(value || '').trim().toLowerCase();
@@ -133,6 +135,10 @@
             filteredLaptops.forEach(lap => {
                 const statusClassRaw = (lap.status || 'Available').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
                 const statusClass = statusClassRaw === 'n-a' ? 'na' : statusClassRaw;
+
+                // ✅ show action buttons only if admin OR viewing own branch
+                const canEdit = userRole === 'admin' || currentBranch === currentUser?.branch;
+
                 html += `<tr>
                     <td>${lap.brand || ''}</td>
                     <td>${lap.model || ''}</td>
@@ -146,8 +152,9 @@
                     <td><span class="status ${statusClass}"><span class="status-dot"></span> ${lap.status || 'Available'}</span></td>
                     <td>
                         <div class="row-actions">
-                            <button class="icon-btn edit-btn" data-id="${lap._id || lap.id}">✎</button>
-                            <button class="icon-btn delete-btn" data-id="${lap._id || lap.id}">🗑</button>
+                            ${canEdit ? `<button class="icon-btn edit-btn" data-id="${lap._id || lap.id}">✎</button>` : ''}
+                            ${canEdit ? `<button class="icon-btn delete-btn" data-id="${lap._id || lap.id}">🗑</button>` : ''}
+                            ${!canEdit ? `<span style="font-size:0.75rem;color:var(--text-muted)">view only</span>` : ''}
                         </div>
                     </td>
                 </tr>`;
@@ -200,7 +207,11 @@
                 document.getElementById("loginScreen").style.display = "none";
 
                 updateBranchUI();
-                fetchLaptops();
+                if (userRole === 'admin') {
+                    showAdminDashboard();
+                } else {
+                    fetchLaptops();
+                }
             }catch{
                 errorBox.innerText = "Server error";
             }
@@ -219,19 +230,30 @@
 
         // if user is already logged in, update UI and fetch data
         function updateBranchUI(){
-            // Show user badge
             const badge = document.getElementById('userBadge');
             const badgeLabel = document.getElementById('userBadgeLabel');
             if (badge && badgeLabel && currentUser) {
                 badge.style.display = 'inline-flex';
-                badgeLabel.textContent = `${currentUser.role} · ${currentUser.branch}`;
+                badgeLabel.textContent = userRole === 'admin'
+                    ? 'admin · all branches'
+                    : `${currentUser.role} · ${currentUser.branch}`;
             }
 
-            document.querySelectorAll(".tab").forEach(tab=>{
-                if(userRole !== "admin" && tab.dataset.branch !== currentBranch){
-                    tab.style.opacity = "0.6";
+            // Show admin tab only for admin role
+            const adminTab = document.getElementById('adminTab');
+            if (adminTab) {
+                if (userRole === 'admin') {
+                    adminTab.style.display = 'inline-flex';
+                    // Admin lands on Admin tab by default
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    adminTab.classList.add('active');
+                    currentBranch = 'Admin';
+                } else {
+                    adminTab.style.display = 'none';
+                    // Staff: lock other branch tabs
+                    
                 }
-            });
+            }
         }
 
                 // ---------- branch tabs ----------
@@ -248,34 +270,38 @@
             });
         });
 */
-            document.querySelectorAll(".tab").forEach(btn=>{
-            btn.addEventListener("click",()=>{
-                document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+        document.querySelectorAll(".tab").forEach(btn => {
+            btn.addEventListener("click", () => {
+                
+                document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
                 btn.classList.add("active");
-
                 currentBranch = btn.dataset.branch;
 
-                fetchLaptops();
+                if (currentBranch === 'Admin') {
+                    showAdminDashboard();
+                } else {
+                    hideAdminDashboard();
+                    fetchLaptops();
+                }
             });
         });
 
         // ---------- API calls ----------
         async function fetchLaptops() {
+            if (currentBranch === 'Admin') {
+                showAdminDashboard();
+                return;
+            }
             const refreshBtn = document.getElementById('refreshBtn');
             setButtonLoading(refreshBtn, true, 'syncing...');
             try {
                 tbody.innerHTML = `<tr><td colspan="11" class="loading-container"><div class="spinner"></div> Loading inventory...</td></tr>`;
-                
-                const res = await fetch(BRANCH_API + currentBranch,{
-                    headers:{
-                        "pin": localStorage.getItem("pin")
-                    }
+                const res = await fetch(BRANCH_API + currentBranch, {
+                    headers: { "pin": localStorage.getItem("pin") }
                 });
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                
                 const data = await res.json();
                 laptops = Array.isArray(data) ? data : (data.data || []);
-                
                 renderTable();
                 modalHint.innerText = `✅ GET ${BRANCH_API}${currentBranch} · ${laptops.length} records`;
                 showNotification(`Synced — ${laptops.length} laptop${laptops.length !== 1 ? 's' : ''} loaded`, 'success', 3000);
@@ -288,6 +314,191 @@
             } finally {
                 setButtonLoading(refreshBtn, false);
             }
+        }
+
+        // ---------- Admin dashboard ----------
+        async function fetchAllBranchData() {
+            const pin = localStorage.getItem('pin');
+            const branches = ['Central', 'Amanfrom', 'East-Legon'];
+            const results = {};
+            await Promise.all(branches.map(async branch => {
+                try {
+                    const res = await fetch(BRANCH_API + branch, { headers: { 'pin': pin } });
+                    results[branch] = res.ok ? await res.json() : [];
+                } catch { results[branch] = []; }
+            }));
+            return results;
+        }
+
+        function hideAdminDashboard() {
+            document.getElementById('adminDashboard').style.display = 'none';
+            document.getElementById('searchSection').style.display = '';
+            document.querySelector('.inventory-card').style.display = '';
+            document.getElementById('addNewBtn').style.display = '';
+        }
+
+        async function showAdminDashboard() {
+            document.getElementById('adminDashboard').style.display = 'block';
+            document.getElementById('searchSection').style.display = 'none';
+            document.querySelector('.inventory-card').style.display = 'none';
+            document.getElementById('addNewBtn').style.display = 'none';
+
+            const refreshBtn = document.getElementById('refreshBtn');
+            setButtonLoading(refreshBtn, true, 'loading...');
+
+            try {
+                allBranchData = await fetchAllBranchData();
+                renderAdminCharts(allBranchData);
+            } catch(err) {
+                showNotification('Failed to load admin data', 'error');
+            } finally {
+                setButtonLoading(refreshBtn, false);
+            }
+        }
+
+        function renderAdminCharts(data) {
+            const BRANCHES = ['Central', 'Amanfrom', 'East-Legon'];
+            const COLORS = {
+                Central:     { bar: 'rgba(0,102,204,0.85)',    border: '#0066CC' },
+                Amanfrom:    { bar: 'rgba(16,185,129,0.85)',   border: '#10B981' },
+                'East-Legon':{ bar: 'rgba(245,158,11,0.85)',   border: '#F59E0B' },
+            };
+
+            // --- compute stats ---
+            const totals    = {};
+            const available = {};
+            const sold      = {};
+            let grandTotal  = 0;
+            let grandAvail  = 0;
+            let grandSold   = 0;
+
+            BRANCHES.forEach(b => {
+                const items = data[b] || [];
+                totals[b]    = items.length;
+                available[b] = items.filter(l => l.status === 'Available').length;
+                sold[b]      = items.filter(l => l.status === 'Sold').length;
+                grandTotal  += totals[b];
+                grandAvail  += available[b];
+                grandSold   += sold[b];
+            });
+
+            // --- KPI cards ---
+            document.getElementById('kpiRow').innerHTML = [
+                { label: 'Total Laptops',  value: grandTotal,  icon: '💻', cls: 'kpi-total' },
+                { label: 'Available',      value: grandAvail,  icon: '✅', cls: 'kpi-available' },
+                { label: 'Sold',           value: grandSold,   icon: '🏷️', cls: 'kpi-sold' },
+                { label: 'Other',          value: grandTotal - grandAvail - grandSold, icon: '📦', cls: 'kpi-other' },
+            ].map(k => `
+                <div class="kpi-card ${k.cls}">
+                    <span class="kpi-icon">${k.icon}</span>
+                    <span class="kpi-value">${k.value}</span>
+                    <span class="kpi-label">${k.label}</span>
+                </div>
+            `).join('');
+
+            // badge totals
+            document.getElementById('overallBadge').textContent   = grandTotal + ' total';
+            document.getElementById('availableBadge').textContent  = grandAvail + ' units';
+            document.getElementById('soldBadge').textContent       = grandSold  + ' units';
+
+            const chartDefaults = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => ` ${ctx.parsed.y} laptops`
+                        }
+                    }
+                },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { size: 12, weight: '600' } } },
+                    y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { stepSize: 1 } }
+                }
+            };
+
+            function makeChart(id, labels, values, colors, label) {
+                if (adminCharts[id]) adminCharts[id].destroy();
+                const ctx = document.getElementById(id).getContext('2d');
+                adminCharts[id] = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels,
+                        datasets: [{
+                            label,
+                            data: values,
+                            backgroundColor: colors.map(c => c.bar),
+                            borderColor: colors.map(c => c.border),
+                            borderWidth: 2,
+                            borderRadius: 8,
+                            borderSkipped: false,
+                        }]
+                    },
+                    options: chartDefaults
+                });
+            }
+
+            // --- overall bar chart (grouped) ---
+            if (adminCharts['chartOverall']) adminCharts['chartOverall'].destroy();
+            const overallCtx = document.getElementById('chartOverall').getContext('2d');
+            adminCharts['chartOverall'] = new Chart(overallCtx, {
+                type: 'bar',
+                data: {
+                    labels: BRANCHES,
+                    datasets: [
+                        {
+                            label: 'Available',
+                            data: BRANCHES.map(b => available[b]),
+                            backgroundColor: 'rgba(16,185,129,0.8)',
+                            borderColor: '#10B981',
+                            borderWidth: 2,
+                            borderRadius: 6,
+                        },
+                        {
+                            label: 'Sold',
+                            data: BRANCHES.map(b => sold[b]),
+                            backgroundColor: 'rgba(239,68,68,0.8)',
+                            borderColor: '#EF4444',
+                            borderWidth: 2,
+                            borderRadius: 6,
+                        },
+                        {
+                            label: 'Other',
+                            data: BRANCHES.map(b => totals[b] - available[b] - sold[b]),
+                            backgroundColor: 'rgba(148,163,184,0.8)',
+                            borderColor: '#94A3B8',
+                            borderWidth: 2,
+                            borderRadius: 6,
+                        }
+                    ]
+                },
+                options: {
+                    ...chartDefaults,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: { usePointStyle: true, pointStyle: 'circle', font: { size: 12 } }
+                        },
+                        tooltip: { mode: 'index', intersect: false }
+                    }
+                }
+            });
+
+            // --- available per branch ---
+            makeChart('chartAvailable', BRANCHES,
+                BRANCHES.map(b => available[b]),
+                BRANCHES.map(b => ({ bar: 'rgba(16,185,129,0.8)', border: '#10B981' })),
+                'Available'
+            );
+
+            // --- sold per branch ---
+            makeChart('chartSold', BRANCHES,
+                BRANCHES.map(b => sold[b]),
+                BRANCHES.map(b => ({ bar: 'rgba(239,68,68,0.8)', border: '#EF4444' })),
+                'Sold'
+            );
         }
 
         async function createLaptop(laptopData) {
@@ -730,9 +941,13 @@
         if(savedUser && savedPin){
             updateBranchUI();
             if (!currentBranch) {
-    console.warn("Branch not set yet");
-    return;
-}
-            fetchLaptops(); // only after restoring session
+                console.warn("Branch not set yet");
+                return;
+            }
+            if (userRole === 'admin') {
+                showAdminDashboard();
+            } else {
+                fetchLaptops();
+            }
         }
     })();
