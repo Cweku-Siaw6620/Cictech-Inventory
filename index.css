@@ -1433,7 +1433,20 @@ html {
 /* Sold table section */
 .admin-sold-section { background: var(--card-white); border: 1px solid var(--border-light); border-radius: 20px; padding: 1.5rem; box-shadow: var(--shadow-sm); margin-bottom: 2rem; }
 .admin-sold-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap; }
-.admin-sold-title { font-size: 1rem; font-weight: 700; color: var(--text-dark); margin: 0 0 0.2rem; }
+.admin-sold-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.98rem;
+    font-weight: 800;
+    color: #9a3412;
+    margin: 0 0 0.35rem;
+    padding: 0.35rem 0.8rem;
+    border-radius: 999px;
+    border: 1px solid #fdba74;
+    background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 58%, #fee2e2 100%);
+    box-shadow: 0 8px 18px rgba(249, 115, 22, 0.18);
+}
 .admin-sold-sub { font-size: 0.82rem; color: var(--text-muted); margin: 0; }
 .admin-sold-filter { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
 .admin-sold-filter select { padding: 0.45rem 0.75rem; border: 1px solid var(--border-light); border-radius: 10px; font-size: 0.85rem; color: var(--text-dark); background: var(--bg-light); cursor: pointer; }
@@ -1451,11 +1464,11 @@ html {
 .approval-badge.pending { background: #fef3c7; color: #92400e; }
 
 /* Approve dropdown */
-.approve-wrapper { position: relative; }
+.approve-wrapper { position: relative; isolation: isolate; }
 .approve-btn { background: var(--bg-light) !important; border: 1px solid var(--border-light) !important; color: var(--text-muted) !important; font-size: 0.85rem !important; }
 .approve-btn.approved-active { background: #d1fae5 !important; color: #065f46 !important; border-color: #6ee7b7 !important; }
-.approve-dropdown { position: absolute; right: 0; top: calc(100% + 4px); background: white; border: 1px solid var(--border-light); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); min-width: 140px; z-index: 100; overflow: hidden; }
-.dd-option { display: block; width: 100%; padding: 0.65rem 1rem; font-size: 0.85rem; font-weight: 500; text-align: left; border: none; background: none; cursor: pointer; transition: background 0.15s; }
+.approve-dropdown { position: absolute; right: 0; top: auto; bottom: calc(100% + 6px); background: white; border: 1px solid var(--border-light); border-radius: 14px; box-shadow: 0 12px 28px rgba(0,0,0,0.16); min-width: 170px; z-index: 1200; overflow: hidden; padding: 0.25rem; }
+.dd-option { display: block; width: 100%; padding: 0.72rem 1rem; font-size: 0.86rem; font-weight: 600; text-align: left; border: none; background: none; cursor: pointer; transition: background 0.15s; border-radius: 10px; line-height: 1.2; }
 .dd-option:hover { background: var(--bg-light); }
 .approve-option { color: #065f46; }
 .disapprove-option { color: #991b1b; }
@@ -1463,6 +1476,12 @@ html {
 
 /* Approved row styling */
 .row-approved td { opacity: 0.6; background: #f8fdf8; }
+.row-approved td:last-child,
+.row-approved .approve-wrapper,
+.row-approved .approve-dropdown,
+.row-approved .row-actions {
+    opacity: 1;
+}
 .highlight-row td { background: #fffbeb !important; transition: background 1.5s; }
 
 @media (max-width: 900px) {
