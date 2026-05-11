@@ -836,6 +836,7 @@
                 const previous = laptops.find(l => (l._id === id || l.id === id));
                 const previousPrice = String(previous?.price ?? '').trim();
                 const nextPrice = String(laptopData?.price ?? '').trim();
+                const hasEmptyPrice = (value) => String(value ?? '').trim() === '';
 
                 const res = await fetch(`${API_BASE}/${id}`, {
                     method: 'PUT',
@@ -848,11 +849,13 @@
 
                 let propagatedCount = 0;
 
-                // If price changed, push the same price to all matching product instances in this branch.
-                if (previous && previousPrice !== nextPrice) {
+                // Auto-fill price only when editing an item that previously had no price.
+                // Matching items that already have a price are never overwritten.
+                if (previous && previousPrice !== nextPrice && hasEmptyPrice(previousPrice) && !hasEmptyPrice(nextPrice)) {
                     const matches = laptops.filter(l => {
                         const recordId = l._id || l.id;
-                        return recordId !== id && isSameProductInstance(l, previous);
+                        const itemPrice = String(l?.price ?? '').trim();
+                        return recordId !== id && isSameProductInstance(l, previous) && hasEmptyPrice(itemPrice);
                     });
 
                     if (matches.length) {
