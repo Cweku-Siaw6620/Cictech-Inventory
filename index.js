@@ -287,10 +287,6 @@
 
         // ---------- API calls ----------
         async function fetchLaptops() {
-            if (currentBranch === 'Admin') {
-                showAdminDashboard();
-                return;
-            }
             const refreshBtn = document.getElementById('refreshBtn');
             setButtonLoading(refreshBtn, true, 'syncing...');
             try {
@@ -318,7 +314,7 @@
         // ---------- Admin dashboard ----------
         async function fetchAllBranchData() {
             const pin = localStorage.getItem('pin');
-            const branches = ['Central', 'Amanfrom', 'East-Legon'];
+            const branches = ['Admin', 'Central', 'Amanfrom', 'East-Legon'];
             const results = {};
             await Promise.all(branches.map(async branch => {
                 try {
@@ -338,9 +334,10 @@
 
         async function showAdminDashboard() {
             document.getElementById('adminDashboard').style.display = 'block';
-            document.getElementById('searchSection').style.display = 'none';
-            document.querySelector('.inventory-card').style.display = 'none';
-            document.getElementById('addNewBtn').style.display = 'none';
+            const showAdminInventory = currentBranch === 'Admin';
+            document.getElementById('searchSection').style.display = showAdminInventory ? '' : 'none';
+            document.querySelector('.inventory-card').style.display = showAdminInventory ? '' : 'none';
+            document.getElementById('addNewBtn').style.display = showAdminInventory ? '' : 'none';
 
             const refreshBtn = document.getElementById('refreshBtn');
             setButtonLoading(refreshBtn, true, 'loading...');
@@ -350,6 +347,9 @@
                 renderAdminCharts(allBranchData);
                 renderAdminSoldTable();
                 renderRevenueCharts(allBranchData);
+                if (showAdminInventory) {
+                    await fetchLaptops();
+                }
             } catch(err) {
                 showNotification('Failed to load admin data', 'error');
             } finally {
@@ -368,7 +368,7 @@
             const soldTbody = document.getElementById('adminSoldBody');
             if (!soldTbody) return;
 
-            const branches = ['Central', 'Amanfrom', 'East-Legon'];
+            const branches = ['Admin', 'Central', 'Amanfrom', 'East-Legon'];
             let soldItems = [];
 
             branches.forEach(branch => {
@@ -508,8 +508,9 @@
         }
 
         function renderAdminCharts(data) {
-            const BRANCHES = ['Central', 'Amanfrom', 'East-Legon'];
+            const BRANCHES = ['Admin', 'Central', 'Amanfrom', 'East-Legon'];
             const COLORS = {
+                Admin:       { bar: 'rgba(100,116,139,0.85)', border: '#64748B' },
                 Central:     { bar: 'rgba(0,102,204,0.85)',    border: '#0066CC' },
                 Amanfrom:    { bar: 'rgba(16,185,129,0.85)',   border: '#10B981' },
                 'East-Legon':{ bar: 'rgba(245,158,11,0.85)',   border: '#F59E0B' },
@@ -653,8 +654,9 @@
         }
 
         function renderRevenueCharts(data) {
-            const BRANCHES = ['Central', 'Amanfrom', 'East-Legon'];
+            const BRANCHES = ['Admin', 'Central', 'Amanfrom', 'East-Legon'];
             const COLORS = [
+                { bg: '#64748B', hover: '#475569' },
                 { bg: '#0066CC', hover: '#004999' },
                 { bg: '#10B981', hover: '#059669' },
                 { bg: '#F59E0B', hover: '#D97706' },
@@ -774,6 +776,7 @@
             setButtonLoading(saveBtn, true, 'saving...');
             try {
                 const { dateSold, ...createData } = laptopData;
+                createData.branch = currentBranch === 'Admin' ? 'Admin' : currentBranch;
                 
                 const res = await fetch(API_BASE, {
                     method: 'POST',
@@ -1062,7 +1065,7 @@
                 const res = await fetch(`${API_BASE}/bulk`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'pin': pin },
-                    body: JSON.stringify({ products: payloads })
+                    body: JSON.stringify({ products: payloads.map(product => ({ ...product, branch: currentBranch === 'Admin' ? 'Admin' : currentBranch })) })
                 });
                 
                 const data = await res.json();
