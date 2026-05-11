@@ -259,8 +259,12 @@
                     currentBranch = 'Admin';
                 } else {
                     adminTab.style.display = 'none';
-                    // Staff: lock other branch tabs
-                    
+                    // Staff: activate their own branch tab
+                    const staffBranchTab = Array.from(document.querySelectorAll('.tab')).find(t => t.dataset.branch === currentUser.branch);
+                    if (staffBranchTab) {
+                        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                        staffBranchTab.classList.add('active');
+                    }
                 }
             }
         }
@@ -281,7 +285,6 @@
 */
         document.querySelectorAll(".tab").forEach(btn => {
             btn.addEventListener("click", () => {
-                
                 document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
                 btn.classList.add("active");
                 currentBranch = btn.dataset.branch;
