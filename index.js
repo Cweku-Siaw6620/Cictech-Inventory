@@ -387,7 +387,7 @@
             soldItems = [...unapprovedSold, ...approvedSold];
 
             if (!soldItems.length) {
-                soldTbody.innerHTML = `<tr class="empty-row"><td colspan="10">✅ No sold machines match this filter</td></tr>`;
+                soldTbody.innerHTML = `<tr class="empty-row"><td colspan="11">✅ No sold machines match this filter</td></tr>`;
                 return;
             }
 
@@ -403,6 +403,7 @@
                     <td>${lap.ram || ''}</td>
                     <td>${lap.storage || ''}</td>
                     <td>${lap.serial || ''}</td>
+                    <td>${lap.purchaseDate ? lap.purchaseDate.slice(0, 10) : '—'}</td>
                     <td>${lap.price ? 'GHS ' + lap.price : '—'}</td>
                     <td>
                         ${isApproved
