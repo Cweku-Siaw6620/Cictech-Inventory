@@ -270,19 +270,6 @@
         }
 
                 // ---------- branch tabs ----------
-  /*      document.querySelectorAll(".tab").forEach(btn => {
-            btn.addEventListener("click", () => {
-                if (userRole !== "admin" && btn.dataset.branch !== currentBranch) {
-                    showNotification("You can only view your own branch", "warning");
-                    return;
-                }
-                document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-                btn.classList.add("active");
-                currentBranch = btn.dataset.branch;
-                fetchLaptops();
-            });
-        });
-*/
         document.querySelectorAll(".tab").forEach(btn => {
             btn.addEventListener("click", () => {
                 document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
@@ -814,6 +801,13 @@
                 showNotification('Session expired. Please log in again.', 'error');
                 return;
             }
+            
+            // Restrict price updates to admin only
+            if (userRole !== 'admin' && laptopData?.price !== undefined) {
+                showNotification('Only admin can update product prices', 'warning');
+                return;
+            }
+            
             const saveBtn = document.getElementById('modalSave');
             setButtonLoading(saveBtn, true, 'updating...');
             try {
@@ -945,8 +939,12 @@
                 storage: document.getElementById('fStorage')?.value,
                 purchaseDate: document.getElementById('fPurDate')?.value,
                 status: document.getElementById('fStatus')?.value,
-                price: document.getElementById('fPrice')?.value.trim(),
             };
+            
+            // Only include price if admin is editing
+            if (isEdit && userRole === 'admin') {
+                values.price = document.getElementById('fPrice')?.value.trim();
+            }
             
             if (isEdit) {
                 const dateSoldInput = document.getElementById('fDateSold');
@@ -972,6 +970,10 @@
         }
 
         function buildEditModalForm(values) {
+            const priceField = userRole === 'admin' 
+                ? `<div class="field"><label>Price (GHS)</label><input id="fPrice" type="number" value="${values.price || ''}" placeholder="e.g., 2500"></div>`
+                : '';
+            
             modalForm.innerHTML = `
                 <div class="field"><label>Serial *</label><input id="fSerial" value="${values.serial || ''}" placeholder="SN-1234"></div>
                 <div class="field"><label>Brand</label><select id="fBrand">${BRAND_OPTIONS.map(b => `<option ${values.brand === b ? 'selected' : ''}>${b}</option>`).join('')}</select></div>
@@ -982,7 +984,7 @@
                 <div class="field"><label>Storage</label><select id="fStorage">${STORAGE_OPTIONS.map(s => `<option ${values.storage === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
                 <div class="field"><label>Purchase date</label><input id="fPurDate" type="date" value="${values.purchaseDate ? values.purchaseDate.slice(0,10) : ''}"></div>
                 <div class="field"><label>Status</label><select id="fStatus">${STATUS_OPTIONS.map(s => `<option ${values.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
-                <div class="field"><label>Price (GHS)</label><input id="fPrice" type="number" value="${values.price || ''}" placeholder="e.g., 2500"></div>
+                ${priceField}
             `;
         }
 
