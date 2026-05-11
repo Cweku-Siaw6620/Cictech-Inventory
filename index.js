@@ -22,7 +22,23 @@
         let pendingDeleteId = null;
         let allBranchData = {};
         let adminCharts = {};
-        let approvedIds = new Set(JSON.parse(localStorage.getItem('approvedIds') || '[]'));
+
+        // Replace with
+        let approvedIds = new Set();
+
+        async function loadApprovedIds() {
+            const pin = localStorage.getItem('pin');
+            try {
+                const res = await fetch(API_BASE, { headers: { 'pin': pin } });
+                if (!res.ok) return;
+                const all = await res.json();
+                approvedIds = new Set(
+                    all.filter(p => p.approved === true).map(p => p._id || p.id)
+                );
+            } catch(err) {
+                console.warn('Could not load approved IDs:', err);
+            }
+        }
 
         function normalizeText(value) {
             return String(value || '').trim().toLowerCase();
@@ -291,6 +307,7 @@
             setButtonLoading(refreshBtn, true, 'syncing...');
             try {
                 tbody.innerHTML = `<tr><td colspan="11" class="loading-container"><div class="spinner"></div> Loading inventory...</td></tr>`;
+                await loadApprovedIds();
                 const res = await fetch(BRANCH_API + currentBranch, {
                     headers: { "pin": localStorage.getItem("pin") }
                 });
@@ -343,6 +360,7 @@
             setButtonLoading(refreshBtn, true, 'loading...');
 
             try {
+                await loadApprovedIds();
                 allBranchData = await fetchAllBranchData();
                 renderAdminCharts(allBranchData);
                 renderAdminSoldTable();
@@ -494,7 +512,7 @@
 
                 if (approved) approvedIds.add(id);
                 else approvedIds.delete(id);
-                localStorage.setItem('approvedIds', JSON.stringify([...approvedIds]));
+                //localStorage.setItem('approvedIds', JSON.stringify([...approvedIds]));
 
                 renderAdminSoldTable();
                 allBranchData = await fetchAllBranchData();
@@ -1206,7 +1224,8 @@
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => {
                 try {
-                    localStorage.clear();
+                    localStorage.removeItem('pin');
+                    localStorage.removeItem('user');
                     showNotification('Logged out. Reloading...', 'info');
                 } catch (e) {
                     console.error('Error clearing storage on logout', e);
