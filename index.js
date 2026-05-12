@@ -13,7 +13,7 @@
         const PROCESSOR_OPTIONS = ['i3','i5','i7','i9',"AMD"];
         const GEN_OPTIONS = ['4th Gen', '5th Gen', '6th Gen', '7th Gen', '8th Gen', '9th Gen', '10th Gen', '11th Gen', '12th Gen', 'Ryzen 3','Ryzen 5','Ryzen 7'];
         const STORAGE_OPTIONS = ['128GB','256GB','320GB','500GB','512GB','720GB','1TB','2TB'];
-        const STATUS_OPTIONS = ['Available', 'Sold', 'N/A', 'Taken Away'];
+        const STATUS_OPTIONS = ['Available', 'Sold', 'N/A'];
 
         // internal state
         let laptops = [];
@@ -978,7 +978,9 @@
                 ram: document.getElementById('fRam')?.value,
                 storage: document.getElementById('fStorage')?.value,
                 purchaseDate: document.getElementById('fPurDate')?.value,
-                status: document.getElementById('fStatus')?.value,
+                status: document.getElementById('fStatus')?.value === '__custom__'
+                    ? (document.getElementById('fStatusCustom')?.value?.trim() || 'Available')
+                    : document.getElementById('fStatus')?.value,
             };
             
             // Only include price if admin is editing
@@ -1005,8 +1007,17 @@
                 <div class="field"><label>Gen</label><select id="fGen">${GEN_OPTIONS.map(g => `<option ${values.gen === g ? 'selected' : ''}>${g}</option>`).join('')}</select></div>
                 <div class="field"><label>RAM</label><select id="fRam">${RAM_OPTIONS.map(r => `<option ${values.ram === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
                 <div class="field"><label>Storage</label><select id="fStorage">${STORAGE_OPTIONS.map(s => `<option ${values.storage === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
-                <div class="field"><label>Status</label><select id="fStatus">${STATUS_OPTIONS.map(s => `<option ${values.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
-            `;
+                
+                <div class="field"><label>Status</label>
+                    <select id="fStatus" onchange="const c=document.getElementById('fStatusCustom');c.style.display=this.value==='__custom__'?'block':'none';if(this.value!=='__custom__')c.value='';">
+                        <option value="Available" ${values.status === 'Available' || !values.status ? 'selected' : ''}>Available</option>
+                        <option value="Sold"      ${values.status === 'Sold'      ? 'selected' : ''}>Sold</option>
+                        <option value="N/A"       ${values.status === 'N/A'       ? 'selected' : ''}>N/A</option>
+                        <option value="__custom__">Taken Away...</option>
+                    </select>
+                    <input type="text" id="fStatusCustom" class="form-input" placeholder="e.g. Taken to HQ" style="margin-top:0.5rem;display:none">
+                </div>
+                `;
         }
 
         function buildEditModalForm(values) {
@@ -1023,7 +1034,17 @@
                 <div class="field"><label>RAM</label><select id="fRam">${RAM_OPTIONS.map(r => `<option ${values.ram === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
                 <div class="field"><label>Storage</label><select id="fStorage">${STORAGE_OPTIONS.map(s => `<option ${values.storage === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
                 <div class="field"><label>Purchase date</label><input id="fPurDate" type="date" value="${values.purchaseDate ? values.purchaseDate.slice(0,10) : ''}"></div>
-                <div class="field"><label>Status</label><select id="fStatus">${STATUS_OPTIONS.map(s => `<option ${values.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+                <div class="field"><label>Status</label>
+                    <select id="fStatus" onchange="const c=document.getElementById('fStatusCustom');c.style.display=this.value==='__custom__'?'block':'none';if(this.value!=='__custom__')c.value='';">
+                        <option value="Available" ${values.status === 'Available' ? 'selected' : ''}>Available</option>
+                        <option value="Sold"      ${values.status === 'Sold'      ? 'selected' : ''}>Sold</option>
+                        <option value="N/A"       ${values.status === 'N/A'       ? 'selected' : ''}>N/A</option>
+                        <option value="__custom__" ${!['Available','Sold','N/A'].includes(values.status) && values.status ? 'selected' : ''}>Taken Away...</option>
+                    </select>
+                    <input type="text" id="fStatusCustom" class="form-input" placeholder="e.g. Taken to HQ"
+                        style="margin-top:0.5rem;display:${!['Available','Sold','N/A'].includes(values.status) && values.status ? 'block' : 'none'}"
+                        value="${!['Available','Sold','N/A'].includes(values.status) && values.status ? values.status : ''}">
+                </div>
                 ${priceField}
             `;
         }
