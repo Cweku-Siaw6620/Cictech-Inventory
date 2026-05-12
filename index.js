@@ -8,7 +8,7 @@
         let currentBranch = null;
         let userRole = null;
 
-        const BRAND_OPTIONS = ['Dell','HP','Lenovo','Mac','Asus','Acer','Apple','Samsung','MSI','Microsoft','LG','Toshiba','Huawei'];
+        const BRAND_OPTIONS = ['Dell','HP','Lenovo','Mac','Asus','Acer','Apple','Samsung','MSI','Microsoft','Toshiba','Tv'];
         const RAM_OPTIONS = ['4GB','8GB','16GB','32GB','64GB'];
         const PROCESSOR_OPTIONS = ['i3','i5','i7','i9',"AMD"];
         const GEN_OPTIONS = ['4th Gen', '5th Gen', '6th Gen', '7th Gen', '8th Gen', '9th Gen', '10th Gen', '11th Gen', '12th Gen', 'Ryzen 3','Ryzen 5','Ryzen 7'];
@@ -1016,8 +1016,18 @@
                     ${GEN_OPTIONS.map(g => `<option value="${g}" ${values.gen === g ? 'selected' : ''}>${g}</option>`).join('')}
                 </select>
                 </div>
-                <div class="field"><label>RAM</label><select id="fRam">${RAM_OPTIONS.map(r => `<option ${values.ram === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
-                <div class="field"><label>Storage</label><select id="fStorage">${STORAGE_OPTIONS.map(s => `<option ${values.storage === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+                <div class="field"><label>RAM</label>
+                <select id="fRam">
+                    <option value="">— not applicable —</option>
+                    ${RAM_OPTIONS.map(r => `<option value="${r}" ${values.ram === r ? 'selected' : ''}>${r}</option>`).join('')}
+                </select>
+                </div>
+                <div class="field"><label>Storage</label>
+                <select id="fStorage">
+                    <option value="">— not applicable —</option>
+                    ${STORAGE_OPTIONS.map(s => `<option value="${s}" ${values.storage === s ? 'selected' : ''}>${s}</option>`).join('')}
+                </select>
+                </div>
                 
                 <div class="field"><label>Status</label>
                     <select id="fStatus" onchange="const c=document.getElementById('fStatusCustom');c.style.display=this.value==='__custom__'?'block':'none';if(this.value!=='__custom__')c.value='';">
@@ -1052,8 +1062,18 @@
                     ${GEN_OPTIONS.map(g => `<option value="${g}" ${values.gen === g ? 'selected' : ''}>${g}</option>`).join('')}
                 </select>
                 </div>
-                <div class="field"><label>RAM</label><select id="fRam">${RAM_OPTIONS.map(r => `<option ${values.ram === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
-                <div class="field"><label>Storage</label><select id="fStorage">${STORAGE_OPTIONS.map(s => `<option ${values.storage === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+                <div class="field"><label>RAM</label>
+                <select id="fRam">
+                    <option value="">— not applicable —</option>
+                    ${RAM_OPTIONS.map(r => `<option value="${r}" ${values.ram === r ? 'selected' : ''}>${r}</option>`).join('')}
+                </select>
+                </div>
+                <div class="field"><label>Storage</label>
+                <select id="fStorage">
+                    <option value="">— not applicable —</option>
+                    ${STORAGE_OPTIONS.map(s => `<option value="${s}" ${values.storage === s ? 'selected' : ''}>${s}</option>`).join('')}
+                </select>
+                </div>
                 <div class="field"><label>Purchase date</label><input id="fPurDate" type="date" value="${values.purchaseDate ? values.purchaseDate.slice(0,10) : ''}"></div>
                 <div class="field"><label>Status</label>
                     <select id="fStatus" onchange="const c=document.getElementById('fStatusCustom');c.style.display=this.value==='__custom__'?'block':'none';if(this.value!=='__custom__')c.value='';">
