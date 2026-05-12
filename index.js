@@ -421,14 +421,14 @@
                 const isApproved = approvedIds.has(id);
                 html += `<tr class="${isApproved ? 'row-approved' : ''}">
                     <td><span class="branch-pill branch-${(lap._branch || '').toLowerCase().replace('-', '')}">${lap._branch}</span></td>
-                    <td>${lap.brand || ''}</td>
-                    <td>${lap.model || ''}</td>
-                    <td>${lap.processor || ''} ${lap.gen || ''}</td>
-                    <td>${lap.ram || ''}</td>
-                    <td>${lap.storage || ''}</td>
-                    <td>${lap.serial || ''}</td>
-                    <td>${lap.purchaseDate ? lap.purchaseDate.slice(0, 10) : '—'}</td>
-                    <td>${lap.price ? 'GHS ' + lap.price : '—'}</td>
+                    <td>${lap.brand || '-'}</td>
+                    <td>${lap.model || '-'}</td>
+                    <td>${lap.processor || '-'} ${lap.gen || '-'}</td>
+                    <td>${lap.ram || '-'}</td>
+                    <td>${lap.storage || '-'}</td>
+                    <td>${lap.serial || '-'}</td>
+                    <td>${lap.purchaseDate ? lap.purchaseDate.slice(0, 10) : '--'}</td>
+                    <td>${lap.price ? 'GHS ' + lap.price : '-'}</td>
                     <td>
                         ${isApproved
                             ? '<span class="approval-badge approved">✔ Approved</span>'
