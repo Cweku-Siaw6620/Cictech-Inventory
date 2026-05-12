@@ -267,15 +267,14 @@
             // Show admin tab only for admin role
             const adminTab = document.getElementById('adminTab');
             if (adminTab) {
+                adminTab.style.display = 'inline-flex';
                 if (userRole === 'admin') {
-                    adminTab.style.display = 'inline-flex';
                     // Admin lands on Admin tab by default
                     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
                     adminTab.classList.add('active');
                     currentBranch = 'Admin';
                 } else {
-                    adminTab.style.display = 'none';
-                    // Staff: activate their own branch tab
+                    // Staff: activate their own branch tab, but keep Admin available as a read-only view
                     const staffBranchTab = Array.from(document.querySelectorAll('.tab')).find(t => t.dataset.branch === currentUser.branch);
                     if (staffBranchTab) {
                         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -352,9 +351,15 @@
         async function showAdminDashboard() {
             document.getElementById('adminDashboard').style.display = 'block';
             const showAdminInventory = currentBranch === 'Admin';
+            const canManageAdminInventory = userRole === 'admin' && currentBranch === 'Admin';
             document.getElementById('searchSection').style.display = showAdminInventory ? '' : 'none';
             document.querySelector('.inventory-card').style.display = showAdminInventory ? '' : 'none';
-            document.getElementById('addNewBtn').style.display = showAdminInventory ? '' : 'none';
+            document.getElementById('addNewBtn').style.display = canManageAdminInventory ? '' : 'none';
+
+            const adminSections = document.querySelectorAll('.admin-stats-header, .kpi-row, .charts-grid, .admin-sold-section, .rev-section');
+            adminSections.forEach(section => {
+                section.style.display = userRole === 'admin' ? '' : 'none';
+            });
 
             const refreshBtn = document.getElementById('refreshBtn');
             setButtonLoading(refreshBtn, true, 'loading...');
