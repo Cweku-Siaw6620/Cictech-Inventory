@@ -8,7 +8,7 @@
         let currentBranch = null;
         let userRole = null;
 
-        const BRAND_OPTIONS = ['Dell','HP','Lenovo','Apple','Asus','Acer','Samsung','MSI','Microsoft','LG','Toshiba','Huawei'];
+        const BRAND_OPTIONS = ['Dell','HP','Lenovo','Mac','Asus','Acer','Apple','Samsung','MSI','Microsoft','LG','Toshiba','Huawei'];
         const RAM_OPTIONS = ['4GB','8GB','16GB','32GB','64GB'];
         const PROCESSOR_OPTIONS = ['i3','i5','i7','i9',"AMD"];
         const GEN_OPTIONS = ['4th Gen', '5th Gen', '6th Gen', '7th Gen', '8th Gen', '9th Gen', '10th Gen', '11th Gen', '12th Gen', 'Ryzen 3','Ryzen 5','Ryzen 7'];
@@ -1004,8 +1004,18 @@
                 <div class="field"><label>Serial *</label><input id="fSerial" value="${values.serial || ''}" placeholder="SN-1234"></div>
                 <div class="field"><label>Brand</label><select id="fBrand">${BRAND_OPTIONS.map(b => `<option ${values.brand === b ? 'selected' : ''}>${b}</option>`).join('')}</select></div>
                 <div class="field"><label>Model</label><input id="fModel" value="${values.model || ''}"></div>
-                <div class="field"><label>Processor</label><select id="fProcessor">${PROCESSOR_OPTIONS.map(p => `<option ${values.processor === p ? 'selected' : ''}>${p}</option>`).join('')}</select></div>
-                <div class="field"><label>Gen</label><select id="fGen">${GEN_OPTIONS.map(g => `<option ${values.gen === g ? 'selected' : ''}>${g}</option>`).join('')}</select></div>
+                <div class="field"><label>Processor</label>
+                <select id="fProcessor">
+                    <option value="">— not applicable —</option>
+                    ${PROCESSOR_OPTIONS.map(p => `<option value="${p}" ${values.processor === p ? 'selected' : ''}>${p}</option>`).join('')}
+                </select>
+                </div>
+                <div class="field"><label>Gen</label>
+                <select id="fGen">
+                    <option value="">— not applicable —</option>
+                    ${GEN_OPTIONS.map(g => `<option value="${g}" ${values.gen === g ? 'selected' : ''}>${g}</option>`).join('')}
+                </select>
+                </div>
                 <div class="field"><label>RAM</label><select id="fRam">${RAM_OPTIONS.map(r => `<option ${values.ram === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
                 <div class="field"><label>Storage</label><select id="fStorage">${STORAGE_OPTIONS.map(s => `<option ${values.storage === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
                 
@@ -1030,8 +1040,18 @@
                 <div class="field"><label>Serial *</label><input id="fSerial" value="${values.serial || ''}" placeholder="SN-1234"></div>
                 <div class="field"><label>Brand</label><select id="fBrand">${BRAND_OPTIONS.map(b => `<option ${values.brand === b ? 'selected' : ''}>${b}</option>`).join('')}</select></div>
                 <div class="field"><label>Model</label><input id="fModel" value="${values.model || ''}"></div>
-                <div class="field"><label>Processor</label><select id="fProcessor">${PROCESSOR_OPTIONS.map(p => `<option ${values.processor === p ? 'selected' : ''}>${p}</option>`).join('')}</select></div>
-                <div class="field"><label>Gen</label><select id="fGen">${GEN_OPTIONS.map(g => `<option ${values.gen === g ? 'selected' : ''}>${g}</option>`).join('')}</select></div>
+                <div class="field"><label>Processor</label>
+                <select id="fProcessor">
+                    <option value="">— not applicable —</option>
+                    ${PROCESSOR_OPTIONS.map(p => `<option value="${p}" ${values.processor === p ? 'selected' : ''}>${p}</option>`).join('')}
+                </select>
+                </div>
+                <div class="field"><label>Gen</label>
+                <select id="fGen">
+                    <option value="">— not applicable —</option>
+                    ${GEN_OPTIONS.map(g => `<option value="${g}" ${values.gen === g ? 'selected' : ''}>${g}</option>`).join('')}
+                </select>
+                </div>
                 <div class="field"><label>RAM</label><select id="fRam">${RAM_OPTIONS.map(r => `<option ${values.ram === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
                 <div class="field"><label>Storage</label><select id="fStorage">${STORAGE_OPTIONS.map(s => `<option ${values.storage === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
                 <div class="field"><label>Purchase date</label><input id="fPurDate" type="date" value="${values.purchaseDate ? values.purchaseDate.slice(0,10) : ''}"></div>
