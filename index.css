@@ -22,6 +22,11 @@
     font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
 }
 
+img {
+    max-width: 100%;
+    display: block;
+}
+
 body {
     background-color: var(--bg-light);
     color: var(--text-dark);
@@ -140,6 +145,7 @@ body {
     max-width: 1400px;
     width: 100%;
     margin: 0 auto;
+    min-width: 0;
 }
 
 /* Header / Top Bar */
@@ -164,6 +170,8 @@ body {
     display: flex;
     gap: 0.75rem;
     align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
 /* User badge shown in top bar */
@@ -265,7 +273,9 @@ body {
     border: 1px solid var(--border-light);
     border-radius: 14px;
     padding: 5px;
-    width: fit-content;
+    width: 100%;
+    max-width: 100%;
+    flex-wrap: wrap;
     box-shadow: var(--shadow-sm);
 }
 
@@ -391,6 +401,7 @@ body {
 .table-responsive {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    width: 100%;
 }
 
 /* Table Styles */
@@ -1585,4 +1596,179 @@ html {
 
 @media (max-width: 480px) {
     .rev-kpi-val { font-size: 1.3rem; }
+}
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE FIXES — Admin Dashboard + Custom Status Input
+   ══════════════════════════════════════════════════════════ */
+
+/* Fix search-wrapper min-width overflow on small screens */
+@media (max-width: 400px) {
+    .search-wrapper { min-width: 0; width: 100%; }
+}
+
+/* ── Admin branch products section ───────────────────────── */
+.admin-branch-products { margin-top: 2rem; }
+.admin-branch-header { margin-bottom: 1rem; }
+.admin-branch-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0 0 0.2rem;
+}
+.admin-branch-sub { font-size: 0.82rem; color: var(--text-muted); margin: 0; }
+
+/* Staff read-only notice */
+.staff-admin-notice {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 12px;
+    padding: 0.85rem 1.25rem;
+    font-size: 0.88rem;
+    color: #1e40af;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+}
+
+/* ── Custom status input ─────────────────────────────────── */
+#fStatusCustom {
+    width: 100%;
+    padding: 0.7rem 1rem;
+    border-radius: 16px;
+    border: 1.5px dashed var(--warning-amber);
+    background: #fffbeb;
+    font-size: 0.9rem;
+    color: var(--text-dark);
+    transition: all 0.2s ease;
+    animation: slideDown 0.18s ease;
+    margin-top: 0.5rem;
+    box-sizing: border-box;
+}
+
+#fStatusCustom::placeholder {
+    color: #a16207;
+    opacity: 0.7;
+    font-style: italic;
+}
+
+#fStatusCustom:focus {
+    outline: none;
+    border-color: #d97706;
+    border-style: solid;
+    box-shadow: 0 0 0 3px rgba(245,158,11,0.15);
+    background: #fffff8;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Large tablets (≤ 1024px) ────────────────────────────── */
+@media (max-width: 1024px) {
+    .charts-grid { grid-template-columns: 1fr 1fr; }
+    .chart-card--wide { grid-column: 1 / -1; }
+    .kpi-row { grid-template-columns: repeat(2, 1fr); }
+    .rev-charts-row { grid-template-columns: 1fr 1fr; }
+}
+
+/* ── Tablets (≤ 768px) ───────────────────────────────────── */
+@media (max-width: 768px) {
+    /* KPI */
+    .kpi-row { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+    .kpi-value { font-size: 1.6rem; }
+
+    /* Charts */
+    .charts-grid { grid-template-columns: 1fr; gap: 0.75rem; }
+    .chart-card canvas { height: 180px !important; }
+
+    /* Admin sold section */
+    .admin-sold-section { padding: 1rem; }
+    .admin-sold-header { flex-direction: column; gap: 0.75rem; }
+    .admin-sold-filter { width: 100%; }
+    .admin-sold-filter select { flex: 1; }
+
+    /* Admin sold table scroll */
+    #adminSoldTable { min-width: 700px; }
+
+    /* Revenue */
+    .rev-section { padding: 1.25rem; }
+    .rev-charts-row { grid-template-columns: 1fr; gap: 1rem; }
+    .rev-kpi-row { grid-template-columns: 1fr 1fr; }
+    .rev-chart-body { flex-direction: row; align-items: center; gap: 1.25rem; }
+    .rev-donut-wrap { width: 150px; height: 150px; }
+    .rev-donut-wrap canvas { width: 150px !important; height: 150px !important; }
+
+    /* Staff notice */
+    .staff-admin-notice { padding: 0.75rem 1rem; font-size: 0.82rem; }
+
+    /* Admin branch section */
+    .admin-branch-products { margin-top: 1.5rem; }
+}
+
+/* ── Mobile (≤ 640px) ────────────────────────────────────── */
+@media (max-width: 640px) {
+    /* Admin stats header */
+    .admin-stats-title { font-size: 1.1rem; }
+
+    /* KPI — still 2 cols but tighter */
+    .kpi-row { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
+    .kpi-card { padding: 1rem; }
+    .kpi-value { font-size: 1.4rem; }
+    .kpi-icon { font-size: 1.2rem; }
+    .kpi-label { font-size: 0.72rem; }
+
+    /* Charts */
+    .chart-card { padding: 1rem; }
+    .chart-card canvas { height: 160px !important; }
+    .chart-card-title { font-size: 0.82rem; }
+
+    /* Admin sold */
+    .admin-sold-section { padding: 0.85rem; border-radius: 16px; }
+    .admin-sold-title { font-size: 0.85rem; padding: 0.3rem 0.65rem; }
+    #adminSoldTable { min-width: 620px; }
+
+    /* Revenue */
+    .rev-section { padding: 1rem; border-radius: 16px; }
+    .rev-kpi-row { grid-template-columns: 1fr; gap: 0.6rem; }
+    .rev-kpi-val { font-size: 1.3rem; }
+    .rev-chart-body { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    .rev-donut-wrap { width: 140px; height: 140px; align-self: center; }
+    .rev-donut-wrap canvas { width: 140px !important; height: 140px !important; }
+    .rev-chart-card { padding: 1rem; }
+    .rev-chart-title { font-size: 0.72rem; }
+
+    /* Custom status input full width on mobile */
+    #fStatusCustom { font-size: 0.875rem; padding: 0.65rem 0.9rem; }
+
+    /* Admin branch products */
+    .admin-branch-title { font-size: 0.9rem; }
+    #adminProductsBody td { font-size: 0.82rem; padding: 0.6rem 0.5rem; }
+
+    /* Staff notice */
+    .staff-admin-notice { font-size: 0.8rem; padding: 0.65rem 0.9rem; border-radius: 10px; }
+}
+
+/* ── Very small phones (≤ 380px) ────────────────────────── */
+@media (max-width: 380px) {
+    /* KPI goes 1 column */
+    .kpi-row { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+    .kpi-card { padding: 0.85rem; }
+    .kpi-value { font-size: 1.25rem; }
+
+    /* Charts smaller */
+    .chart-card canvas { height: 140px !important; }
+
+    /* Revenue donut smaller */
+    .rev-donut-wrap { width: 120px; height: 120px; }
+    .rev-donut-wrap canvas { width: 120px !important; height: 120px !important; }
+
+    /* Admin sold table */
+    #adminSoldTable { min-width: 560px; }
+
+    /* Tighter admin sections */
+    .admin-sold-section { padding: 0.7rem; }
+    .rev-section { padding: 0.7rem; }
 }
