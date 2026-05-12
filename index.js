@@ -852,7 +852,17 @@
                 // Auto-fill price only when editing an item that previously had no price.
                 // Matching items that already have a price are never overwritten.
                 if (previous && previousPrice !== nextPrice && hasEmptyPrice(previousPrice) && !hasEmptyPrice(nextPrice)) {
-                    const matches = laptops.filter(l => {
+                    const allProductsRes = await fetch(API_BASE, {
+                        headers: { 'pin': pin }
+                    });
+                    if (!allProductsRes.ok) throw new Error(`GET failed: ${allProductsRes.status}`);
+
+                    const allProductsData = await allProductsRes.json();
+                    const allProducts = Array.isArray(allProductsData)
+                        ? allProductsData
+                        : (allProductsData.data || []);
+
+                    const matches = allProducts.filter(l => {
                         const recordId = l._id || l.id;
                         const itemPrice = String(l?.price ?? '').trim();
                         return recordId !== id && isSameProductInstance(l, previous) && hasEmptyPrice(itemPrice);
