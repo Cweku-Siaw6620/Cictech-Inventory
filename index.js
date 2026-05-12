@@ -162,15 +162,15 @@
                 const canEdit = (userRole === 'admin' || currentBranch === currentUser?.branch) && !isApproved;
 
                 html += `<tr${isApproved ? ' class="row-approved"' : ''}>
-                    <td>${lap.brand || ''}</td>
-                    <td>${lap.model || ''}</td>
-                    <td>${lap.processor || ''}</td>
-                    <td>${lap.gen || ''}</td>
-                    <td>${lap.ram || ''}</td>
-                    <td>${lap.storage || ''}</td>
-                    <td>${lap.serial || ''}</td>
+                    <td>${lap.brand || '-'}</td>
+                    <td>${lap.model || '-'}</td>
+                    <td>${lap.processor || '-'}</td>
+                    <td>${lap.gen || '-'}</td>
+                    <td>${lap.ram || '-'}</td>
+                    <td>${lap.storage || '-'}</td>
+                    <td>${lap.serial || '-'}</td>
                     <td>${lap.price ? 'GHS ' + lap.price : '-'}</td>
-                    <td>${lap.purchaseDate ? lap.purchaseDate.slice(0,10) : ''}</td>
+                    <td>${lap.purchaseDate ? lap.purchaseDate.slice(0,10) : '--'}</td>
                     <td><span class="status ${statusClass}"><span class="status-dot"></span> ${lap.status || 'Available'}</span></td>
                     <td>
                         <div class="row-actions">
