@@ -156,7 +156,8 @@
             orderedLaptops.forEach(lap => {
                 const id = lap._id || lap.id;
                 const statusClassRaw = (lap.status || 'Available').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-                const statusClass = statusClassRaw === 'n-a' ? 'na' : statusClassRaw;
+                const knownClasses = ['available', 'sold', 'na'];
+                const statusClass = statusClassRaw === 'n-a' ? 'na' : knownClasses.includes(statusClassRaw) ? statusClassRaw : 'custom';
                 const isApproved = approvedIds.has(id);
                 const canEdit = (userRole === 'admin' || currentBranch === currentUser?.branch) && !isApproved;
 

@@ -473,14 +473,14 @@ tr:last-child td {
     box-shadow: 0 0 0 2px #f39281;
 }
 
-/* Taken away status */
-.status.taken-away {
-    background-color: #f5f3ff; /* light indigo */
-    color: #4c1d95; /* indigo-800 */
+/* Custom / Taken Away status */
+.status.custom {
+    background-color: #f5f3ff;
+    color: #4c1d95;
 }
 
-.status.taken-away .status-dot {
-    background-color: #7c3aed; /* indigo */
+.status.custom .status-dot {
+    background-color: #7c3aed;
     box-shadow: 0 0 0 2px #e9d5ff;
 }
 
