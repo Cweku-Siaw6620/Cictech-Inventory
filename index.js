@@ -8,7 +8,7 @@
         let currentBranch = null;
         let userRole = null;
 
-        const BRAND_OPTIONS = ['Dell','HP','Lenovo','Mac','Asus','Acer','Apple','Samsung','MSI','Microsoft','Toshiba','Tv'];
+        const BRAND_OPTIONS = ['Dell','HP','Lenovo','Mac','Asus','Acer','Apple','Samsung','MSI','Microsoft','Toshiba','Tv','Monitor'];
         const RAM_OPTIONS = ['4GB','8GB','16GB','32GB','64GB'];
         const PROCESSOR_OPTIONS = ['i3','i5','i7','i9',"AMD"];
         const GEN_OPTIONS = ['4th Gen', '5th Gen', '6th Gen', '7th Gen', '8th Gen', '9th Gen', '10th Gen', '11th Gen', '12th Gen', 'Ryzen 3','Ryzen 5','Ryzen 7'];
