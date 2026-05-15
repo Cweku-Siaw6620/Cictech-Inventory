@@ -1520,7 +1520,40 @@ html {
     box-shadow: var(--shadow-sm);
     margin-bottom: 2rem;
 }
-.rev-section-header { margin-bottom: 1.25rem; }
+.rev-section-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+.rev-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-shrink: 0;
+}
+.rev-filter-group label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+#revDateFilter {
+    padding: 0.45rem 0.9rem;
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+    font-size: 0.85rem;
+    color: var(--text-dark);
+    background: var(--bg-light);
+    cursor: pointer;
+    transition: border-color 0.15s;
+}
+#revDateFilter:focus {
+    outline: none;
+    border-color: var(--primary);
+}
 .rev-section-title { font-size: 1rem; font-weight: 700; color: var(--text-dark); margin: 0 0 0.2rem; }
 .rev-section-sub { font-size: 0.82rem; color: var(--text-muted); margin: 0; }
 
@@ -1607,6 +1640,12 @@ html {
 
 @media (max-width: 480px) {
     .rev-kpi-val { font-size: 1.3rem; }
+}
+
+@media (max-width: 640px) {
+    .rev-section-header { flex-direction: column; }
+    .rev-filter-group { width: 100%; }
+    #revDateFilter { flex: 1; width: 100%; }
 }
 /* ══════════════════════════════════════════════════════════
    RESPONSIVE FIXES — Admin Dashboard + Custom Status Input

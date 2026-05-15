@@ -111,8 +111,21 @@
         <!-- Revenue Donut Charts -->
         <div class="rev-section">
             <div class="rev-section-header">
-                <h3 class="rev-section-title">&#128200; Financial Overview</h3>
-                <p class="rev-section-sub">Revenue contribution by branch</p>
+                <div>
+                    <h3 class="rev-section-title">&#128200; Financial Overview</h3>
+                    <p class="rev-section-sub">Revenue contribution by branch</p>
+                </div>
+                <div class="rev-filter-group">
+                    <label for="revDateFilter">Approved Sales Period</label>
+                    <select id="revDateFilter">
+                        <option value="this_month">This Month</option>
+                        <option value="last_month">Last Month</option>
+                        <option value="last_3_months">Last 3 Months</option>
+                        <option value="last_6_months">Last 6 Months</option>
+                        <option value="this_year">This Year</option>
+                        <option value="all_time" selected>All Time</option>
+                    </select>
+                </div>
             </div>
             <div class="rev-kpi-row">
                 <div class="rev-kpi-card">

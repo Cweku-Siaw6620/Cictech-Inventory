@@ -678,6 +678,36 @@
             );
         }
 
+        function getDateRangeFilter(filterVal) {
+            const now = new Date();
+            switch (filterVal) {
+                case 'this_month': {
+                    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+                    return d => d && new Date(d) >= start;
+                }
+                case 'last_month': {
+                    const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                    const end = new Date(now.getFullYear(), now.getMonth(), 1);
+                    return d => d && new Date(d) >= start && new Date(d) < end;
+                }
+                case 'last_3_months': {
+                    const start = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+                    return d => d && new Date(d) >= start;
+                }
+                case 'last_6_months': {
+                    const start = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+                    return d => d && new Date(d) >= start;
+                }
+                case 'this_year': {
+                    const start = new Date(now.getFullYear(), 0, 1);
+                    return d => d && new Date(d) >= start;
+                }
+                case 'all_time':
+                default:
+                    return () => true;
+            }
+        }
+
         function renderRevenueCharts(data) {
             const BRANCHES = ['Admin', 'Central', 'Amanfrom', 'East-Legon'];
             const COLORS = [
@@ -686,6 +716,9 @@
                 { bg: '#10B981', hover: '#059669' },
                 { bg: '#F59E0B', hover: '#D97706' },
             ];
+
+            const filterVal = document.getElementById('revDateFilter')?.value || 'all_time';
+            const dateFilter = getDateRangeFilter(filterVal);
 
             function fmt(n) {
                 if (n >= 1000000) return 'GHS ' + (n / 1000000).toFixed(1) + 'M';
@@ -699,13 +732,28 @@
             );
             const grandTotalRev = totalRevByBranch.reduce((a, b) => a + b, 0);
 
-            // Chart 2: approved sold value only
+            // Chart 2: approved sold value filtered by approval date range
             const approvedRevByBranch = BRANCHES.map(b =>
                 (data[b] || [])
-                    .filter(l => l.status === 'Sold' && approvedIds.has(l._id || l.id))
+                    .filter(l => {
+                        if (l.status !== 'Sold' || !approvedIds.has(l._id || l.id)) return false;
+                        if (!l.approvedAt) return filterVal === 'all_time';
+                        return dateFilter(l.approvedAt);
+                    })
                     .reduce((sum, l) => sum + (parseFloat(l.price) || 0), 0)
             );
             const grandApprovedRev = approvedRevByBranch.reduce((a, b) => a + b, 0);
+
+            const periodLabels = {
+                this_month: 'This month only',
+                last_month: 'Last month only',
+                last_3_months: 'Last 3 months',
+                last_6_months: 'Last 6 months',
+                this_year: 'This year',
+                all_time: 'Sold & approved machines · all time'
+            };
+            const approvedSub = document.querySelector('.rev-chart-card:last-child .rev-chart-sub');
+            if (approvedSub) approvedSub.textContent = periodLabels[filterVal] || '';
 
             // update KPI revenue cards
             document.getElementById('revTotalVal').textContent = fmt(grandTotalRev);
