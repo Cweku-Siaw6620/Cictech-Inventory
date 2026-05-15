@@ -169,7 +169,7 @@
                     <td>${lap.ram || '-'}</td>
                     <td>${lap.storage || '-'}</td>
                     <td>${lap.serial || '-'}</td>
-                    <td>${lap.price ? 'GHS ' + lap.price : '-'}</td>
+                    <td><span class="price-highlight">${lap.price ? 'GHS ' + lap.price : '-'}</span></td>
                     <td>${lap.purchaseDate ? lap.purchaseDate.slice(0,10) : '--'}</td>
                     <td>${lap.customerNumber || '--'}</td>
                     <td><span class="status ${statusClass}"><span class="status-dot"></span> ${lap.status || 'Available'}</span></td>
@@ -429,7 +429,7 @@
                     <td>${lap.storage || '-'}</td>
                     <td>${lap.serial || '-'}</td>
                     <td>${lap.purchaseDate ? lap.purchaseDate.slice(0, 10) : '--'}</td>
-                    <td>${lap.price ? 'GHS ' + lap.price : '-'}</td>
+                    <td><span class="price-highlight">${lap.price ? 'GHS ' + lap.price : '-'}</span></td>
                     <td>
                         ${isApproved
                             ? '<span class="approval-badge approved">✔ Approved</span>'
