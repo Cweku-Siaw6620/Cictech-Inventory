@@ -9,10 +9,10 @@
         let userRole = null;
 
         const BRAND_OPTIONS = ['Dell','HP','Lenovo','Macbook','Asus','Acer','Apple','Samsung','MSI','Microsoft','Toshiba','Tv','Monitor'];
-        const RAM_OPTIONS = ['4GB','8GB','16GB','32GB','64GB'];
-        const PROCESSOR_OPTIONS = ['i3','i5','i7','i9',"AMD"];
+        const RAM_OPTIONS = ['4GB','8GB','12GB','16GB','32GB','64GB'];
+        const PROCESSOR_OPTIONS = ['i3','i5','i7','i9','DUAL_CORE',"AMD",'M5'];
         const GEN_OPTIONS = ['3rd Gen','4th Gen', '5th Gen', '6th Gen', '7th Gen', '8th Gen', '9th Gen', '10th Gen', '11th Gen', '12th Gen', 'Ryzen 3','Ryzen 5','Ryzen 7','A8','A9','A10'];
-        const STORAGE_OPTIONS = ['128GB','256GB','320GB','500GB','512GB','720GB','1TB','2TB'];
+        const STORAGE_OPTIONS = ['128GB','230GB','256GB','320GB','500GB','512GB','720GB','1TB','2TB',' 320/128 GB',' 500/128GB',' 512/256GB','1TB/128GB',' 1TB/256GB',' 1TB/512GB'];
         const STATUS_OPTIONS = ['Available', 'Sold', 'N/A'];
 
         // internal state
@@ -123,12 +123,12 @@
             const ramVal = ramFilter.value;
 
             if (laptops === null) {
-                tbody.innerHTML = `<tr><td colspan="11" class="loading-container"><div class="spinner"></div> Connecting to database...</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="12" class="loading-container"><div class="spinner"></div> Connecting to database...</td></tr>`;
                 return;
             }
 
             if (!laptops.length) {
-                tbody.innerHTML = `<tr class="empty-row"><td colspan="11">📭 inventory is empty — add your first laptop</td></tr>`;
+                tbody.innerHTML = `<tr class="empty-row"><td colspan="12">📭 inventory is empty — add your first laptop</td></tr>`;
                 return;
             }
 
@@ -143,7 +143,7 @@
             });
 
             if (filteredLaptops.length === 0) {
-                tbody.innerHTML = `<tr class="empty-row"><td colspan="11">🔍 no matching laptops — adjust filters</td></tr>`;
+                tbody.innerHTML = `<tr class="empty-row"><td colspan="12">🔍 no matching laptops — adjust filters</td></tr>`;
                 return;
             }
 
@@ -171,6 +171,7 @@
                     <td>${lap.serial || '-'}</td>
                     <td>${lap.price ? 'GHS ' + lap.price : '-'}</td>
                     <td>${lap.purchaseDate ? lap.purchaseDate.slice(0,10) : '--'}</td>
+                    <td>${lap.customerNumber || '--'}</td>
                     <td><span class="status ${statusClass}"><span class="status-dot"></span> ${lap.status || 'Available'}</span></td>
                     <td>
                         <div class="row-actions">
@@ -306,7 +307,7 @@
             const refreshBtn = document.getElementById('refreshBtn');
             setButtonLoading(refreshBtn, true, 'syncing...');
             try {
-                tbody.innerHTML = `<tr><td colspan="11" class="loading-container"><div class="spinner"></div> Loading inventory...</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="12" class="loading-container"><div class="spinner"></div> Loading inventory...</td></tr>`;
                 await loadApprovedIds();
                 const res = await fetch(BRANCH_API + currentBranch, {
                     headers: { "pin": localStorage.getItem("pin") }
@@ -411,7 +412,7 @@
             soldItems = [...unapprovedSold, ...approvedSold];
 
             if (!soldItems.length) {
-                soldTbody.innerHTML = `<tr class="empty-row"><td colspan="11">✅ No sold machines match this filter</td></tr>`;
+                soldTbody.innerHTML = `<tr class="empty-row"><td colspan="12">✅ No sold machines match this filter</td></tr>`;
                 return;
             }
 
@@ -994,6 +995,7 @@
                 if (dateSoldInput) {
                     values.dateSold = dateSoldInput.value || null;
                 }
+                values.customerNumber = document.getElementById('fCustomerNumber')?.value?.trim() || '';
             }
             
             return values;
@@ -1085,6 +1087,10 @@
                     <input type="text" id="fStatusCustom" class="form-input" placeholder="e.g. Taken to HQ"
                         style="margin-top:0.5rem;display:${!['Available','Sold','N/A'].includes(values.status) && values.status ? 'block' : 'none'}"
                         value="${!['Available','Sold','N/A'].includes(values.status) && values.status ? values.status : ''}">
+                </div>
+                <div class="field">
+                    <label>Customer Number <span style="font-weight:400;color:#94a3b8;font-size:0.78rem;text-transform:none">(optional)</span></label>
+                    <input type="text" id="fCustomerNumber" class="form-input" placeholder="e.g. CUS-00123" value="${values.customerNumber || ''}">
                 </div>
                 ${priceField}
             `;
