@@ -399,6 +399,20 @@ body {
     outline: none;
 }
 
+.filter-badge input[type="date"] {
+    border: none;
+    background: transparent;
+    padding: 0.4rem 0.5rem;
+    font-weight: 500;
+    color: var(--text-dark);
+    font-size: 0.9rem;
+    min-width: 140px;
+}
+
+.filter-badge input[type="date"]:focus {
+    outline: none;
+}
+
 /* Inventory Card */
 .inventory-card {
     background: var(--card-white);
@@ -1038,6 +1052,7 @@ tr:last-child td {
     .filter-badge { flex: 1; padding: 0.3rem 0.6rem 0.3rem 0.8rem; }
     .filter-badge span { font-size: 0.78rem; }
     .filter-badge select { font-size: 0.82rem; }
+    .filter-badge input[type="date"] { font-size: 0.82rem; }
     .inventory-card { border-radius: 20px; }
     table { min-width: 680px; }
     th { padding: 0.85rem 0.65rem; font-size: 0.75rem; }
@@ -1284,6 +1299,7 @@ html {
     .btn,
     .icon-btn,
     .filter-badge select,
+    .filter-badge input[type="date"],
     .bulk-row-grid input,
     .bulk-row-grid select {
         cursor: pointer;

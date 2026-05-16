@@ -105,7 +105,7 @@
         const tbody = document.getElementById('tableBody');
         const searchInput = document.getElementById('searchInput');
         const statusFilter = document.getElementById('statusFilter');
-        const ramFilter = document.getElementById('ramFilter');
+        const dateSoldFilter = document.getElementById('dateSoldFilter');
         const modalOverlay = document.getElementById('modal');
         const modalTitle = document.getElementById('modalTitle');
         const modalForm = document.getElementById('modalForm');
@@ -125,7 +125,7 @@
         function renderTable() {
             const searchTerm = searchInput.value.toLowerCase();
             const statusVal = statusFilter.value;
-            const ramVal = ramFilter.value;
+            const dateSoldVal = dateSoldFilter.value;
 
             if (laptops === null) {
                 tbody.innerHTML = `<tr><td colspan="12" class="loading-container"><div class="spinner"></div> Connecting to database...</td></tr>`;
@@ -142,9 +142,13 @@
                 const matchesSearch = (lap.serial?.toLowerCase() || '').includes(searchTerm) ||
                                     (lap.brand?.toLowerCase() || '').includes(searchTerm) ||
                                     (lap.model?.toLowerCase() || '').includes(searchTerm);
-                const matchesStatus = statusVal ? lap.status === statusVal : true;
-                const matchesRam = ramVal ? lap.ram === ramVal : true;
-                return matchesSearch && matchesStatus && matchesRam;
+                const currentStatus = String(lap.status || '').trim();
+                const matchesStatus = statusVal === '__other__'
+                    ? (currentStatus !== 'Available' && currentStatus !== 'Sold' && currentStatus !== 'N/A')
+                    : (statusVal ? currentStatus === statusVal : true);
+                const purchaseDate = String(lap.purchaseDate || '').slice(0, 10);
+                const matchesDateSold = dateSoldVal ? purchaseDate === dateSoldVal : true;
+                return matchesSearch && matchesStatus && matchesDateSold;
             });
 
             if (filteredLaptops.length === 0) {
@@ -1390,7 +1394,7 @@
 
         searchInput.addEventListener('input', renderTable);
         statusFilter.addEventListener('change', renderTable);
-        ramFilter.addEventListener('change', renderTable);
+        dateSoldFilter.addEventListener('change', renderTable);
 
         if(savedUser && savedPin){
             updateBranchUI();
