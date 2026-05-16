@@ -44,6 +44,11 @@
             return String(value || '').trim().toLowerCase();
         }
 
+        function getPurchaseDateTimestamp(product) {
+            const ts = new Date(product?.purchaseDate || 0).getTime();
+            return Number.isFinite(ts) ? ts : 0;
+        }
+
         function toProductPayload(record) {
             const { _id, id, __v, createdAt, updatedAt, ...payload } = record || {};
             return payload;
@@ -149,7 +154,9 @@
 
             // Ensure approved items are shown after unapproved ones
             const unapprovedLaps = filteredLaptops.filter(l => !approvedIds.has(l._id || l.id));
-            const approvedLaps = filteredLaptops.filter(l => approvedIds.has(l._id || l.id));
+            const approvedLaps = filteredLaptops
+                .filter(l => approvedIds.has(l._id || l.id))
+                .sort((a, b) => getPurchaseDateTimestamp(b) - getPurchaseDateTimestamp(a));
             const orderedLaptops = [...unapprovedLaps, ...approvedLaps];
 
             let html = '';
@@ -419,7 +426,9 @@
 
             // Ensure approved sold items appear after pending/unapproved ones
             const unapprovedSold = soldItems.filter(l => !approvedIds.has(l._id || l.id));
-            const approvedSold = soldItems.filter(l => approvedIds.has(l._id || l.id));
+            const approvedSold = soldItems
+                .filter(l => approvedIds.has(l._id || l.id))
+                .sort((a, b) => getPurchaseDateTimestamp(b) - getPurchaseDateTimestamp(a));
             soldItems = [...unapprovedSold, ...approvedSold];
 
             if (!soldItems.length) {
