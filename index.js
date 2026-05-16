@@ -383,13 +383,16 @@
 
             const bf = document.getElementById('adminBranchFilter');
             const af = document.getElementById('adminApprovalFilter');
+            const sf = document.getElementById('adminSoldSearchInput');
             if (bf) bf.onchange = renderAdminSoldTable;
             if (af) af.onchange = renderAdminSoldTable;
+            if (sf) sf.oninput = renderAdminSoldTable;
         }
 
         function renderAdminSoldTable() {
             const branchFilter = document.getElementById('adminBranchFilter')?.value || '';
             const approvalFilter = document.getElementById('adminApprovalFilter')?.value;
+            const searchTerm = (document.getElementById('adminSoldSearchInput')?.value || '').trim().toLowerCase();
             const soldTbody = document.getElementById('adminSoldBody');
             if (!soldTbody) return;
 
@@ -405,6 +408,14 @@
             if (branchFilter) soldItems = soldItems.filter(l => l._branch === branchFilter);
             if (approvalFilter === 'pending') soldItems = soldItems.filter(l => !approvedIds.has(l._id || l.id));
             if (approvalFilter === 'approved') soldItems = soldItems.filter(l => approvedIds.has(l._id || l.id));
+            if (searchTerm) {
+                soldItems = soldItems.filter(l => {
+                    const brand = String(l.brand || '').toLowerCase();
+                    const model = String(l.model || '').toLowerCase();
+                    const serial = String(l.serial || l.serialNumber || '').toLowerCase();
+                    return brand.includes(searchTerm) || model.includes(searchTerm) || serial.includes(searchTerm);
+                });
+            }
 
             // Ensure approved sold items appear after pending/unapproved ones
             const unapprovedSold = soldItems.filter(l => !approvedIds.has(l._id || l.id));

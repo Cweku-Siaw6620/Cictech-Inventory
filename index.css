@@ -1471,6 +1471,21 @@ html {
 }
 .admin-sold-sub { font-size: 0.82rem; color: var(--text-muted); margin: 0; }
 .admin-sold-filter { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
+.admin-sold-filter input {
+    padding: 0.45rem 0.75rem;
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+    font-size: 0.85rem;
+    color: var(--text-dark);
+    background: var(--bg-light);
+    min-width: 220px;
+}
+.admin-sold-filter input::placeholder { color: var(--text-muted); }
+.admin-sold-filter input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.12);
+}
 .admin-sold-filter select { padding: 0.45rem 0.75rem; border: 1px solid var(--border-light); border-radius: 10px; font-size: 0.85rem; color: var(--text-dark); background: var(--bg-light); cursor: pointer; }
 .admin-sold-filter select:focus { outline: none; border-color: var(--primary); }
 
@@ -1738,6 +1753,7 @@ html {
     .admin-sold-section { padding: 1rem; }
     .admin-sold-header { flex-direction: column; gap: 0.75rem; }
     .admin-sold-filter { width: 100%; }
+    .admin-sold-filter input { flex: 1 1 100%; min-width: 0; }
     .admin-sold-filter select { flex: 1; }
 
     /* Admin sold table scroll */
