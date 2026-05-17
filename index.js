@@ -264,6 +264,7 @@
             userRole = currentUser.role;
 
             document.getElementById("loginScreen").style.display = "none";
+            updateBranchUI();
         }
 
         // if user is already logged in, update UI and fetch data
@@ -294,6 +295,14 @@
                         staffBranchTab.classList.add('active');
                     }
                 }
+            }
+            // Show/disable New Laptop button: only admins can add products
+            const addBtn = document.getElementById('addNewBtn');
+            if (addBtn) {
+                const isAdmin = userRole === 'admin';
+                addBtn.style.display = isAdmin ? '' : 'none';
+                addBtn.disabled = !isAdmin;
+                addBtn.title = isAdmin ? '' : 'Only admin can add new products';
             }
         }
 
@@ -358,7 +367,7 @@
             document.getElementById('adminDashboard').style.display = 'none';
             document.getElementById('searchSection').style.display = '';
             document.querySelector('.inventory-card').style.display = '';
-            document.getElementById('addNewBtn').style.display = '';
+            document.getElementById('addNewBtn').style.display = 'none';
         }
 
         async function showAdminDashboard() {
