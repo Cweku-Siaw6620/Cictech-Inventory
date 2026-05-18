@@ -122,7 +122,8 @@
         const modalBack = document.getElementById('modalBack');
         const bulkBack = document.getElementById('bulkBack');
         const confirmBack = document.getElementById('confirmBack');
-        document.getElementById("loginBtn").addEventListener("click", login);
+        const loginBtn = document.getElementById("loginBtn");
+        if (loginBtn) loginBtn.addEventListener("click", login);
 
         // ---------- render table ----------
         function renderTable() {
@@ -198,7 +199,7 @@
                             }
                         </div>
                     </td>
-                </tr>`;
+                 </tr>`;
             });
             tbody.innerHTML = html;
 
@@ -284,14 +285,14 @@
             // Show admin tab only for admin role
             const adminTab = document.getElementById('adminTab');
             if (adminTab) {
-                adminTab.style.display = 'inline-flex';
+                adminTab.style.display = userRole === 'admin' ? 'inline-flex' : 'none';
                 if (userRole === 'admin') {
                     // Admin lands on Admin tab by default
                     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
                     adminTab.classList.add('active');
                     currentBranch = 'Admin';
                 } else {
-                    // Staff: activate their own branch tab, but keep Admin available as a read-only view
+                    // Staff: activate their own branch tab
                     const staffBranchTab = Array.from(document.querySelectorAll('.tab')).find(t => t.dataset.branch === currentUser.branch);
                     if (staffBranchTab) {
                         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -299,6 +300,7 @@
                     }
                 }
             }
+            
             // Show/disable New Laptop button: only admins can add products
             const addBtn = document.getElementById('addNewBtn');
             if (addBtn) {
@@ -308,18 +310,17 @@
                 addBtn.title = isAdmin ? '' : 'Only admin can add new products';
             }
 
-            // Admin view toggle visibility and default mode
+            // Admin view toggle visibility (only for admin)
             const adminViewToggle = document.getElementById('adminViewToggle');
             if (adminViewToggle) {
-                if (userRole === 'admin') {
-                    adminViewToggle.style.display = '';
-                    // default to Table view when admin logs in
-                    adminViewMode = 'table';
-                } else {
-                    adminViewToggle.style.display = 'none';
-                }
+                adminViewToggle.style.display = userRole === 'admin' ? '' : 'none';
             }
-            applyAdminViewMode();
+            
+            // Apply view mode only if admin
+            if (userRole === 'admin') {
+                adminViewMode = 'table';
+                applyAdminViewMode();
+            }
         }
 
                 // ---------- branch tabs ----------
@@ -338,13 +339,23 @@
             });
         });
 
-        // Admin view toggle buttons
-        (function wireAdminToggle(){
-            const viewTableBtn = document.getElementById('viewTableBtn');
-            const viewOverviewBtn = document.getElementById('viewOverviewBtn');
-            if (viewTableBtn) viewTableBtn.addEventListener('click', () => { adminViewMode = 'table'; applyAdminViewMode(); });
-            if (viewOverviewBtn) viewOverviewBtn.addEventListener('click', () => { adminViewMode = 'overview'; applyAdminViewMode(); });
-        })();
+        // Admin view toggle buttons - only wire if they exist
+        const viewTableBtn = document.getElementById('viewTableBtn');
+        const viewOverviewBtn = document.getElementById('viewOverviewBtn');
+        if (viewTableBtn) {
+            viewTableBtn.addEventListener('click', () => { 
+                if (userRole !== 'admin') return;
+                adminViewMode = 'table'; 
+                applyAdminViewMode(); 
+            });
+        }
+        if (viewOverviewBtn) {
+            viewOverviewBtn.addEventListener('click', () => { 
+                if (userRole !== 'admin') return;
+                adminViewMode = 'overview'; 
+                applyAdminViewMode(); 
+            });
+        }
 
         // ---------- API calls ----------
         async function fetchLaptops() {
@@ -388,13 +399,20 @@
         }
 
         function hideAdminDashboard() {
-            document.getElementById('adminDashboard').style.display = 'none';
-            document.getElementById('searchSection').style.display = '';
-            document.querySelector('.inventory-card').style.display = '';
-            document.getElementById('addNewBtn').style.display = 'none';
+            const adminDashboard = document.getElementById('adminDashboard');
+            if (adminDashboard) adminDashboard.style.display = 'none';
+            const searchSection = document.getElementById('searchSection');
+            if (searchSection) searchSection.style.display = '';
+            const inventoryCard = document.querySelector('.inventory-card');
+            if (inventoryCard) inventoryCard.style.display = '';
+            const addNewBtn = document.getElementById('addNewBtn');
+            if (addNewBtn) addNewBtn.style.display = 'none';
         }
 
         function applyAdminViewMode() {
+            // Only apply if user is admin
+            if (userRole !== 'admin') return;
+            
             const adminSections = Array.from(document.querySelectorAll('.admin-stats-header, .kpi-row, .charts-grid, .admin-sold-section, .rev-section'));
             const searchSection = document.getElementById('searchSection');
             const inventoryCard = document.querySelector('.inventory-card');
@@ -406,9 +424,9 @@
                 // show table UI
                 if (searchSection) searchSection.style.display = '';
                 if (inventoryCard) inventoryCard.style.display = '';
-                if (bulkToolbar) bulkToolbar.style.display = adminSelectedIds.size > 0 ? 'flex' : 'none';
+                if (bulkToolbar) bulkToolbar.style.display = 'none'; // hide bulk toolbar initially
                 // hide admin overview sections
-                adminSections.forEach(s => s.style.display = 'none');
+                adminSections.forEach(s => { if (s) s.style.display = 'none'; });
                 if (viewTableBtn) viewTableBtn.classList.add('active');
                 if (viewOverviewBtn) viewOverviewBtn.classList.remove('active');
             } else {
@@ -416,23 +434,31 @@
                 if (searchSection) searchSection.style.display = 'none';
                 if (inventoryCard) inventoryCard.style.display = 'none';
                 if (bulkToolbar) bulkToolbar.style.display = 'none';
-                adminSections.forEach(s => s.style.display = '');
+                adminSections.forEach(s => { if (s) s.style.display = ''; });
                 if (viewTableBtn) viewTableBtn.classList.remove('active');
                 if (viewOverviewBtn) viewOverviewBtn.classList.add('active');
             }
         }
 
         async function showAdminDashboard() {
-            document.getElementById('adminDashboard').style.display = 'block';
+            const adminDashboard = document.getElementById('adminDashboard');
+            if (adminDashboard) adminDashboard.style.display = 'block';
+            
             const showAdminInventory = currentBranch === 'Admin';
             const canManageAdminInventory = userRole === 'admin' && currentBranch === 'Admin';
-            document.getElementById('searchSection').style.display = showAdminInventory ? '' : 'none';
-            document.querySelector('.inventory-card').style.display = showAdminInventory ? '' : 'none';
-            document.getElementById('addNewBtn').style.display = canManageAdminInventory ? '' : 'none';
+            
+            const searchSection = document.getElementById('searchSection');
+            if (searchSection) searchSection.style.display = showAdminInventory ? '' : 'none';
+            
+            const inventoryCard = document.querySelector('.inventory-card');
+            if (inventoryCard) inventoryCard.style.display = showAdminInventory ? '' : 'none';
+            
+            const addNewBtn = document.getElementById('addNewBtn');
+            if (addNewBtn) addNewBtn.style.display = canManageAdminInventory ? '' : 'none';
 
             const adminSections = document.querySelectorAll('.admin-stats-header, .kpi-row, .charts-grid, .admin-sold-section, .rev-section');
             adminSections.forEach(section => {
-                section.style.display = userRole === 'admin' ? '' : 'none';
+                if (section) section.style.display = 'none'; // Start hidden, overview button will show
             });
 
             const refreshBtn = document.getElementById('refreshBtn');
@@ -447,6 +473,8 @@
                 if (showAdminInventory) {
                     await fetchLaptops();
                 }
+                // Apply view mode after data is loaded
+                applyAdminViewMode();
             } catch(err) {
                 showNotification('Failed to load admin data', 'error');
             } finally {
@@ -533,7 +561,7 @@
                             </div>
                         </div>
                     </td>
-                </tr>`;
+                 </tr>`;
             });
             soldTbody.innerHTML = html;
 
@@ -645,23 +673,29 @@
             });
 
             // --- KPI cards ---
-            document.getElementById('kpiRow').innerHTML = [
-                { label: 'Total Laptops',  value: grandTotal,  icon: '💻', cls: 'kpi-total' },
-                { label: 'Available',      value: grandAvail,  icon: '✅', cls: 'kpi-available' },
-                { label: 'Sold',           value: grandSold,   icon: '🏷️', cls: 'kpi-sold' },
-                { label: 'Other',          value: grandTotal - grandAvail - grandSold, icon: '📦', cls: 'kpi-other' },
-            ].map(k => `
-                <div class="kpi-card ${k.cls}">
-                    <span class="kpi-icon">${k.icon}</span>
-                    <span class="kpi-value">${k.value}</span>
-                    <span class="kpi-label">${k.label}</span>
-                </div>
-            `).join('');
+            const kpiRow = document.getElementById('kpiRow');
+            if (kpiRow) {
+                kpiRow.innerHTML = [
+                    { label: 'Total Laptops',  value: grandTotal,  icon: '💻', cls: 'kpi-total' },
+                    { label: 'Available',      value: grandAvail,  icon: '✅', cls: 'kpi-available' },
+                    { label: 'Sold',           value: grandSold,   icon: '🏷️', cls: 'kpi-sold' },
+                    { label: 'Other',          value: grandTotal - grandAvail - grandSold, icon: '📦', cls: 'kpi-other' },
+                ].map(k => `
+                    <div class="kpi-card ${k.cls}">
+                        <span class="kpi-icon">${k.icon}</span>
+                        <span class="kpi-value">${k.value}</span>
+                        <span class="kpi-label">${k.label}</span>
+                    </div>
+                `).join('');
+            }
 
             // badge totals
-            document.getElementById('overallBadge').textContent   = grandTotal + ' total';
-            document.getElementById('availableBadge').textContent  = grandAvail + ' units';
-            document.getElementById('soldBadge').textContent       = grandSold  + ' units';
+            const overallBadge = document.getElementById('overallBadge');
+            const availableBadge = document.getElementById('availableBadge');
+            const soldBadge = document.getElementById('soldBadge');
+            if (overallBadge) overallBadge.textContent = grandTotal + ' total';
+            if (availableBadge) availableBadge.textContent = grandAvail + ' units';
+            if (soldBadge) soldBadge.textContent = grandSold + ' units';
 
             const chartDefaults = {
                 responsive: true,
@@ -682,7 +716,9 @@
 
             function makeChart(id, labels, values, colors, label) {
                 if (adminCharts[id]) adminCharts[id].destroy();
-                const ctx = document.getElementById(id).getContext('2d');
+                const canvas = document.getElementById(id);
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
                 adminCharts[id] = new Chart(ctx, {
                     type: 'bar',
                     data: {
@@ -702,51 +738,54 @@
             }
 
             // --- overall bar chart (grouped) ---
-            if (adminCharts['chartOverall']) adminCharts['chartOverall'].destroy();
-            const overallCtx = document.getElementById('chartOverall').getContext('2d');
-            adminCharts['chartOverall'] = new Chart(overallCtx, {
-                type: 'bar',
-                data: {
-                    labels: BRANCHES,
-                    datasets: [
-                        {
-                            label: 'Available',
-                            data: BRANCHES.map(b => available[b]),
-                            backgroundColor: 'rgba(16,185,129,0.8)',
-                            borderColor: '#10B981',
-                            borderWidth: 2,
-                            borderRadius: 6,
-                        },
-                        {
-                            label: 'Sold',
-                            data: BRANCHES.map(b => sold[b]),
-                            backgroundColor: 'rgba(239,68,68,0.8)',
-                            borderColor: '#EF4444',
-                            borderWidth: 2,
-                            borderRadius: 6,
-                        },
-                        {
-                            label: 'Other',
-                            data: BRANCHES.map(b => totals[b] - available[b] - sold[b]),
-                            backgroundColor: 'rgba(148,163,184,0.8)',
-                            borderColor: '#94A3B8',
-                            borderWidth: 2,
-                            borderRadius: 6,
+            const chartOverall = document.getElementById('chartOverall');
+            if (chartOverall) {
+                if (adminCharts['chartOverall']) adminCharts['chartOverall'].destroy();
+                const overallCtx = chartOverall.getContext('2d');
+                adminCharts['chartOverall'] = new Chart(overallCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: BRANCHES,
+                        datasets: [
+                            {
+                                label: 'Available',
+                                data: BRANCHES.map(b => available[b]),
+                                backgroundColor: 'rgba(16,185,129,0.8)',
+                                borderColor: '#10B981',
+                                borderWidth: 2,
+                                borderRadius: 6,
+                            },
+                            {
+                                label: 'Sold',
+                                data: BRANCHES.map(b => sold[b]),
+                                backgroundColor: 'rgba(239,68,68,0.8)',
+                                borderColor: '#EF4444',
+                                borderWidth: 2,
+                                borderRadius: 6,
+                            },
+                            {
+                                label: 'Other',
+                                data: BRANCHES.map(b => totals[b] - available[b] - sold[b]),
+                                backgroundColor: 'rgba(148,163,184,0.8)',
+                                borderColor: '#94A3B8',
+                                borderWidth: 2,
+                                borderRadius: 6,
+                            }
+                        ]
+                    },
+                    options: {
+                        ...chartDefaults,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: { usePointStyle: true, pointStyle: 'circle', font: { size: 12 } }
+                            },
+                            tooltip: { mode: 'index', intersect: false }
                         }
-                    ]
-                },
-                options: {
-                    ...chartDefaults,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top',
-                            labels: { usePointStyle: true, pointStyle: 'circle', font: { size: 12 } }
-                        },
-                        tooltip: { mode: 'index', intersect: false }
                     }
-                }
-            });
+                });
+            }
 
             // --- available per branch ---
             makeChart('chartAvailable', BRANCHES,
@@ -841,13 +880,16 @@
             if (approvedSub) approvedSub.textContent = periodLabels[filterVal] || '';
 
             // update KPI revenue cards
-            document.getElementById('revTotalVal').textContent = fmt(grandTotalRev);
-            document.getElementById('revApprovedVal').textContent = fmt(grandApprovedRev);
+            const revTotalVal = document.getElementById('revTotalVal');
+            const revApprovedVal = document.getElementById('revApprovedVal');
+            if (revTotalVal) revTotalVal.textContent = fmt(grandTotalRev);
+            if (revApprovedVal) revApprovedVal.textContent = fmt(grandApprovedRev);
 
             function drawDonut(canvasId, values, grandTotal, centerLabel) {
                 if (adminCharts[canvasId]) adminCharts[canvasId].destroy();
-                const ctx = document.getElementById(canvasId)?.getContext('2d');
-                if (!ctx) return;
+                const canvas = document.getElementById(canvasId);
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
 
                 adminCharts[canvasId] = new Chart(ctx, {
                     type: 'doughnut',
@@ -1336,7 +1378,8 @@
         }
 
         // ---------- Event Listeners ----------
-        document.getElementById('modalSave').addEventListener('click', () => {
+        const modalSaveBtn = document.getElementById('modalSave');
+        if (modalSaveBtn) modalSaveBtn.addEventListener('click', () => {
             const isEdit = editingId !== null;
             const payload = buildModalValues(isEdit);
             
@@ -1352,8 +1395,9 @@
             }
         });
 
-        document.getElementById('modalCancel').addEventListener('click', () => {
-            modalOverlay.classList.remove('show');
+        const modalCancelBtn = document.getElementById('modalCancel');
+        if (modalCancelBtn) modalCancelBtn.addEventListener('click', () => {
+            if (modalOverlay) modalOverlay.classList.remove('show');
         });
         if (modalBack) modalBack.addEventListener('click', () => modalOverlay.classList.remove('show'));
         
@@ -1361,10 +1405,11 @@
             if (e.target === modalOverlay) modalOverlay.classList.remove('show');
         });
 
-        openBulkBtn.addEventListener('click', openBulkModal);
+        if (openBulkBtn) openBulkBtn.addEventListener('click', openBulkModal);
         
-        document.getElementById('bulkCancel').addEventListener('click', () => {
-            bulkModal.classList.remove('show');
+        const bulkCancelBtn = document.getElementById('bulkCancel');
+        if (bulkCancelBtn) bulkCancelBtn.addEventListener('click', () => {
+            if (bulkModal) bulkModal.classList.remove('show');
         });
         if (bulkBack) bulkBack.addEventListener('click', () => {
             bulkModal.classList.remove('show');
@@ -1376,7 +1421,7 @@
             if (e.target === bulkModal) bulkModal.classList.remove('show');
         });
         
-        bulkSaveBtn.addEventListener('click', () => {
+        if (bulkSaveBtn) bulkSaveBtn.addEventListener('click', () => {
             const { items, invalidRows } = collectBulkPayloads();
 
             if (!items.length && !invalidRows.length) {
@@ -1400,9 +1445,10 @@
             confirmModal.classList.add('show');
         }
 
-        document.getElementById('confirmCancel').addEventListener('click', () => {
+        const confirmCancelBtn = document.getElementById('confirmCancel');
+        if (confirmCancelBtn) confirmCancelBtn.addEventListener('click', () => {
             pendingDeleteId = null;
-            confirmModal.classList.remove('show');
+            if (confirmModal) confirmModal.classList.remove('show');
         });
         if (confirmBack) confirmBack.addEventListener('click', () => {
             pendingDeleteId = null;
@@ -1416,9 +1462,10 @@
             }
         });
 
-        document.getElementById('confirmDelete').addEventListener('click', async () => {
+        const confirmDeleteBtn = document.getElementById('confirmDelete');
+        if (confirmDeleteBtn) confirmDeleteBtn.addEventListener('click', async () => {
             if (!pendingDeleteId) return;
-            const deleteBtn = document.getElementById('confirmDelete');
+            const deleteBtn = confirmDeleteBtn;
             setButtonLoading(deleteBtn, true, 'deleting...');
             try {
                 await deleteLaptop(pendingDeleteId);
@@ -1429,14 +1476,10 @@
             }
         });
 
-        document.getElementById('refreshBtn').addEventListener('click', fetchLaptops);
-        document.getElementById('addNewBtn').addEventListener('click', openCreateModal);
-
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            localStorage.removeItem('pin');
-            localStorage.removeItem('user');
-            window.location.reload();
-        });
+        const refreshBtnEl = document.getElementById('refreshBtn');
+        if (refreshBtnEl) refreshBtnEl.addEventListener('click', fetchLaptops);
+        const addNewBtnEl = document.getElementById('addNewBtn');
+        if (addNewBtnEl) addNewBtnEl.addEventListener('click', openCreateModal);
 
         // ---------- LOGOUT ----------
         const logoutBtn = document.getElementById('logoutBtn');
@@ -1453,9 +1496,9 @@
             });
         }
 
-        searchInput.addEventListener('input', renderTable);
-        statusFilter.addEventListener('change', renderTable);
-        dateSoldFilter.addEventListener('change', renderTable);
+        if (searchInput) searchInput.addEventListener('input', renderTable);
+        if (statusFilter) statusFilter.addEventListener('change', renderTable);
+        if (dateSoldFilter) dateSoldFilter.addEventListener('change', renderTable);
 
         if(savedUser && savedPin){
             updateBranchUI();
