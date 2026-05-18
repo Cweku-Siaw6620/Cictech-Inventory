@@ -20,6 +20,7 @@
         let filteredLaptops = [];
         let editingId = null;
         let pendingDeleteId = null;
+        let distributionProductId = null;
         let allBranchData = {};
         let adminCharts = {};
 
@@ -1132,6 +1133,44 @@
             }
         }
 
+        function openDistributeModal(id){
+            distributionProductId = id;
+            document.getElementById('distributeModal').classList.add('show');
+        }
+
+        async function distributeProduct(){
+            const branch = document.getElementById('distributionBranch').value;
+
+            try {
+                const res = await fetch(
+                    `${API_BASE}/distribute/${distributionProductId}`,
+                    {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'pin': localStorage.getItem('pin')
+                        },
+                        body: JSON.stringify({ branch })
+                    }
+                );
+
+            const data = await res.json();
+
+            if(!res.ok){ throw new Error(data.message || 'Transfer failed');}
+
+            showNotification(`Product transferred to ${branch}`,'success');
+
+            document.getElementById('distributeModal').classList.remove('show');
+
+                distributionProductId = null;
+
+                fetchLaptops();
+
+            } catch(error){
+                showNotification(error.message, 'error');
+            }
+        }
+
         // ---------- modal flows ----------
         function openEditModal(id) {
             const laptop = laptops.find(l => (l._id === id || l.id === id));
@@ -1396,6 +1435,14 @@
         }
 
         // ---------- Event Listeners ----------
+
+        const distributeModal = document.getElementById('distributeModal');
+        document.getElementById('cancelDistribution').addEventListener('click', () => {
+                distributeModal.classList.remove('show');
+                distributionProductId = null;
+        });
+        document.getElementById('confirmDistribution').addEventListener('click', distributeProduct);
+
         const modalSaveBtn = document.getElementById('modalSave');
         if (modalSaveBtn) modalSaveBtn.addEventListener('click', () => {
             const isEdit = editingId !== null;
