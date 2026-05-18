@@ -108,6 +108,7 @@
         // DOM elements
         const tbody = document.getElementById('tableBody');
         const searchInput = document.getElementById('searchInput');
+        const branchFilter = document.getElementById('branchFilter');
         const statusFilter = document.getElementById('statusFilter');
         const dateSoldFilter = document.getElementById('dateSoldFilter');
         const modalOverlay = document.getElementById('modal');
@@ -130,6 +131,7 @@
         function renderTable() {
             const mainTableColspan = 12;
             const searchTerm = searchInput.value.toLowerCase();
+            const branchVal = branchFilter?.value || '';
             const statusVal = statusFilter.value;
             const dateSoldVal = dateSoldFilter.value;
 
@@ -148,13 +150,14 @@
                 const matchesSearch = (lap.serial?.toLowerCase() || '').includes(searchTerm) ||
                                     (lap.brand?.toLowerCase() || '').includes(searchTerm) ||
                                     (lap.model?.toLowerCase() || '').includes(searchTerm);
+                const matchesBranch = branchVal ? String(lap.branch || '').trim() === branchVal : true;
                 const currentStatus = String(lap.status || '').trim();
                 const matchesStatus = statusVal === '__other__'
                     ? (currentStatus !== 'Available' && currentStatus !== 'Sold' && currentStatus !== 'N/A')
                     : (statusVal ? currentStatus === statusVal : true);
                 const purchaseDate = String(lap.purchaseDate || '').slice(0, 10);
                 const matchesDateSold = dateSoldVal ? purchaseDate === dateSoldVal : true;
-                return matchesSearch && matchesStatus && matchesDateSold;
+                return matchesSearch && matchesBranch && matchesStatus && matchesDateSold;
             });
 
             if (filteredLaptops.length === 0) {
@@ -302,6 +305,11 @@
             const branchHeader = document.getElementById('branchHeader');
             if (branchHeader) {
                 branchHeader.style.display = userRole === 'admin' ? '' : 'none';
+            }
+
+            const branchFilterWrap = document.getElementById('branchFilterWrap');
+            if (branchFilterWrap) {
+                branchFilterWrap.style.display = userRole === 'admin' ? '' : 'none';
             }
 
             // Hide customer number column for admin only
@@ -1577,6 +1585,7 @@
         }
 
         if (searchInput) searchInput.addEventListener('input', renderTable);
+        if (branchFilter) branchFilter.addEventListener('change', renderTable);
         if (statusFilter) statusFilter.addEventListener('change', renderTable);
         if (dateSoldFilter) dateSoldFilter.addEventListener('change', renderTable);
 
