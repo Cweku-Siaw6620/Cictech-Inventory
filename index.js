@@ -180,6 +180,7 @@
                 const statusClass = statusClassRaw === 'n-a' ? 'na' : knownClasses.includes(statusClassRaw) ? statusClassRaw : 'custom';
                 const isApproved = approvedIds.has(id);
                 const canEdit = (currentBranch === currentUser?.branch) && !isApproved;
+                const canDelete = userRole === 'admin';
                 const rowBranch = lap.branch || currentBranch || '-';
                 const customerCell = userRole === 'admin' ? '' : `<td>${lap.customerNumber || '--'}</td>`;
                 const serialValue = String(lap.serial || '-');
@@ -209,7 +210,7 @@
                                             🚚
                                         </button>
                                     ` : ''}
-                                       <button class="icon-btn delete-btn" data-id="${id}">🗑</button>`
+                                       ${canDelete ? `<button class="icon-btn delete-btn" data-id="${id}">🗑</button>` : ''}`
                                     : '<span style="font-size:0.75rem;color:var(--text-muted)">view only</span>'
                             }
                         </div>
