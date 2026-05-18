@@ -128,7 +128,7 @@
 
         // ---------- render table ----------
         function renderTable() {
-            const mainTableColspan = userRole === 'admin' ? 13 : 12;
+            const mainTableColspan = 12;
             const searchTerm = searchInput.value.toLowerCase();
             const statusVal = statusFilter.value;
             const dateSoldVal = dateSoldFilter.value;
@@ -178,6 +178,7 @@
                 const isApproved = approvedIds.has(id);
                 const canEdit = (currentBranch === currentUser?.branch) && !isApproved;
                 const rowBranch = lap.branch || currentBranch || '-';
+                const customerCell = userRole === 'admin' ? '' : `<td>${lap.customerNumber || '--'}</td>`;
 
                 html += `<tr${isApproved ? ' class="row-approved"' : ''}>
                     ${userRole === 'admin' ? `<td><span class="branch-pill branch-${String(rowBranch).toLowerCase().replace(/[^a-z0-9]+/g, '')}">${rowBranch}</span></td>` : ''}
@@ -190,7 +191,7 @@
                     <td>${lap.serial || '-'}</td>
                     <td><span class="price-highlight">${lap.price ? 'GHS ' + lap.price : '-'}</span></td>
                     <td>${lap.purchaseDate ? lap.purchaseDate.slice(0,10) : '--'}</td>
-                    <td>${lap.customerNumber || '--'}</td>
+                    ${customerCell}
                     <td><span class="status ${statusClass}"><span class="status-dot"></span> ${lap.status || 'Available'}</span></td>
                     <td>
                         <div class="row-actions">
@@ -301,6 +302,12 @@
             const branchHeader = document.getElementById('branchHeader');
             if (branchHeader) {
                 branchHeader.style.display = userRole === 'admin' ? '' : 'none';
+            }
+
+            // Hide customer number column for admin only
+            const customerHeader = document.getElementById('customerHeader');
+            if (customerHeader) {
+                customerHeader.style.display = userRole === 'admin' ? 'none' : '';
             }
 
             // Show admin tab only for admin role
