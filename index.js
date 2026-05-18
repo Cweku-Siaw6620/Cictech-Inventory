@@ -128,17 +128,18 @@
 
         // ---------- render table ----------
         function renderTable() {
+            const mainTableColspan = userRole === 'admin' ? 13 : 12;
             const searchTerm = searchInput.value.toLowerCase();
             const statusVal = statusFilter.value;
             const dateSoldVal = dateSoldFilter.value;
 
             if (laptops === null) {
-                tbody.innerHTML = `<tr><td colspan="12" class="loading-container"><div class="spinner"></div> Connecting to database...</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${mainTableColspan}" class="loading-container"><div class="spinner"></div> Connecting to database...</td></tr>`;
                 return;
             }
 
             if (!laptops.length) {
-                tbody.innerHTML = `<tr class="empty-row"><td colspan="12">📭 inventory is empty — add your first laptop</td></tr>`;
+                tbody.innerHTML = `<tr class="empty-row"><td colspan="${mainTableColspan}">📭 inventory is empty — add your first laptop</td></tr>`;
                 return;
             }
 
@@ -157,7 +158,7 @@
             });
 
             if (filteredLaptops.length === 0) {
-                tbody.innerHTML = `<tr class="empty-row"><td colspan="12">🔍 no matching laptops — adjust filters</td></tr>`;
+                tbody.innerHTML = `<tr class="empty-row"><td colspan="${mainTableColspan}">🔍 no matching laptops — adjust filters</td></tr>`;
                 return;
             }
 
@@ -176,9 +177,10 @@
                 const statusClass = statusClassRaw === 'n-a' ? 'na' : knownClasses.includes(statusClassRaw) ? statusClassRaw : 'custom';
                 const isApproved = approvedIds.has(id);
                 const canEdit = (currentBranch === currentUser?.branch) && !isApproved;
+                const rowBranch = lap.branch || currentBranch || '-';
 
                 html += `<tr${isApproved ? ' class="row-approved"' : ''}>
-                    ${userRole === 'admin' ? `<td><span class="branch-pill branch-${(currentBranch || '').toLowerCase().replace('-', '')}">${currentBranch}</span></td>` : ''}
+                    ${userRole === 'admin' ? `<td><span class="branch-pill branch-${String(rowBranch).toLowerCase().replace(/[^a-z0-9]+/g, '')}">${rowBranch}</span></td>` : ''}
                     <td>${lap.brand || '-'}</td>
                     <td>${lap.model || '-'}</td>
                     <td>${lap.processor || '-'}</td>
@@ -381,22 +383,28 @@
             const refreshBtn = document.getElementById('refreshBtn');
             setButtonLoading(refreshBtn, true, 'syncing...');
             try {
-                tbody.innerHTML = `<tr><td colspan="12" class="loading-container"><div class="spinner"></div> Loading inventory...</td></tr>`;
+                const mainTableColspan = userRole === 'admin' ? 13 : 12;
+                tbody.innerHTML = `<tr><td colspan="${mainTableColspan}" class="loading-container"><div class="spinner"></div> Loading inventory...</td></tr>`;
                 await loadApprovedIds();
-                const res = await fetch(BRANCH_API + currentBranch, {
+                const endpoint = (userRole === 'admin' && currentBranch === 'Admin') ? API_BASE : (BRANCH_API + currentBranch);
+                const res = await fetch(endpoint, {
                     headers: { "pin": localStorage.getItem("pin") }
                 });
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const data = await res.json();
                 laptops = Array.isArray(data) ? data : (data.data || []);
                 renderTable();
-                modalHint.innerText = `✅ GET ${BRANCH_API}${currentBranch} · ${laptops.length} records`;
+                modalHint.innerText = userRole === 'admin' && currentBranch === 'Admin'
+                    ? `✅ GET ${API_BASE} · ${laptops.length} records`
+                    : `✅ GET ${BRANCH_API}${currentBranch} · ${laptops.length} records`;
                 showNotification(`Synced — ${laptops.length} laptop${laptops.length !== 1 ? 's' : ''} loaded`, 'success', 3000);
             } catch (err) {
                 console.warn('fetch error', err);
                 laptops = [];
                 renderTable();
-                modalHint.innerText = `⚠️ cannot reach ${BRANCH_API}${currentBranch} — check server`;
+                modalHint.innerText = userRole === 'admin' && currentBranch === 'Admin'
+                    ? `⚠️ cannot reach ${API_BASE} — check server`
+                    : `⚠️ cannot reach ${BRANCH_API}${currentBranch} — check server`;
                 showNotification('Could not reach the server. Check your connection.', 'error');
             } finally {
                 setButtonLoading(refreshBtn, false);
