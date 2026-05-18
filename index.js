@@ -182,6 +182,8 @@
                 const canEdit = (currentBranch === currentUser?.branch) && !isApproved;
                 const rowBranch = lap.branch || currentBranch || '-';
                 const customerCell = userRole === 'admin' ? '' : `<td>${lap.customerNumber || '--'}</td>`;
+                const serialValue = String(lap.serial || '-');
+                const serialCell = `<td><span class="${serialValue.length > 14 ? 'serial-wrap' : ''}">${serialValue}</span></td>`;
 
                 html += `<tr${isApproved ? ' class="row-approved"' : ''}>
                     ${userRole === 'admin' ? `<td><span class="branch-pill branch-${String(rowBranch).toLowerCase().replace(/[^a-z0-9]+/g, '')}">${rowBranch}</span></td>` : ''}
@@ -191,7 +193,7 @@
                     <td>${lap.gen || '-'}</td>
                     <td>${lap.ram || '-'}</td>
                     <td>${lap.storage || '-'}</td>
-                    <td>${lap.serial || '-'}</td>
+                    ${serialCell}
                     <td><span class="price-highlight">${lap.price ? 'GHS ' + lap.price : '-'}</span></td>
                     <td>${lap.purchaseDate ? lap.purchaseDate.slice(0,10) : '--'}</td>
                     ${customerCell}
@@ -575,6 +577,8 @@
             soldItems.forEach(lap => {
                 const id = lap._id || lap.id;
                 const isApproved = approvedIds.has(id);
+                const serialValue = String(lap.serial || '-');
+                const serialCell = `<td><span class="${serialValue.length > 14 ? 'serial-wrap' : ''}">${serialValue}</span></td>`;
                 html += `<tr class="${isApproved ? 'row-approved' : ''}">
                     <td><span class="branch-pill branch-${(lap._branch || '').toLowerCase().replace('-', '')}">${lap._branch}</span></td>
                     <td>${lap.brand || '-'}</td>
@@ -582,7 +586,7 @@
                     <td>${lap.processor || '-'} ${lap.gen || '-'}</td>
                     <td>${lap.ram || '-'}</td>
                     <td>${lap.storage || '-'}</td>
-                    <td>${lap.serial || '-'}</td>
+                    ${serialCell}
                     <td>${lap.purchaseDate ? lap.purchaseDate.slice(0, 10) : '--'}</td>
                     <td><span class="price-highlight">${lap.price ? 'GHS ' + lap.price : '-'}</span></td>
                     <td>

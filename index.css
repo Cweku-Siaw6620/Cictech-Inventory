@@ -462,6 +462,15 @@ td {
     font-size: 0.95rem;
 }
 
+.serial-wrap {
+    display: inline-block;
+    max-width: 140px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    vertical-align: top;
+}
+
 tr:last-child td {
     border-bottom: none;
 }
@@ -678,6 +687,93 @@ tr:last-child td {
     max-width: 1100px;
     max-height: 88vh;
     overflow-y: auto;
+}
+
+.distribute-modal-card {
+    max-width: 460px;
+    padding: 2rem;
+    border-radius: 28px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+}
+
+.distribute-modal-card .modal-header {
+    margin-bottom: 1rem;
+}
+
+.distribute-modal-card h2 {
+    margin-bottom: 0.35rem;
+    font-size: 1.45rem;
+}
+
+.distribute-modal-subtitle {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-left: 0.1rem;
+}
+
+.distribute-modal-card .modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 1.1rem 0 1.3rem;
+}
+
+.distribute-modal-card .modal-body label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+}
+
+.distribute-modal-card .modal-body select {
+    width: 100%;
+    padding: 0.95rem 1rem;
+    border-radius: 16px;
+    border: 1px solid var(--border-light);
+    background: #fff;
+    color: var(--text-dark);
+    font-size: 0.95rem;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+}
+
+.distribute-modal-card .modal-body select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(0,102,204,0.12);
+}
+
+.distribute-modal-card .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.distribute-modal-card #cancelDistribution,
+.distribute-modal-card #confirmDistribution {
+    padding: 0.7rem 1.25rem;
+    border-radius: 999px;
+    border: 1px solid var(--border-light);
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.distribute-modal-card #cancelDistribution {
+    background: #fff;
+    color: var(--text-dark);
+}
+
+.distribute-modal-card #confirmDistribution {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 8px 18px rgba(0,102,204,0.18);
+}
+
+.distribute-modal-card #cancelDistribution:hover,
+.distribute-modal-card #confirmDistribution:hover {
+    transform: translateY(-1px);
 }
 
 .bulk-help {
