@@ -1222,6 +1222,7 @@
                 gen: '10th Gen', 
                 ram: '8GB', 
                 storage: '256GB', 
+                price: '',
                 purchaseDate: '', 
                 status: 'Available' 
             });
@@ -1238,15 +1239,18 @@
                 gen: document.getElementById('fGen')?.value,
                 ram: document.getElementById('fRam')?.value,
                 storage: document.getElementById('fStorage')?.value,
+                price: document.getElementById('fPrice')?.value?.trim(),
                 purchaseDate: document.getElementById('fPurDate')?.value,
                 status: document.getElementById('fStatus')?.value === '__custom__'
                     ? (document.getElementById('fStatusCustom')?.value?.trim() || 'Available')
                     : document.getElementById('fStatus')?.value,
             };
             
-            // Only include price if admin is editing
-            if (isEdit && userRole === 'admin') {
+            // Only include price for admin-created or admin-edited records
+            if (userRole === 'admin') {
                 values.price = document.getElementById('fPrice')?.value.trim();
+            } else {
+                delete values.price;
             }
             
             if (isEdit) {
@@ -1289,6 +1293,8 @@
                     ${STORAGE_OPTIONS.map(s => `<option value="${s}" ${values.storage === s ? 'selected' : ''}>${s}</option>`).join('')}
                 </select>
                 </div>
+
+                <div class="field"><label>Price (GHS)</label><input id="fPrice" type="number" min="0" step="0.01" value="${values.price || ''}" placeholder="e.g., 2500"></div>
                 
                 <div class="field"><label>Status</label>
                     <select id="fStatus" onchange="const c=document.getElementById('fStatusCustom');c.style.display=this.value==='__custom__'?'block':'none';if(this.value!=='__custom__')c.value='';">
@@ -1369,6 +1375,7 @@
                             <select class="bulk-gen">${GEN_OPTIONS.map(g => `<option value="${g}">${g}</option>`).join('')}</select>
                             <select class="bulk-ram">${RAM_OPTIONS.map(r => `<option value="${r}">${r}</option>`).join('')}</select>
                             <select class="bulk-storage">${STORAGE_OPTIONS.map(s => `<option value="${s}">${s}</option>`).join('')}</select>
+                            <input class="bulk-price" type="number" min="0" step="0.01" placeholder="Price (GHS)">
                             <select class="bulk-status">${STATUS_OPTIONS.map(s => `<option value="${s}">${s}</option>`).join('')}</select>
                         </div>
                     </div>
@@ -1410,6 +1417,7 @@
                     gen: row.querySelector('.bulk-gen')?.value || '10th Gen',
                     ram: row.querySelector('.bulk-ram')?.value || '8GB',
                     storage: row.querySelector('.bulk-storage')?.value || '256GB',
+                    price: row.querySelector('.bulk-price')?.value?.trim() || '',
                     status: row.querySelector('.bulk-status')?.value || 'Available'
                 });
             });
