@@ -174,9 +174,10 @@
                 const knownClasses = ['available', 'sold', 'na'];
                 const statusClass = statusClassRaw === 'n-a' ? 'na' : knownClasses.includes(statusClassRaw) ? statusClassRaw : 'custom';
                 const isApproved = approvedIds.has(id);
-                const canEdit = (userRole === 'admin' || currentBranch === currentUser?.branch) && !isApproved;
+                const canEdit = (currentBranch === currentUser?.branch) && !isApproved;
 
                 html += `<tr${isApproved ? ' class="row-approved"' : ''}>
+                    ${userRole === 'admin' ? `<td><span class="branch-pill branch-${(currentBranch || '').toLowerCase().replace('-', '')}">${currentBranch}</span></td>` : ''}
                     <td>${lap.brand || '-'}</td>
                     <td>${lap.model || '-'}</td>
                     <td>${lap.processor || '-'}</td>
@@ -194,6 +195,11 @@
                                 ? '<span class="approval-badge approved" style="font-size:0.72rem">✔ Approved</span>'
                                 : canEdit
                                     ? `<button class="icon-btn edit-btn" data-id="${id}">✎</button>
+                                    ${userRole === 'admin' ? `
+                                        <button class="icon-btn distribute-btn" data-id="${lap._id || lap.id}">
+                                            🚚
+                                        </button>
+                                    ` : ''}
                                        <button class="icon-btn delete-btn" data-id="${id}">🗑</button>`
                                     : '<span style="font-size:0.75rem;color:var(--text-muted)">view only</span>'
                             }
@@ -213,6 +219,12 @@
                 btn.addEventListener('click', (e) => {
                     const id = e.currentTarget.dataset.id;
                     deleteLaptopFlow(id);
+                });
+            });
+            document.querySelectorAll('.distribute-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = e.currentTarget.dataset.id;
+                    openDistributeModal(id);
                 });
             });
         }
@@ -280,6 +292,12 @@
                 badgeLabel.textContent = userRole === 'admin'
                     ? 'admin · all branches'
                     : `${currentUser.role} · ${currentUser.branch}`;
+            }
+
+            // Show branch column in main table for admin only
+            const branchHeader = document.getElementById('branchHeader');
+            if (branchHeader) {
+                branchHeader.style.display = userRole === 'admin' ? '' : 'none';
             }
 
             // Show admin tab only for admin role
