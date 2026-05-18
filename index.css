@@ -399,6 +399,13 @@ body {
     outline: none;
 }
 
+/* Admin view toggle buttons (custom class: toggleBtn) */
+.view-toggle { display:flex; gap:8px; }
+.view-toggle .toggleBtn { transition: all 220ms ease; padding: 0.5rem 1rem; border-radius: 999px; border: 1px solid var(--border-light); background: white; color: var(--text-dark); box-shadow: var(--shadow-sm); cursor: pointer; }
+.view-toggle .toggleBtn.active { background: var(--primary); color: white; box-shadow: 0 6px 18px rgba(0,102,204,0.18); transform: translateY(-2px); }
+.view-toggle .toggleBtn:not(.active):hover { transform: translateY(-1px); }
+
+
 .filter-badge input[type="date"] {
     border: none;
     background: transparent;

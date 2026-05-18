@@ -23,6 +23,9 @@
         let allBranchData = {};
         let adminCharts = {};
 
+        // Admin view mode: 'table' (default) or 'overview'
+        let adminViewMode = 'table';
+
         // Replace with
         let approvedIds = new Set();
 
@@ -304,6 +307,19 @@
                 addBtn.disabled = !isAdmin;
                 addBtn.title = isAdmin ? '' : 'Only admin can add new products';
             }
+
+            // Admin view toggle visibility and default mode
+            const adminViewToggle = document.getElementById('adminViewToggle');
+            if (adminViewToggle) {
+                if (userRole === 'admin') {
+                    adminViewToggle.style.display = '';
+                    // default to Table view when admin logs in
+                    adminViewMode = 'table';
+                } else {
+                    adminViewToggle.style.display = 'none';
+                }
+            }
+            applyAdminViewMode();
         }
 
                 // ---------- branch tabs ----------
@@ -321,6 +337,14 @@
                 }
             });
         });
+
+        // Admin view toggle buttons
+        (function wireAdminToggle(){
+            const viewTableBtn = document.getElementById('viewTableBtn');
+            const viewOverviewBtn = document.getElementById('viewOverviewBtn');
+            if (viewTableBtn) viewTableBtn.addEventListener('click', () => { adminViewMode = 'table'; applyAdminViewMode(); });
+            if (viewOverviewBtn) viewOverviewBtn.addEventListener('click', () => { adminViewMode = 'overview'; applyAdminViewMode(); });
+        })();
 
         // ---------- API calls ----------
         async function fetchLaptops() {
@@ -368,6 +392,34 @@
             document.getElementById('searchSection').style.display = '';
             document.querySelector('.inventory-card').style.display = '';
             document.getElementById('addNewBtn').style.display = 'none';
+        }
+
+        function applyAdminViewMode() {
+            const adminSections = Array.from(document.querySelectorAll('.admin-stats-header, .kpi-row, .charts-grid, .admin-sold-section, .rev-section'));
+            const searchSection = document.getElementById('searchSection');
+            const inventoryCard = document.querySelector('.inventory-card');
+            const bulkToolbar = document.getElementById('bulkReassignToolbar');
+            const viewTableBtn = document.getElementById('viewTableBtn');
+            const viewOverviewBtn = document.getElementById('viewOverviewBtn');
+
+            if (adminViewMode === 'table') {
+                // show table UI
+                if (searchSection) searchSection.style.display = '';
+                if (inventoryCard) inventoryCard.style.display = '';
+                if (bulkToolbar) bulkToolbar.style.display = adminSelectedIds.size > 0 ? 'flex' : 'none';
+                // hide admin overview sections
+                adminSections.forEach(s => s.style.display = 'none');
+                if (viewTableBtn) viewTableBtn.classList.add('active');
+                if (viewOverviewBtn) viewOverviewBtn.classList.remove('active');
+            } else {
+                // show overview
+                if (searchSection) searchSection.style.display = 'none';
+                if (inventoryCard) inventoryCard.style.display = 'none';
+                if (bulkToolbar) bulkToolbar.style.display = 'none';
+                adminSections.forEach(s => s.style.display = '');
+                if (viewTableBtn) viewTableBtn.classList.remove('active');
+                if (viewOverviewBtn) viewOverviewBtn.classList.add('active');
+            }
         }
 
         async function showAdminDashboard() {
