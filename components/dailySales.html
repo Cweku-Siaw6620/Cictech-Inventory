@@ -1,0 +1,329 @@
+<!-- ============================================================
+     FILE 1: Finance/daily-sales.html
+     CICTech Electronics — Finance Module
+     Daily Sales Page
+     ============================================================ -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CICTech Finance — Daily Sales recording and management">
+  <title>CICTech Finance · Daily Sales</title>
+  <link rel="stylesheet" href="../stylesheet/dailySales.css">
+</head>
+<body>
+
+  <div class="fin-app">
+
+    <!-- ==================== HEADER ==================== -->
+    <header class="fin-header">
+      <div class="fin-header-left">
+        <div class="fin-brand">
+          <span class="fin-brand-cic">CICTech</span>
+          <span class="fin-brand-fin">Finance</span>
+          <span class="fin-brand-page">Daily Sales</span>
+        </div>
+        <div class="fin-user-badge" id="userBadge">
+          <span class="fin-user-role" id="userRole">staff</span>
+          <span class="fin-user-sep">·</span>
+          <span class="fin-user-branch" id="userBranch">—</span>
+        </div>
+      </div>
+      <div class="fin-header-right">
+        <a href="../Finances/staffDashboard.html" class="fin-back-link" id="backToDashboard">
+          <span class="fin-back-arrow">←</span>
+          <span>Back to Dashboard</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- ==================== NAVIGATION ==================== -->
+    <nav class="fin-nav" aria-label="Finance navigation">
+      <ul class="fin-nav-tabs">
+        <li><a href="../Finances/staffDashboard.html" class="fin-nav-link">Dashboard</a></li>
+        <li><a href="dailySales.html" class="fin-nav-link fin-nav-active" aria-current="page">Daily Sales</a></li>
+        <li><a href="expenses.html" class="fin-nav-link">Expenses</a></li>
+        <li><a href="history.html" class="fin-nav-link">History</a></li>
+      </ul>
+    </nav>
+
+    <!-- ==================== MAIN ==================== -->
+    <main class="fin-main">
+
+      <!-- Loading state -->
+      <div id="loadingState" class="fin-state fin-state-loading">
+        <div class="fin-spinner"></div>
+        <p>Loading today's sales data…</p>
+      </div>
+
+      <!-- Error state -->
+      <div id="errorState" class="fin-state fin-state-error hidden">
+        <div class="fin-state-icon">⚠</div>
+        <p id="errorMessage">Unable to load data.</p>
+        <button class="fin-btn fin-btn-secondary" id="retryBtn">Retry</button>
+      </div>
+
+      <!-- Page content -->
+      <div id="pageContent" class="fin-content hidden">
+
+        <!-- ===== Page heading ===== -->
+        <section class="fin-page-head">
+          <div class="fin-page-head-left">
+            <h1 class="fin-page-title">Daily Sales</h1>
+            <p class="fin-page-sub">Today's sales and payment activity</p>
+            <p class="fin-page-date" id="pageDate">—</p>
+          </div>
+          <div class="fin-page-head-right">
+            <span class="fin-status fin-status-open" id="accountStatus">
+              <span class="fin-status-dot"></span>
+              <span class="fin-status-text">OPEN</span>
+            </span>
+          </div>
+        </section>
+
+        <!-- ===== Summary cards ===== -->
+        <section class="fin-summary" aria-label="Today's sales summary">
+          <div class="fin-summary-card fin-summary-card-primary">
+            <span class="fin-summary-label">Today's Sales</span>
+            <span class="fin-summary-value" id="sumTotal">—</span>
+          </div>
+          <div class="fin-summary-card">
+            <span class="fin-summary-label">Cash</span>
+            <span class="fin-summary-value" id="sumCash">—</span>
+          </div>
+          <div class="fin-summary-card">
+            <span class="fin-summary-label">MoMo</span>
+            <span class="fin-summary-value" id="sumMomo">—</span>
+          </div>
+          <div class="fin-summary-card">
+            <span class="fin-summary-label">Bank / POS</span>
+            <span class="fin-summary-value" id="sumBank">—</span>
+          </div>
+        </section>
+
+        <!-- ===== Closed account notice ===== -->
+        <div id="closedNotice" class="fin-closed-notice hidden">
+          <div class="fin-closed-icon">🔒</div>
+          <div class="fin-closed-body">
+            <strong>Today's account is closed.</strong>
+            <p>Sales can no longer be recorded for this day.</p>
+          </div>
+        </div>
+
+        <!-- ===== Record Sale Panel ===== -->
+        <section class="fin-card fin-record-card" id="recordCard">
+          <div class="fin-card-head">
+            <h2 class="fin-card-title">Record Sale</h2>
+            <p class="fin-card-sub">Add a device or accessory sale to today's account.</p>
+          </div>
+
+          <!-- Sale type switch -->
+          <div class="fin-segmented" role="tablist" aria-label="Sale type">
+            <button type="button"
+                    class="fin-seg-btn fin-seg-active"
+                    id="tabInventory"
+                    role="tab"
+                    aria-selected="true">
+              Inventory Sale
+            </button>
+            <button type="button"
+                    class="fin-seg-btn"
+                    id="tabManual"
+                    role="tab"
+                    aria-selected="false">
+              Manual Sale
+            </button>
+          </div>
+
+        <!-- ========== Inventory Sale Form ========== -->
+        <form id="inventoryForm" class="fin-form" novalidate>
+
+        <!-- Serial number search -->
+        <div class="fin-form-row">
+            <label for="invSerial" class="fin-label">Serial Number</label>
+            <div class="fin-serial-search">
+            <input
+                type="text"
+                id="invSerial"
+                class="fin-input"
+                placeholder="Scan or type serial number…"
+                autocomplete="off"
+                spellcheck="false"
+            >
+            <button type="button" class="fin-btn fin-btn-secondary fin-serial-btn" id="invSerialLookupBtn">
+                Search
+            </button>
+            </div>
+            <div class="fin-serial-hint" id="invSerialHint"></div>
+        </div>
+
+        <!-- Product details preview (shown after a serial match) -->
+        <div id="invProductPreview" class="fin-product-preview hidden">
+            <div class="fin-product-preview-head">
+            <span class="fin-product-preview-title">Product Details</span>
+            <span class="fin-badge fin-badge-inventory" id="pvAvailability">Available</span>
+            </div>
+            <div class="fin-product-preview-grid">
+            <div class="fin-product-detail">
+                <span class="fin-product-detail-label">Brand</span>
+                <span class="fin-product-detail-value" id="pvBrand">—</span>
+            </div>
+            <div class="fin-product-detail">
+                <span class="fin-product-detail-label">Model</span>
+                <span class="fin-product-detail-value" id="pvModel">—</span>
+            </div>
+            <div class="fin-product-detail">
+                <span class="fin-product-detail-label">Serial</span>
+                <span class="fin-product-detail-value" id="pvSerial">—</span>
+            </div>
+            <div class="fin-product-detail">
+                <span class="fin-product-detail-label">Processor</span>
+                <span class="fin-product-detail-value" id="pvProcessor">—</span>
+            </div>
+            <div class="fin-product-detail">
+                <span class="fin-product-detail-label">RAM</span>
+                <span class="fin-product-detail-value" id="pvRam">—</span>
+            </div>
+            <div class="fin-product-detail">
+                <span class="fin-product-detail-label">Storage</span>
+                <span class="fin-product-detail-value" id="pvStorage">—</span>
+            </div>
+            <div class="fin-product-detail fin-product-detail-price">
+                <span class="fin-product-detail-label">Price</span>
+                <span class="fin-product-detail-value" id="pvPrice">—</span>
+            </div>
+            </div>
+        </div>
+
+        <div class="fin-form-row">
+            <label for="invPrice" class="fin-label">Price</label>
+            <input
+            type="text"
+            id="invPrice"
+            class="fin-input fin-input-readonly"
+            value="GHS 0.00"
+            readonly
+            tabindex="-1"
+            aria-readonly="true"
+            >
+        </div>
+
+        <!-- Payment -->
+        <div class="fin-payment-block">
+            <h3 class="fin-payment-title">Payment</h3>
+            <div class="fin-payment-grid">
+            <div class="fin-payment-item">
+                <label for="invCash" class="fin-pay-label">Cash</label>
+                <input type="number" id="invCash" class="fin-pay-input" min="0" step="0.01" placeholder="0.00">
+            </div>
+            <div class="fin-payment-item">
+                <label for="invMomo" class="fin-pay-label">MoMo</label>
+                <input type="number" id="invMomo" class="fin-pay-input" min="0" step="0.01" placeholder="0.00">
+            </div>
+            <div class="fin-payment-item">
+                <label for="invBank" class="fin-pay-label">Bank / POS</label>
+                <input type="number" id="invBank" class="fin-pay-input" min="0" step="0.01" placeholder="0.00">
+            </div>
+            </div>
+            <div class="fin-payment-total">
+            <span class="fin-pay-total-label">Total Paid</span>
+            <span class="fin-pay-total-value" id="invTotalPaid">GHS 0.00</span>
+            </div>
+            <div class="fin-pay-hint" id="invHint"></div>
+        </div>
+
+        <div class="fin-form-actions">
+            <button type="submit" class="fin-btn fin-btn-primary" id="invSubmitBtn" disabled>
+            Record Sale
+            </button>
+        </div>
+        </form>
+
+          <!-- ========== Manual Sale Form ========== -->
+          <form id="manualForm" class="fin-form hidden" novalidate>
+            <div class="fin-form-row">
+              <label class="fin-label">Sale Type</label>
+              <div class="fin-category-toggle" role="radiogroup" aria-label="Sale category">
+                <button type="button" class="fin-cat-btn fin-cat-active" data-category="device">Device</button>
+                <button type="button" class="fin-cat-btn" data-category="accessory">Accessory</button>
+              </div>
+            </div>
+
+            <div class="fin-form-row">
+              <label for="manName" class="fin-label">Product Name</label>
+              <input type="text" id="manName" class="fin-input" placeholder="Enter product name" required>
+            </div>
+
+            <div class="fin-form-row" id="manSerialRow">
+              <label for="manSerial" class="fin-label">Serial Number <span class="fin-optional">(optional)</span></label>
+              <input type="text" id="manSerial" class="fin-input" placeholder="Optional serial number">
+            </div>
+
+            <div class="fin-form-row" id="manDetailRow">
+              <label for="manDetail" class="fin-label">Details <span class="fin-optional">(optional)</span></label>
+              <input type="text" id="manDetail" class="fin-input" placeholder="Optional details">
+            </div>
+
+            <div class="fin-form-row">
+              <label for="manPrice" class="fin-label">Price</label>
+              <input type="number" id="manPrice" class="fin-input" min="0" step="0.01" placeholder="0.00" required>
+            </div>
+
+            <!-- Payment -->
+            <div class="fin-payment-block">
+              <h3 class="fin-payment-title">Payment</h3>
+              <div class="fin-payment-grid">
+                <div class="fin-payment-item">
+                  <label for="manCash" class="fin-pay-label">Cash</label>
+                  <input type="number" id="manCash" class="fin-pay-input" min="0" step="0.01" placeholder="0.00">
+                </div>
+                <div class="fin-payment-item">
+                  <label for="manMomo" class="fin-pay-label">MoMo</label>
+                  <input type="number" id="manMomo" class="fin-pay-input" min="0" step="0.01" placeholder="0.00">
+                </div>
+                <div class="fin-payment-item">
+                  <label for="manBank" class="fin-pay-label">Bank / POS</label>
+                  <input type="number" id="manBank" class="fin-pay-input" min="0" step="0.01" placeholder="0.00">
+                </div>
+              </div>
+              <div class="fin-payment-total">
+                <span class="fin-pay-total-label">Total Paid</span>
+                <span class="fin-pay-total-value" id="manTotalPaid">GHS 0.00</span>
+              </div>
+              <div class="fin-pay-hint" id="manHint"></div>
+            </div>
+
+            <div class="fin-form-actions">
+              <button type="submit" class="fin-btn fin-btn-primary" id="manSubmitBtn" disabled>
+                Record Sale
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- ===== Today's Sales Table ===== -->
+        <section class="fin-card fin-sales-card">
+          <div class="fin-card-head">
+            <h2 class="fin-card-title">Today's Sales</h2>
+          </div>
+
+          <div id="salesListWrap">
+            <!-- Injected by JS: table or empty state -->
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <footer class="fin-footer">
+      <span>CICTech Electronics · Finance</span>
+    </footer>
+  </div>
+
+  <!-- Toast container -->
+  <div id="toastContainer" class="fin-toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="../javascript/dailySales.js"></script>
+</body>
+</html>

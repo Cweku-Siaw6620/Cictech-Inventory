@@ -1,0 +1,197 @@
+<!-- ============================================================
+     FILE 1: Finance/expenses.html
+     CICTech Electronics — Finance Module
+     Expenses Page
+     ============================================================ -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CICTech Finance — Record and review today's business expenses">
+  <title>CICTech Finance · Expenses</title>
+  <link rel="stylesheet" href="../stylesheet/expenses.css">
+</head>
+<body>
+
+  <div class="fin-app">
+
+    <!-- ==================== HEADER ==================== -->
+    <header class="fin-header">
+      <div class="fin-header-left">
+        <div class="fin-brand">
+          <span class="fin-brand-cic">CICTech</span>
+          <span class="fin-brand-fin">Finance</span>
+          <span class="fin-brand-page">Expenses</span>
+        </div>
+        <div class="fin-user-badge">
+          <span class="fin-user-role" id="userRole">staff</span>
+          <span class="fin-user-sep">·</span>
+          <span class="fin-user-branch" id="userBranch">—</span>
+        </div>
+      </div>
+      <div class="fin-header-right">
+        <a href="../Finances/staffDashboard.html" class="fin-back-link" id="backToDashboard">
+          <span class="fin-back-arrow">←</span>
+          <span>Back to Dashboard</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- ==================== NAVIGATION ==================== -->
+    <nav class="fin-nav" aria-label="Finance navigation">
+      <ul class="fin-nav-tabs">
+        <li><a href="../Finances/staffDashboard.html" class="fin-nav-link">Dashboard</a></li>
+        <li><a href="dailySales.html" class="fin-nav-link">Daily Sales</a></li>
+        <li><a href="expenses.html" class="fin-nav-link fin-nav-active" aria-current="page">Expenses</a></li>
+        <li><a href="history.html" class="fin-nav-link">History</a></li>
+      </ul>
+    </nav>
+
+    <!-- ==================== MAIN ==================== -->
+    <main class="fin-main">
+
+      <!-- Loading state -->
+      <div id="loadingState" class="fin-state fin-state-loading">
+        <div class="fin-spinner"></div>
+        <p>Loading today's expense data…</p>
+      </div>
+
+      <!-- Error state -->
+      <div id="errorState" class="fin-state fin-state-error hidden">
+        <div class="fin-state-icon">⚠</div>
+        <p id="errorMessage">Unable to load data.</p>
+        <button class="fin-btn fin-btn-secondary" id="retryBtn">Retry</button>
+      </div>
+
+      <!-- Page content -->
+      <div id="pageContent" class="fin-content hidden">
+
+        <!-- ===== Page heading ===== -->
+        <section class="fin-page-head">
+          <div class="fin-page-head-left">
+            <h1 class="fin-page-title">Expenses</h1>
+            <p class="fin-page-sub">Record and review today's business expenses.</p>
+            <p class="fin-page-date" id="pageDate">—</p>
+          </div>
+          <div class="fin-page-head-right">
+            <span class="fin-status fin-status-open" id="accountStatus">
+              <span class="fin-status-dot"></span>
+              <span class="fin-status-text">OPEN</span>
+            </span>
+          </div>
+        </section>
+
+        <!-- ===== Summary cards ===== -->
+        <section class="fin-summary" aria-label="Today's expense summary">
+          <div class="fin-summary-card fin-summary-card-primary">
+            <span class="fin-summary-label">Today's Expenses</span>
+            <span class="fin-summary-value" id="sumTotal">—</span>
+          </div>
+          <div class="fin-summary-card">
+            <span class="fin-summary-label">Cash</span>
+            <span class="fin-summary-value" id="sumCash">—</span>
+          </div>
+          <div class="fin-summary-card">
+            <span class="fin-summary-label">MoMo</span>
+            <span class="fin-summary-value" id="sumMomo">—</span>
+          </div>
+          <div class="fin-summary-card">
+            <span class="fin-summary-label">Bank / POS</span>
+            <span class="fin-summary-value" id="sumBank">—</span>
+          </div>
+        </section>
+
+        <!-- ===== Closed account notice ===== -->
+        <div id="closedNotice" class="fin-closed-notice hidden">
+          <div class="fin-closed-icon">🔒</div>
+          <div class="fin-closed-body">
+            <strong>Today's account is closed.</strong>
+            <p>Expenses can no longer be recorded for this day.</p>
+          </div>
+        </div>
+
+        <!-- ===== Record Expense ===== -->
+        <section class="fin-card fin-record-card" id="recordCard">
+          <div class="fin-card-head">
+            <h2 class="fin-card-title">Record Expense</h2>
+            <p class="fin-card-sub">Add a business expense to today's account.</p>
+          </div>
+
+          <form id="expenseForm" class="fin-form" novalidate>
+
+            <div class="fin-form-row">
+              <label for="expDescription" class="fin-label">Expense Description</label>
+              <input
+                type="text"
+                id="expDescription"
+                class="fin-input"
+                placeholder="e.g. Transport, stationery, delivery, repairs"
+                autocomplete="off"
+                maxlength="200"
+                required
+              >
+              <div class="fin-field-hint" id="descHint"></div>
+            </div>
+
+            <div class="fin-form-row">
+              <label for="expAmount" class="fin-label">Amount</label>
+              <div class="fin-amount-wrap">
+                <span class="fin-amount-prefix">GHS</span>
+                <input
+                  type="number"
+                  id="expAmount"
+                  class="fin-input fin-input-amount"
+                  min="0.01"
+                  step="0.01"
+                  placeholder="0.00"
+                  inputmode="decimal"
+                  required
+                >
+              </div>
+              <div class="fin-field-hint" id="amountHint"></div>
+            </div>
+
+            <div class="fin-form-row">
+              <label for="expPaymentMethod" class="fin-label">Payment Method</label>
+              <select id="expPaymentMethod" class="fin-select" required>
+                <option value="">— Select payment method —</option>
+                <option value="Cash">Cash</option>
+                <option value="MoMo">MoMo</option>
+                <option value="Bank/POS">Bank/POS</option>
+              </select>
+              <div class="fin-field-hint" id="methodHint"></div>
+            </div>
+
+            <div class="fin-form-actions">
+              <button type="submit" class="fin-btn fin-btn-primary" id="expSubmitBtn">
+                Record Expense
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- ===== Today's Expenses table ===== -->
+        <section class="fin-card fin-expenses-card">
+          <div class="fin-card-head">
+            <h2 class="fin-card-title">Today's Expenses</h2>
+          </div>
+          <div id="expensesListWrap">
+            <!-- Injected by JS: table or empty state -->
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <footer class="fin-footer">
+      <span>CICTech Electronics · Finance</span>
+    </footer>
+  </div>
+
+  <!-- Toast container -->
+  <div id="toastContainer" class="fin-toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="../javascript/expenses.js"></script>
+</body>
+</html>

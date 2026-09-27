@@ -1,7 +1,7 @@
 (function() {
         // ---------- API endpoint ----------
-        const API_BASE = 'https://cictech-inventory-2se4.vercel.app/products';
-        const BRANCH_API = 'https://cictech-inventory-2se4.vercel.app/products/branch/';
+        const API_BASE = 'http://localhost:3000/products';
+        const BRANCH_API = 'http://localhost:3000/products/branch/';
         const BULK_LIMIT = 15;
 
         let currentUser = null;
@@ -251,7 +251,7 @@
                 return;
             }
             try{
-                const res = await fetch("https://cictech-inventory-2se4.vercel.app/verify-pin",{
+                const res = await fetch("http://localhost:3000/verify-pin",{
                     method:"POST",
                     headers:{"Content-Type":"application/json"},
                     body: JSON.stringify({ pin })
@@ -1579,8 +1579,22 @@
 
         const refreshBtnEl = document.getElementById('refreshBtn');
         if (refreshBtnEl) refreshBtnEl.addEventListener('click', fetchLaptops);
+
         const addNewBtnEl = document.getElementById('addNewBtn');
         if (addNewBtnEl) addNewBtnEl.addEventListener('click', openCreateModal);
+
+        // ---------- FINANCE ----------
+        const financeBtn = document.getElementById('financeBtn');
+
+        if (financeBtn) {
+            financeBtn.addEventListener('click', () => {
+                if (userRole === 'admin') {
+                    window.location.href = 'Finances/adminDashboard.html';
+                } else {
+                    window.location.href = 'Finances/staffDashboard.html';
+                }
+            });
+        }
 
         // ---------- LOGOUT ----------
         const logoutBtn = document.getElementById('logoutBtn');

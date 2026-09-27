@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CICTech Finance · Staff Dashboard</title>
+  <!-- Finance stylesheet -->
+  <link rel="stylesheet" href="../stylesheet/staffDashboard.css">
+  <!-- No external libraries, vanilla only -->
+</head>
+<body>
+  <!-- Main application shell -->
+  <div class="finance-app">
+    <!-- ========== HEADER ========== -->
+    <header class="finance-header">
+      <div class="header-left">
+        <div class="brand">
+          <span class="brand-cic">CICTech</span>
+          <span class="brand-finance">Finance</span>
+        </div>
+        <div class="user-badge" id="userBadge">
+          <!-- dynamically filled: staff · Central -->
+          <span class="user-role">staff</span>
+          <span class="user-branch">· <span id="branchDisplay">—</span></span>
+        </div>
+      </div>
+      <div class="header-right">
+        <a href="/" class="back-to-inventory" id="backToInventoryBtn" aria-label="Back to Inventory application">
+          ← Back to Inventory
+        </a>
+      </div>
+    </header>
+
+    <!-- ========== FINANCE NAVIGATION ========== -->
+    <nav class="finance-nav" aria-label="Finance section navigation">
+      <ul class="nav-tabs">
+        <li><a href="#" class="nav-link active" aria-current="page">Dashboard</a></li>
+        <li><a href="../components/dailySales.html" class="nav-link">Daily Sales</a></li>
+        <li><a href="expenses.html" class="nav-link">Expenses</a></li>
+        <li><a href="history.html" class="nav-link">History</a></li>
+      </ul>
+    </nav>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="finance-main" id="dashboardMain">
+      <!-- Loading / error / content will be managed by JS -->
+      <div id="loadingState" class="state-message loading">Loading today's financial data…</div>
+      <div id="errorState" class="state-message error hidden"></div>
+
+      <div id="dashboardContent" class="dashboard-content hidden">
+        <!-- 1. TOP PAGE HEADER -->
+        <section class="page-header">
+          <div class="page-header-left">
+            <h1 class="page-title">Finance Dashboard</h1>
+            <div class="page-meta">
+              <span class="page-date" id="todayDate">—</span>
+              <span class="meta-separator">·</span>
+              <span class="page-branch" id="branchNameHeader">—</span>
+            </div>
+          </div>
+          <div class="page-header-right">
+            <span class="status-badge" id="accountStatus">—</span>
+          </div>
+        </section>
+
+        <!-- 6. SIMPLE FINANCIAL OVERVIEW (equation) -->
+        <section class="overview-equation" aria-label="Financial overview equation">
+          <div class="equation-item">
+            <span class="equation-label">Opening</span>
+            <span class="equation-value" id="eqOpening">—</span>
+          </div>
+          <span class="equation-operator">+</span>
+          <div class="equation-item">
+            <span class="equation-label">Sales</span>
+            <span class="equation-value" id="eqSales">—</span>
+          </div>
+          <span class="equation-operator">−</span>
+          <div class="equation-item">
+            <span class="equation-label">Expenses</span>
+            <span class="equation-value" id="eqExpenses">—</span>
+          </div>
+          <span class="equation-operator">=</span>
+          <div class="equation-item highlight">
+            <span class="equation-label">Available</span>
+            <span class="equation-value" id="eqAvailable">—</span>
+          </div>
+        </section>
+
+        <!-- 2. OPENING BALANCE SECTION -->
+        <section class="section-card">
+          <h2 class="section-title">Opening Balance</h2>
+          <div class="balance-grid">
+            <div class="balance-card">
+              <span class="balance-label">Cash</span>
+              <span class="balance-amount" id="openingCash">—</span>
+            </div>
+            <div class="balance-card">
+              <span class="balance-label">MoMo</span>
+              <span class="balance-amount" id="openingMomo">—</span>
+            </div>
+            <div class="balance-card">
+              <span class="balance-label">Bank/POS</span>
+              <span class="balance-amount" id="openingBank">—</span>
+            </div>
+          </div>
+          <div class="total-line">
+            <span class="total-label">Total Opening Balance</span>
+            <span class="total-amount" id="openingTotal">—</span>
+          </div>
+        </section>
+
+        <!-- 3. TODAY'S SALES SECTION -->
+        <section class="section-card">
+          <h2 class="section-title">Today's Sales</h2>
+          <div class="total-line main-total">
+            <span class="total-label">Total Sales</span>
+            <span class="total-amount" id="salesTotal">—</span>
+          </div>
+          <div class="breakdown-grid">
+            <div class="breakdown-item">
+              <span class="breakdown-label">Cash</span>
+              <span class="breakdown-amount" id="salesCash">—</span>
+            </div>
+            <div class="breakdown-item">
+              <span class="breakdown-label">MoMo</span>
+              <span class="breakdown-amount" id="salesMomo">—</span>
+            </div>
+            <div class="breakdown-item">
+              <span class="breakdown-label">Bank/POS</span>
+              <span class="breakdown-amount" id="salesBank">—</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. TODAY'S EXPENSES SECTION -->
+        <section class="section-card">
+          <h2 class="section-title">Today's Expenses</h2>
+          <div class="total-line main-total">
+            <span class="total-label">Total Expenses</span>
+            <span class="total-amount" id="expensesTotal">—</span>
+          </div>
+          <div class="breakdown-grid">
+            <div class="breakdown-item">
+              <span class="breakdown-label">Cash</span>
+              <span class="breakdown-amount" id="expensesCash">—</span>
+            </div>
+            <div class="breakdown-item">
+              <span class="breakdown-label">MoMo</span>
+              <span class="breakdown-amount" id="expensesMomo">—</span>
+            </div>
+            <div class="breakdown-item">
+              <span class="breakdown-label">Bank/POS</span>
+              <span class="breakdown-amount" id="expensesBank">—</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. CURRENT AVAILABLE BALANCE (prominent) -->
+        <section class="section-card available-card">
+          <h2 class="section-title">Current Available Balance</h2>
+          <div class="available-total">
+            <span class="available-label">Total Available</span>
+            <span class="available-amount" id="availableTotal">—</span>
+          </div>
+          <div class="available-breakdown">
+            <div class="available-item">
+              <span class="available-method">Cash</span>
+              <span class="available-value" id="availableCash">—</span>
+            </div>
+            <div class="available-item">
+              <span class="available-method">MoMo</span>
+              <span class="available-value" id="availableMomo">—</span>
+            </div>
+            <div class="available-item">
+              <span class="available-method">Bank/POS</span>
+              <span class="available-value" id="availableBank">—</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- 7. RECENT ACTIVITY PREVIEW (placeholder, no inventing) -->
+        <section class="section-card activity-preview">
+          <h2 class="section-title">Recent Activity</h2>
+          <div class="activity-placeholder">
+            <p class="activity-note">Transaction details are available on the Daily Sales and Expenses pages.</p>
+            <div class="activity-links">
+              <a href="../components/dailySales.html" class="activity-link">View today's sales →</a>
+              <a href="expenses.html" class="activity-link">View today's expenses →</a>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- ========== FOOTER (subtle) ========== -->
+    <footer class="finance-footer">
+      <span>CICTech Electronics · Finance</span>
+    </footer>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="../javascript/staffDashboard.js"></script>
+  <script>
+    const savedUser = localStorage.getItem("user");
+    const savedPin = localStorage.getItem("pin");
+
+    if (!savedUser || !savedPin) {
+        window.location.href = "../index.html";
+    } else {
+        const currentUser = JSON.parse(savedUser);
+
+        if (currentUser.role === "admin") {
+            window.location.href = "adminDashboard.html";
+        }
+
+        if (currentUser.role !== "staff") {
+            window.location.href = "../index.html";
+        }
+    }
+</script>
+</body>
+</html>
