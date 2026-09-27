@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CICTech Finance: Admin Dashboard">
+  <title>CICTech Finance | Admin Dashboard</title>
+  <!-- Typeface (falls back to system fonts if offline) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../stylesheet/adminDashboard.css">
+</head>
+<body>
+
+  <div class="adm-shell">
+
+    <!-- ==================== TOP HEADER ==================== -->
+    <header class="adm-topbar">
+      <div class="adm-topbar-left">
+        <div class="adm-brand">
+          <img class="adm-brand-logo" src="../assets/logo.jpg" alt="">
+          <span class="adm-brand-cic">CICTech</span>
+          <span class="adm-brand-fin">Finance</span>
+          <span class="adm-brand-role">Admin</span>
+        </div>
+        <div class="adm-user-badge">
+          <span class="adm-user-role" id="userRole">admin</span>
+          <span class="adm-user-sep" aria-hidden="true"></span>
+          <span class="adm-user-branch" id="userBranch">Admin</span>
+        </div>
+      </div>
+      <div class="adm-topbar-right">
+        <a href="../index.html" class="adm-back-link">
+          <span class="adm-back-arrow" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M12.5 4.5 7 10l5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span>Back to Inventory</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- ==================== BODY LAYOUT ==================== -->
+    <div class="adm-body">
+
+      <!-- ---------- SIDEBAR ---------- -->
+      <aside class="adm-sidebar" aria-label="Admin navigation">
+        <nav>
+          <ul class="adm-side-list">
+            <li class="adm-side-heading" aria-hidden="true">Overview</li>
+            <li>
+              <button type="button"
+                      class="adm-side-item adm-side-active"
+                      data-section="dashboard"
+                      data-branch="">
+                <span class="adm-side-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><rect x="3" y="3" width="6" height="6" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="11" y="3" width="6" height="6" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="3" y="11" width="6" height="6" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="11" y="11" width="6" height="6" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></span>
+                <span>Dashboard</span>
+              </button>
+            </li>
+            <li class="adm-side-heading" aria-hidden="true">Branches</li>
+            <li>
+              <button type="button"
+                      class="adm-side-item"
+                      data-section="branch"
+                      data-branch="Central">
+                <span class="adm-side-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M3.5 8.5V16.5h13V8.5M2.5 8.5l1.6-5h11.8l1.6 5h-15Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 16.5v-4h4v4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
+                <span>Central</span>
+              </button>
+            </li>
+            <li>
+              <button type="button"
+                      class="adm-side-item"
+                      data-section="branch"
+                      data-branch="Amanfrom">
+                <span class="adm-side-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M3.5 8.5V16.5h13V8.5M2.5 8.5l1.6-5h11.8l1.6 5h-15Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 16.5v-4h4v4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
+                <span>Amanfrom</span>
+              </button>
+            </li>
+            <li>
+              <button type="button"
+                      class="adm-side-item"
+                      data-section="branch"
+                      data-branch="East-Legon">
+                <span class="adm-side-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M3.5 8.5V16.5h13V8.5M2.5 8.5l1.6-5h11.8l1.6 5h-15Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 16.5v-4h4v4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
+                <span>East-Legon</span>
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      <!-- ---------- MAIN ---------- -->
+      <main class="adm-main">
+
+        <!-- Loading state -->
+        <div id="loadingState" class="adm-state adm-state-loading">
+          <div class="adm-spinner"></div>
+          <p>Loading finance data…</p>
+        </div>
+
+        <!-- Error state -->
+        <div id="errorState" class="adm-state adm-state-error hidden">
+          <div class="adm-state-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.5 2.5 20h19L12 3.5Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 10v4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="17.2" r="1.1" fill="currentColor"/></svg></div>
+          <p id="errorMessage">Unable to load data.</p>
+          <button class="adm-btn adm-btn-secondary" id="retryBtn">Retry</button>
+        </div>
+
+        <!-- ==================== VIEW: DASHBOARD ==================== -->
+        <section id="viewDashboard" class="adm-view hidden">
+
+          <div class="adm-page-head">
+            <div>
+              <h1 class="adm-page-title">Finance Overview</h1>
+              <p class="adm-page-sub" id="dashboardSubtitle">–</p>
+            </div>
+          </div>
+
+          <!-- Grand total -->
+          <div class="adm-card adm-grand-total">
+            <div class="adm-grand-total-head">
+              <h2 class="adm-card-title">Total Across All Branches</h2>
+              <span class="adm-grand-date" id="grandDate">–</span>
+            </div>
+
+            <div class="adm-grand-grid">
+              <div class="adm-grand-cell adm-grand-cell-sales">
+                <span class="adm-grand-label">Total Sales</span>
+                <span class="adm-grand-value" id="gtSales">–</span>
+              </div>
+              <div class="adm-grand-cell adm-grand-cell-expenses">
+                <span class="adm-grand-label">Total Expenses</span>
+                <span class="adm-grand-value" id="gtExpenses">–</span>
+              </div>
+              <div class="adm-grand-cell adm-grand-cell-accent">
+                <span class="adm-grand-label">Total Available</span>
+                <span class="adm-grand-value" id="gtAvailable">–</span>
+              </div>
+            </div>
+
+            <div class="adm-grand-sub">
+              <div class="adm-grand-sub-item adm-method-cash">
+                <span class="adm-grand-sub-label">Cash</span>
+                <span class="adm-grand-sub-value" id="gtCash">–</span>
+              </div>
+              <div class="adm-grand-sub-item adm-method-momo">
+                <span class="adm-grand-sub-label">MoMo</span>
+                <span class="adm-grand-sub-value" id="gtMomo">–</span>
+              </div>
+              <div class="adm-grand-sub-item adm-method-bank">
+                <span class="adm-grand-sub-label">Bank/POS</span>
+                <span class="adm-grand-sub-value" id="gtBank">–</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Per-branch cards -->
+          <h2 class="adm-section-heading">Branch Overview</h2>
+          <div id="branchCards" class="adm-branch-grid">
+            <!-- injected by JS -->
+          </div>
+        </section>
+
+        <!-- ==================== VIEW: BRANCH ==================== -->
+        <section id="viewBranch" class="adm-view hidden">
+
+          <div class="adm-page-head">
+            <div>
+              <h1 class="adm-page-title" id="branchTitle">–</h1>
+              <p class="adm-page-sub" id="branchSubtitle">–</p>
+            </div>
+            <div id="branchActions" class="adm-action-group">
+              <!-- injected by JS -->
+            </div>
+          </div>
+
+          <!-- Branch sub-tabs -->
+          <nav class="adm-subtabs" aria-label="Branch view tabs">
+            <button type="button"
+                    class="adm-subtab adm-subtab-active"
+                    data-tab="today"
+                    id="subtabToday">Today</button>
+            <button type="button"
+                    class="adm-subtab"
+                    data-tab="history"
+                    id="subtabHistory">History</button>
+          </nav>
+
+          <!-- ============ SUBTAB: TODAY ============ -->
+          <div id="subToday" class="adm-subview">
+            <!-- Branch today content injected by JS -->
+          </div>
+
+          <!-- ============ SUBTAB: HISTORY ============ -->
+          <div id="subHistory" class="adm-subview hidden">
+            <!-- Range filter -->
+            <div class="adm-card adm-range-card">
+              <div class="adm-range-row">
+                <div class="adm-range-item">
+                  <label for="histStart" class="adm-range-label">Start Date</label>
+                  <input type="date" id="histStart" class="adm-range-input">
+                </div>
+                <div class="adm-range-item">
+                  <label for="histEnd" class="adm-range-label">End Date</label>
+                  <input type="date" id="histEnd" class="adm-range-input">
+                </div>
+                <div class="adm-range-item">
+                  <label for="histDate" class="adm-range-label">Specific Date</label>
+                  <input type="date" id="histDate" class="adm-range-input">
+                </div>
+                <div class="adm-range-actions">
+                  <button type="button"
+                          class="adm-btn adm-btn-secondary"
+                          id="histClearBtn">Clear</button>
+                  <button type="button"
+                          class="adm-btn adm-btn-primary"
+                          id="histApplyBtn">Apply</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- History list -->
+            <div id="historyListWrap" class="adm-card">
+              <!-- injected by JS -->
+            </div>
+
+            <!-- Drill-down -->
+            <div id="historyDetailWrap" class="hidden">
+              <!-- injected by JS -->
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+
+    <footer class="adm-footer">
+      <span>CICTech Electronics Finance Admin</span>
+    </footer>
+  </div>
+
+  <!-- ==================== EDIT SALE MODAL ==================== -->
+  <div id="saleModal" class="adm-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="saleModalTitle">
+    <div class="adm-modal">
+      <div class="adm-modal-head">
+        <h3 class="adm-modal-title" id="saleModalTitle">Edit Sale</h3>
+        <button type="button" class="adm-modal-close" id="saleModalClose" aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5.5 5.5l9 9m0-9-9 9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+      </div>
+      <div class="adm-modal-body">
+        <div class="adm-form-row">
+          <label class="adm-label">Product</label>
+          <input type="text" id="saleModalProduct" class="adm-input" readonly>
+        </div>
+        <div class="adm-form-row">
+          <label class="adm-label">Total Price</label>
+          <input type="text" id="saleModalTotal" class="adm-input adm-input-readonly" readonly>
+        </div>
+
+        <div class="adm-form-row" id="saleModalNameRow">
+          <label for="saleModalName" class="adm-label">Name</label>
+          <input type="text" id="saleModalName" class="adm-input">
+        </div>
+        <div class="adm-form-row" id="saleModalSerialRow">
+          <label for="saleModalSerial" class="adm-label">Serial</label>
+          <input type="text" id="saleModalSerial" class="adm-input">
+        </div>
+        <div class="adm-form-row" id="saleModalDetailRow">
+          <label for="saleModalDetail" class="adm-label">Detail</label>
+          <input type="text" id="saleModalDetail" class="adm-input">
+        </div>
+
+        <div class="adm-modal-section-head">Payment Split</div>
+        <div class="adm-payment-grid">
+          <div class="adm-form-row adm-method-cash">
+            <label for="saleModalCash" class="adm-label">Cash</label>
+            <input type="number" id="saleModalCash" class="adm-input" min="0" step="0.01">
+          </div>
+          <div class="adm-form-row adm-method-momo">
+            <label for="saleModalMomo" class="adm-label">MoMo</label>
+            <input type="number" id="saleModalMomo" class="adm-input" min="0" step="0.01">
+          </div>
+          <div class="adm-form-row adm-method-bank">
+            <label for="saleModalBank" class="adm-label">Bank/POS</label>
+            <input type="number" id="saleModalBank" class="adm-input" min="0" step="0.01">
+          </div>
+        </div>
+
+        <div class="adm-modal-total">
+          <span class="adm-modal-total-label">Payment Total</span>
+          <span class="adm-modal-total-value" id="saleModalPayTotal">GH₵ 0.00</span>
+        </div>
+        <div class="adm-modal-hint" id="saleModalHint"></div>
+      </div>
+      <div class="adm-modal-foot">
+        <button type="button" class="adm-btn adm-btn-secondary" id="saleModalCancel">Cancel</button>
+        <button type="button" class="adm-btn adm-btn-primary" id="saleModalSave">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== EDIT EXPENSE MODAL ==================== -->
+  <div id="expenseModal" class="adm-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="expenseModalTitle">
+    <div class="adm-modal">
+      <div class="adm-modal-head">
+        <h3 class="adm-modal-title" id="expenseModalTitle">Edit Expense</h3>
+        <button type="button" class="adm-modal-close" id="expenseModalClose" aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5.5 5.5l9 9m0-9-9 9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+      </div>
+      <div class="adm-modal-body">
+        <div class="adm-form-row">
+          <label for="expenseModalDesc" class="adm-label">Description</label>
+          <input type="text" id="expenseModalDesc" class="adm-input" maxlength="200">
+        </div>
+        <div class="adm-form-row">
+          <label for="expenseModalAmount" class="adm-label">Amount</label>
+          <input type="number" id="expenseModalAmount" class="adm-input" min="0.01" step="0.01">
+        </div>
+        <div class="adm-form-row">
+          <label for="expenseModalMethod" class="adm-label">Payment Method</label>
+          <select id="expenseModalMethod" class="adm-input">
+            <option value="Cash">Cash</option>
+            <option value="MoMo">MoMo</option>
+            <option value="Bank/POS">Bank/POS</option>
+          </select>
+        </div>
+        <div class="adm-modal-hint" id="expenseModalHint"></div>
+      </div>
+      <div class="adm-modal-foot">
+        <button type="button" class="adm-btn adm-btn-secondary" id="expenseModalCancel">Cancel</button>
+        <button type="button" class="adm-btn adm-btn-primary" id="expenseModalSave">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div id="toastContainer" class="adm-toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="../javascript/adminDashboard.js"></script>
+
+  <!-- Colour tagging: reads the labels that adminDashboard.js writes
+       ("Sales", "Expenses", "Opening", "Available", "Cash", "MoMo", "Bank/POS")
+       and adds matching classes so the stylesheet can colour them.
+       It only adds classes; it never changes text, ids or existing classes. -->
+  <script>
+    (function () {
+      function kind(text) {
+        var t = (text || "").toLowerCase();
+        if (t.indexOf("expens") > -1) return "expenses";
+        if (t.indexOf("sale") > -1) return "sales";
+        if (t.indexOf("opening") > -1) return "opening";
+        if (t.indexOf("available") > -1) return "available";
+        return "";
+      }
+      function method(text) {
+        var t = (text || "").toLowerCase();
+        if (t.indexOf("momo") > -1) return "momo";
+        if (t.indexOf("bank") > -1 || t.indexOf("pos") > -1) return "bank";
+        if (t.indexOf("cash") > -1) return "cash";
+        return "";
+      }
+      function textOf(el, sel) {
+        var n = el.querySelector(sel);
+        return n ? n.textContent : "";
+      }
+      function nearestHeading(el) {
+        // Walk back through earlier siblings, then up a level, looking for a title
+        var node = el;
+        for (var depth = 0; depth < 4 && node; depth++) {
+          var sib = node.previousElementSibling;
+          while (sib) {
+            if (/^H[1-4]$/.test(sib.tagName)) return sib.textContent;
+            var inner = sib.querySelectorAll("h1, h2, h3, h4, .adm-card-title");
+            if (inner.length) return inner[inner.length - 1].textContent;
+            sib = sib.previousElementSibling;
+          }
+          node = node.parentElement;
+        }
+        return "";
+      }
+      function tag() {
+        document.querySelectorAll(".adm-summary-block").forEach(function (b) {
+          var k = kind(textOf(b, ".adm-summary-block-title"));
+          if (k) b.classList.add("is-" + k);
+        });
+        document.querySelectorAll(".adm-summary-cell").forEach(function (c) {
+          var m = method(textOf(c, ".adm-summary-cell-label"));
+          if (m) c.classList.add("adm-method-" + m);
+        });
+        document.querySelectorAll(".adm-branch-card-row").forEach(function (r) {
+          var k = kind(textOf(r, ".adm-branch-card-label"));
+          if (k) r.classList.add("is-" + k);
+        });
+        document.querySelectorAll(".adm-table-wrap").forEach(function (w) {
+          var k = kind(nearestHeading(w));
+          if (k !== "sales" && k !== "expenses") {
+            var heads = Array.prototype.map.call(w.querySelectorAll("th"), function (th) {
+              return th.textContent.toLowerCase();
+            }).join(" ");
+            if (heads.indexOf("description") > -1 && heads.indexOf("product") === -1) k = "expenses";
+            else if (heads.indexOf("product") > -1 || heads.indexOf("serial") > -1) k = "sales";
+            else k = "";
+          }
+          if (!k) return;
+          w.classList.add("is-" + k);
+          var card = w.closest(".adm-card");
+          if (card && card.querySelectorAll(".adm-table-wrap").length === 1) {
+            card.classList.add("is-" + k + "-card");
+          }
+        });
+      }
+      var queued = false;
+      function schedule() {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(function () { queued = false; tag(); });
+      }
+      tag();
+      var root = document.querySelector(".adm-main") || document.body;
+      new MutationObserver(schedule).observe(root, { childList: true, subtree: true });
+    })();
+  </script>
+</body>
+</html>

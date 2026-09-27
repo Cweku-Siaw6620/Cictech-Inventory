@@ -1,0 +1,1737 @@
+/* ============================================================
+   adminDashboard.css  |  CICTech Finance: Admin Dashboard
+
+   Same colour language as the staff pages, everywhere:
+     green + up arrow    = sales (money coming in)
+     red   + down arrow  = expenses (money going out)
+     slate               = opening balance (carried forward)
+     navy                = available balance
+   Status: open = green, closed = red, approved = navy.
+   Payment method squares: cash = slate, MoMo = amber, Bank/POS = violet.
+
+   What makes admin look different from staff: a navy sidebar for
+   moving between branches, and wider, denser overview panels.
+
+   All original class names, ids and data attributes are kept.
+   The small script at the bottom of adminDashboard.html adds
+   is-sales / is-expenses / is-opening / is-available classes to
+   content built by adminDashboard.js, based on its label text,
+   so the colours below apply without editing the JS.
+   ============================================================ */
+
+:root {
+  /* Neutrals (shared with staff pages) */
+  --adm-white: #ffffff;
+  --adm-paper: #f3f5f8;
+  --adm-ink: #14213a;
+  --adm-ink-2: #26375a;
+  --adm-text: #14213a;
+  --adm-text-soft: #4b5870;
+  --adm-text-muted: #7b8698;
+  --adm-border: #e2e6ec;
+  --adm-border-strong: #cdd4de;
+  --adm-bg-soft: #f7f8fa;
+  --adm-bg-soft-2: #eef1f5;
+
+  /* Meaning (shared with staff pages) */
+  --adm-income: #0f7a4d;
+  --adm-income-soft: #e7f5ee;
+  --adm-income-line: #b5e0c9;
+  --adm-expense: #b42318;
+  --adm-expense-soft: #fdeeec;
+  --adm-expense-line: #f4c5bf;
+  --adm-opening: #52627a;
+  --adm-opening-soft: #eef1f5;
+  --adm-warn: #9a5b00;
+  --adm-warn-soft: #fff6e0;
+  --adm-warn-line: #f3d894;
+
+  /* On navy */
+  --adm-on-dark: #ffffff;
+  --adm-on-dark-soft: #b8c3d8;
+  --adm-on-dark-muted: #8391aa;
+  --adm-on-dark-line: rgba(255, 255, 255, 0.1);
+  --adm-on-dark-hover: rgba(255, 255, 255, 0.06);
+  --adm-on-dark-active: rgba(255, 255, 255, 0.11);
+
+  /* Payment methods */
+  --adm-m-cash: #64748b;
+  --adm-m-momo: #d79a00;
+  --adm-m-bank: #5b4fc4;
+
+  /* Icons (same arrows as the staff dashboard) */
+  --adm-icon-sales: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10 15.5v-11m0 0-4.5 4.5M10 4.5l4.5 4.5' fill='none' stroke='%230f7a4d' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --adm-icon-expenses: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10 4.5v11m0 0-4.5-4.5m4.5 4.5 4.5-4.5' fill='none' stroke='%23b42318' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --adm-icon-opening: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M3 7.5h14M5 7.5V15m3.3-7.5V15m3.4-7.5V15M15 7.5V15M2.5 16.5h15M10 3l7 3.5H3L10 3Z' fill='none' stroke='%2352627a' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --adm-icon-available: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Crect x='2.5' y='5' width='15' height='11' rx='2' fill='none' stroke='%23ffffff' stroke-width='1.6'/%3E%3Cpath d='M2.5 8.5h15M12.5 12.3h2' stroke='%23ffffff' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+
+  /* Interaction */
+  --adm-focus: #2f5bd3;
+  --adm-focus-ring: rgba(47, 91, 211, 0.16);
+
+  /* Legacy names kept in case JS or other pages use them */
+  --adm-navy: var(--adm-ink);
+  --adm-navy-deep: #0f1a2e;
+  --adm-accent: var(--adm-ink);
+  --adm-accent-hover: var(--adm-ink-2);
+  --adm-accent-soft: var(--adm-bg-soft-2);
+  --adm-accent-border: var(--adm-border-strong);
+  --adm-open: var(--adm-income);
+  --adm-open-bg: var(--adm-income-soft);
+  --adm-open-border: var(--adm-income-line);
+  --adm-closed: var(--adm-expense);
+  --adm-closed-bg: var(--adm-expense-soft);
+  --adm-closed-border: var(--adm-expense-line);
+  --adm-approved: var(--adm-ink);
+  --adm-approved-bg: var(--adm-ink);
+  --adm-approved-border: var(--adm-ink);
+  --adm-warn-bg: var(--adm-warn-soft);
+  --adm-warn-border: var(--adm-warn-line);
+
+  --adm-radius-lg: 14px;
+  --adm-radius: 10px;
+  --adm-radius-sm: 6px;
+  --adm-radius-pill: 999px;
+
+  --adm-shadow-elevated: 0 18px 50px rgba(15, 26, 46, 0.28);
+
+  --adm-font: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --adm-sidebar-w: 232px;
+  --adm-topbar-h: 68px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--adm-font);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--adm-text);
+  background: var(--adm-paper);
+  min-height: 100vh;
+}
+
+button { cursor: pointer; }
+input, select, button { font-family: inherit; font-size: inherit; color: inherit; }
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--adm-focus);
+  outline-offset: 2px;
+}
+
+svg { display: block; }
+
+.hidden { display: none !important; }
+
+.adm-grand-value,
+.adm-grand-sub-value,
+.adm-branch-card-value,
+.adm-summary-cell-value,
+.adm-modal-total-value,
+.adm-table .adm-td-right {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Shared icon tile (same as .title-icon on the staff dashboard) */
+.adm-grand-label::before,
+.adm-summary-block-title::before,
+.adm-card.is-sales-card .adm-card-title::before,
+.adm-card.is-expenses-card .adm-card-title::before {
+  content: "";
+  display: inline-block;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--adm-radius-sm);
+  background-color: var(--adm-opening-soft);
+  background-image: var(--adm-icon-opening);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 16px 16px;
+}
+
+/* ---------- Shell ---------- */
+.adm-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  /* Navy runs the full height behind the sidebar column */
+  background: linear-gradient(to right, var(--adm-ink) var(--adm-sidebar-w), var(--adm-paper) var(--adm-sidebar-w));
+}
+
+/* Top bar: white, like the staff header */
+.adm-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: var(--adm-topbar-h);
+  padding: 0 28px 0 0;
+  background: var(--adm-white);
+  border-bottom: 1px solid var(--adm-border);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.adm-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-width: 0;
+  height: 100%;
+}
+
+/* Brand sits above the navy sidebar so the two line up */
+.adm-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: var(--adm-sidebar-w);
+  height: 100%;
+  padding: 0 18px;
+  flex-shrink: 0;
+  background: var(--adm-ink);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--adm-on-dark);
+}
+
+.adm-brand-logo {
+  height: 40px;
+  width: auto;
+  border-radius: var(--adm-radius-sm);
+  background: var(--adm-white);
+  display: block;
+}
+
+/* The logo carries the company name */
+.adm-brand-cic,
+.adm-brand-fin {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.adm-brand-role {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--adm-ink);
+  background: var(--adm-white);
+  border-radius: var(--adm-radius-pill);
+}
+
+/* Matches the staff user badge */
+.adm-user-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  color: var(--adm-text-soft);
+  background: var(--adm-white);
+  border: 1px solid var(--adm-border);
+  padding: 5px 12px 5px 6px;
+  border-radius: var(--adm-radius-pill);
+}
+
+.adm-user-role {
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: var(--adm-white);
+  background: var(--adm-ink);
+  padding: 2px 10px;
+  border-radius: var(--adm-radius-pill);
+  text-transform: capitalize;
+}
+
+.adm-user-sep { display: none; }
+.adm-user-branch { color: var(--adm-text-soft); }
+
+.adm-topbar-right {
+  display: flex;
+  align-items: center;
+}
+
+/* Matches the staff back button */
+.adm-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--adm-ink);
+  text-decoration: none;
+  padding: 8px 14px 8px 10px;
+  border: 1px solid var(--adm-border-strong);
+  border-radius: var(--adm-radius-sm);
+  background: var(--adm-white);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.adm-back-link:hover {
+  background: var(--adm-bg-soft-2);
+  border-color: var(--adm-ink-2);
+}
+
+.adm-back-arrow svg { width: 16px; height: 16px; }
+
+/* ---------- Body layout ---------- */
+.adm-body {
+  display: grid;
+  grid-template-columns: var(--adm-sidebar-w) minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+}
+
+/* ---------- Sidebar ---------- */
+.adm-sidebar {
+  background: var(--adm-ink);
+  padding: 18px 12px;
+  position: sticky;
+  top: var(--adm-topbar-h);
+  align-self: start;
+  height: calc(100vh - var(--adm-topbar-h));
+  overflow-y: auto;
+}
+
+.adm-side-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.adm-side-heading {
+  padding: 14px 12px 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--adm-on-dark-muted);
+}
+
+.adm-side-heading:first-child { padding-top: 0; }
+
+.adm-side-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 9px 12px;
+  font-size: 0.925rem;
+  font-weight: 500;
+  color: var(--adm-on-dark-soft);
+  background: transparent;
+  border: none;
+  border-radius: var(--adm-radius-sm);
+  text-align: left;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.adm-side-item:hover {
+  background: var(--adm-on-dark-hover);
+  color: var(--adm-on-dark);
+}
+
+.adm-side-item.adm-side-active {
+  background: var(--adm-on-dark-active);
+  color: var(--adm-on-dark);
+  font-weight: 600;
+}
+
+.adm-side-item.adm-side-active::before {
+  content: "";
+  position: absolute;
+  left: -12px;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--adm-on-dark);
+}
+
+.adm-side-item:focus-visible {
+  outline-color: var(--adm-on-dark);
+  outline-offset: -2px;
+}
+
+.adm-side-icon {
+  display: inline-flex;
+  opacity: 0.9;
+}
+
+.adm-side-icon svg { width: 18px; height: 18px; }
+
+/* ---------- Main ---------- */
+.adm-main {
+  padding: 30px 36px 48px;
+  min-width: 0;
+  max-width: 1240px;
+  width: 100%;
+}
+
+/* ---------- Loading / error ---------- */
+.adm-state {
+  text-align: center;
+  padding: 48px 24px;
+  border: 1px solid var(--adm-border);
+  border-radius: var(--adm-radius);
+  background: var(--adm-white);
+  color: var(--adm-text-soft);
+  font-size: 0.95rem;
+}
+
+.adm-state-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.adm-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--adm-border-strong);
+  border-top-color: var(--adm-ink);
+  border-radius: 50%;
+  animation: adm-spin 0.8s linear infinite;
+}
+
+@keyframes adm-spin { to { transform: rotate(360deg); } }
+
+.adm-state-error {
+  background: var(--adm-expense-soft);
+  border-color: var(--adm-expense-line);
+  color: var(--adm-expense);
+}
+
+.adm-state-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.adm-state-icon svg { width: 28px; height: 28px; }
+
+.adm-state-error p {
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+/* ---------- Page heading ---------- */
+.adm-page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.adm-page-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--adm-ink);
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+}
+
+.adm-page-sub {
+  margin-top: 4px;
+  font-size: 0.95rem;
+  color: var(--adm-text-soft);
+}
+
+/* ---------- Cards ---------- */
+.adm-card {
+  background: var(--adm-white);
+  border: 1px solid var(--adm-border);
+  border-radius: var(--adm-radius);
+  padding: 22px 24px;
+  margin-bottom: 20px;
+}
+
+.adm-card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--adm-ink);
+}
+
+.adm-section-heading {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--adm-ink);
+  margin: 28px 0 14px;
+}
+
+/* Cards holding a sales or expenses table get the matching edge and icon */
+.adm-card.is-sales-card { border-top: 3px solid var(--adm-income); }
+.adm-card.is-expenses-card { border-top: 3px solid var(--adm-expense); }
+
+.adm-card.is-sales-card .adm-card-title::before {
+  background-color: var(--adm-income-soft);
+  background-image: var(--adm-icon-sales);
+}
+
+.adm-card.is-expenses-card .adm-card-title::before {
+  background-color: var(--adm-expense-soft);
+  background-image: var(--adm-icon-expenses);
+}
+
+/* ---------- Grand total: all branches together ---------- */
+/* Laid out like the staff dashboard cards: sales, expenses, then the navy available card */
+.adm-grand-total {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.adm-grand-total-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.adm-grand-date {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--adm-text-soft);
+  padding: 5px 12px;
+  border-radius: var(--adm-radius-pill);
+  background: var(--adm-white);
+  border: 1px solid var(--adm-border);
+}
+
+.adm-grand-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.25fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.adm-grand-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 22px 22px;
+  min-width: 0;
+  background: var(--adm-white);
+  border: 1px solid var(--adm-border);
+  border-top: 3px solid var(--adm-opening);
+  border-radius: var(--adm-radius);
+}
+
+.adm-grand-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--adm-ink);
+}
+
+.adm-grand-value {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+  color: var(--adm-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Sales: green */
+.adm-grand-cell-sales { border-top-color: var(--adm-income); }
+.adm-grand-cell-sales .adm-grand-label::before {
+  background-color: var(--adm-income-soft);
+  background-image: var(--adm-icon-sales);
+}
+.adm-grand-cell-sales .adm-grand-value { color: var(--adm-income); }
+
+/* Expenses: red */
+.adm-grand-cell-expenses { border-top-color: var(--adm-expense); }
+.adm-grand-cell-expenses .adm-grand-label::before {
+  background-color: var(--adm-expense-soft);
+  background-image: var(--adm-icon-expenses);
+}
+.adm-grand-cell-expenses .adm-grand-value { color: var(--adm-expense); }
+
+/* Available: navy card, same as the staff dashboard */
+.adm-grand-cell-accent {
+  background: var(--adm-ink);
+  border-color: var(--adm-ink);
+  border-top-color: var(--adm-ink);
+  border-radius: var(--adm-radius-lg);
+}
+
+.adm-grand-cell-accent .adm-grand-label { color: var(--adm-on-dark-soft); font-weight: 500; }
+.adm-grand-cell-accent .adm-grand-label::before {
+  background-color: rgba(255, 255, 255, 0.1);
+  background-image: var(--adm-icon-available);
+}
+.adm-grand-cell-accent .adm-grand-value { color: var(--adm-on-dark); font-size: 2.4rem; }
+
+/* Payment method breakdown: one white strip */
+.adm-grand-sub {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  background: var(--adm-white);
+  border: 1px solid var(--adm-border);
+  border-radius: var(--adm-radius);
+}
+
+.adm-grand-sub-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  padding: 14px 20px;
+  font-size: 0.925rem;
+  min-width: 0;
+}
+
+.adm-grand-sub-item + .adm-grand-sub-item {
+  border-left: 1px solid var(--adm-border);
+}
+
+.adm-grand-sub-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--adm-text-soft);
+}
+
+.adm-grand-sub-value {
+  font-weight: 600;
+  color: var(--adm-ink);
+  white-space: nowrap;
+}
+
+/* Payment method squares (shared everywhere) */
+.adm-method-cash .adm-grand-sub-label::before,
+.adm-method-momo .adm-grand-sub-label::before,
+.adm-method-bank .adm-grand-sub-label::before,
+.adm-method-cash .adm-label::before,
+.adm-method-momo .adm-label::before,
+.adm-method-bank .adm-label::before,
+.adm-method-cash .adm-summary-cell-label::before,
+.adm-method-momo .adm-summary-cell-label::before,
+.adm-method-bank .adm-summary-cell-label::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--adm-m-cash);
+  flex-shrink: 0;
+}
+
+.adm-method-momo .adm-grand-sub-label::before,
+.adm-method-momo .adm-label::before,
+.adm-method-momo .adm-summary-cell-label::before { background: var(--adm-m-momo); }
+
+.adm-method-bank .adm-grand-sub-label::before,
+.adm-method-bank .adm-label::before,
+.adm-method-bank .adm-summary-cell-label::before { background: var(--adm-m-bank); }
+
+/* ---------- Branch cards ---------- */
+.adm-branch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.adm-branch-card {
+  background: var(--adm-white);
+  border: 1px solid var(--adm-border);
+  border-radius: var(--adm-radius);
+  padding: 18px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.adm-branch-card:hover {
+  border-color: var(--adm-border-strong);
+  box-shadow: 0 4px 16px rgba(20, 33, 58, 0.06);
+}
+
+.adm-branch-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.adm-branch-card-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--adm-ink);
+}
+
+.adm-branch-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.adm-branch-card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  font-size: 0.925rem;
+  border-radius: var(--adm-radius-sm);
+  background: var(--adm-bg-soft);
+  border-left: 3px solid var(--adm-border-strong);
+}
+
+.adm-branch-card-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--adm-text-soft);
+}
+
+.adm-branch-card-value {
+  font-weight: 600;
+  color: var(--adm-ink);
+  white-space: nowrap;
+}
+
+/* Sales row: green */
+.adm-branch-card-row.is-sales {
+  background: var(--adm-income-soft);
+  border-left-color: var(--adm-income);
+}
+.adm-branch-card-row.is-sales .adm-branch-card-label { color: var(--adm-income); }
+.adm-branch-card-row.is-sales .adm-branch-card-value { color: var(--adm-income); font-weight: 700; }
+
+/* Expenses row: red */
+.adm-branch-card-row.is-expenses {
+  background: var(--adm-expense-soft);
+  border-left-color: var(--adm-expense);
+}
+.adm-branch-card-row.is-expenses .adm-branch-card-label { color: var(--adm-expense); }
+.adm-branch-card-row.is-expenses .adm-branch-card-value { color: var(--adm-expense); font-weight: 700; }
+
+/* Opening row: slate */
+.adm-branch-card-row.is-opening { border-left-color: var(--adm-opening); }
+
+/* Available row: navy, the highlighted figure */
+.adm-branch-card-row.is-available,
+.adm-branch-card-row:has(.accent) {
+  background: var(--adm-ink);
+  border-left-color: var(--adm-ink);
+  padding: 12px 14px;
+}
+
+.adm-branch-card-row.is-available .adm-branch-card-label,
+.adm-branch-card-row:has(.accent) .adm-branch-card-label { color: var(--adm-on-dark-soft); }
+
+.adm-branch-card-row.is-available .adm-branch-card-value,
+.adm-branch-card-value.accent {
+  color: var(--adm-on-dark);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+/* Icons on the sales and expenses rows */
+.adm-branch-card-row.is-sales .adm-branch-card-label::before,
+.adm-branch-card-row.is-expenses .adm-branch-card-label::before {
+  content: "";
+  width: 16px;
+  height: 16px;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+}
+.adm-branch-card-row.is-sales .adm-branch-card-label::before { background-image: var(--adm-icon-sales); }
+.adm-branch-card-row.is-expenses .adm-branch-card-label::before { background-image: var(--adm-icon-expenses); }
+
+.adm-branch-card-footer {
+  margin-top: auto;
+  display: flex;
+  gap: 8px;
+}
+
+.adm-branch-card-footer .adm-btn { flex: 1; }
+
+/* ---------- Status pill (same as staff) ---------- */
+.adm-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px 5px 10px;
+  border-radius: var(--adm-radius-pill);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.adm-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.adm-status-open {
+  background: var(--adm-income-soft);
+  color: var(--adm-income);
+  border-color: var(--adm-income-line);
+}
+
+.adm-status-closed {
+  background: var(--adm-expense-soft);
+  color: var(--adm-expense);
+  border-color: var(--adm-expense-line);
+}
+
+.adm-status-approved {
+  background: var(--adm-ink);
+  color: var(--adm-on-dark);
+  border-color: var(--adm-ink);
+}
+
+.adm-status-none {
+  background: var(--adm-white);
+  color: var(--adm-text-muted);
+  border: 1px dashed var(--adm-border-strong);
+}
+
+/* ---------- Branch sub-tabs (same underline tabs as staff) ---------- */
+.adm-subtabs {
+  display: flex;
+  gap: 2px;
+  border-bottom: 1px solid var(--adm-border-strong);
+  margin-bottom: 22px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.adm-subtabs::-webkit-scrollbar { display: none; }
+
+.adm-subtab {
+  padding: 11px 18px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--adm-text-soft);
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+  white-space: nowrap;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.adm-subtab:hover {
+  color: var(--adm-ink);
+  border-bottom-color: var(--adm-border-strong);
+}
+
+.adm-subtab.adm-subtab-active {
+  color: var(--adm-ink);
+  border-bottom-color: var(--adm-ink);
+  font-weight: 600;
+}
+
+/* ---------- Buttons (same as staff) ---------- */
+.adm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 18px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: var(--adm-radius-sm);
+  border: 1px solid transparent;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.adm-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.adm-btn-primary {
+  background: var(--adm-ink);
+  color: var(--adm-white);
+  border-color: var(--adm-ink);
+}
+
+.adm-btn-primary:hover:not(:disabled) {
+  background: var(--adm-ink-2);
+  border-color: var(--adm-ink-2);
+}
+
+.adm-btn-secondary {
+  background: var(--adm-white);
+  color: var(--adm-ink);
+  border-color: var(--adm-border-strong);
+}
+
+.adm-btn-secondary:hover:not(:disabled) {
+  background: var(--adm-bg-soft-2);
+  border-color: var(--adm-ink-2);
+}
+
+.adm-btn-danger {
+  background: var(--adm-white);
+  color: var(--adm-expense);
+  border-color: var(--adm-expense-line);
+}
+
+.adm-btn-danger:hover:not(:disabled) {
+  background: var(--adm-expense-soft);
+  border-color: var(--adm-expense);
+}
+
+.adm-btn-success {
+  background: var(--adm-income);
+  color: var(--adm-white);
+  border-color: var(--adm-income);
+}
+
+.adm-btn-success:hover:not(:disabled) {
+  background: #0b6640;
+  border-color: #0b6640;
+}
+
+.adm-btn-ghost {
+  background: transparent;
+  color: var(--adm-ink-2);
+  border-color: transparent;
+  padding: 5px 10px;
+  font-size: 0.825rem;
+}
+
+.adm-btn-ghost:hover:not(:disabled) {
+  background: var(--adm-bg-soft-2);
+  color: var(--adm-ink);
+}
+
+.adm-action-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ---------- Account summary (branch Today view and drill-down) ---------- */
+/* Same layout as the staff dashboard: opening, sales and expenses side by
+   side, then the navy available card across the full width. */
+:where(.adm-subview, .adm-card, div):has(> .adm-summary-block) {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+:where(.adm-subview, .adm-card, div):has(> .adm-summary-block) > :not(.adm-summary-block),
+.adm-summary-block-available {
+  grid-column: 1 / -1;
+}
+
+.adm-summary-block {
+  display: flex;
+  flex-direction: column;
+  padding: 18px 20px 20px;
+  background: var(--adm-white);
+  border: 1px solid var(--adm-border);
+  border-top: 3px solid var(--adm-opening);
+  border-radius: var(--adm-radius);
+  min-width: 0;
+}
+
+.adm-card > .adm-summary-block { border-color: var(--adm-border); }
+
+.adm-summary-block-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--adm-ink);
+  margin-bottom: 14px;
+}
+
+/* Sales block: green */
+.adm-summary-block.is-sales { border-top-color: var(--adm-income); }
+.adm-summary-block.is-sales .adm-summary-block-title::before {
+  background-color: var(--adm-income-soft);
+  background-image: var(--adm-icon-sales);
+}
+.adm-summary-block.is-sales .adm-summary-cell-total .adm-summary-cell-value { color: var(--adm-income); }
+
+/* Expenses block: red */
+.adm-summary-block.is-expenses { border-top-color: var(--adm-expense); }
+.adm-summary-block.is-expenses .adm-summary-block-title::before {
+  background-color: var(--adm-expense-soft);
+  background-image: var(--adm-icon-expenses);
+}
+.adm-summary-block.is-expenses .adm-summary-cell-total .adm-summary-cell-value { color: var(--adm-expense); }
+
+/* Cells as ledger lines, with the total first and largest */
+.adm-summary-grid {
+  display: flex;
+  flex-direction: column;
+}
+
+.adm-summary-cell {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--adm-border);
+  min-width: 0;
+}
+
+.adm-summary-cell:last-child { border-bottom: none; padding-bottom: 0; }
+.adm-summary-cell:has(+ .adm-summary-cell-total:last-child) { border-bottom: none; padding-bottom: 0; }
+
+/* dotted leader between label and amount, like the staff dashboard */
+.adm-summary-cell::after {
+  content: "";
+  flex: 1;
+  order: 1;
+  min-width: 12px;
+  border-bottom: 1px dotted var(--adm-border-strong);
+  transform: translateY(-4px);
+}
+
+.adm-summary-cell-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  order: 0;
+  font-size: 0.9rem;
+  color: var(--adm-text-soft);
+  white-space: nowrap;
+}
+
+.adm-summary-cell-value {
+  order: 2;
+  font-size: 0.975rem;
+  font-weight: 600;
+  color: var(--adm-ink);
+  white-space: nowrap;
+}
+
+.adm-summary-cell-total {
+  order: -1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 0 0 14px;
+  margin-bottom: 4px;
+}
+
+.adm-summary-cell-total::after { display: none; }
+
+.adm-summary-cell-total .adm-summary-cell-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.adm-summary-cell-total .adm-summary-cell-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+/* Available: navy card across the full width, same as the staff dashboard */
+.adm-summary-block-available {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+  column-gap: 32px;
+  align-items: end;
+  padding: 24px 26px;
+  background: var(--adm-ink);
+  border: none;
+  border-radius: var(--adm-radius-lg);
+}
+
+.adm-summary-block-available .adm-summary-block-title {
+  grid-column: 1 / -1;
+  color: var(--adm-on-dark-soft);
+  font-weight: 500;
+}
+
+.adm-summary-block-available .adm-summary-block-title::before {
+  background-color: rgba(255, 255, 255, 0.1);
+  background-image: var(--adm-icon-available);
+}
+
+.adm-summary-block-available .adm-summary-grid {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) repeat(3, minmax(0, 0.8fr));
+  gap: 12px;
+  align-items: stretch;
+}
+
+.adm-summary-block-available .adm-summary-cell {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--adm-radius);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.adm-summary-block-available .adm-summary-cell::after { display: none; }
+
+.adm-summary-block-available .adm-summary-cell:has(+ .adm-summary-cell-total:last-child) {
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.adm-summary-block-available .adm-summary-cell-label { color: var(--adm-on-dark-soft); }
+.adm-summary-block-available .adm-summary-cell-value { color: var(--adm-on-dark); font-size: 1.1rem; }
+
+.adm-summary-block-available .adm-summary-cell-total {
+  background: transparent;
+  border: none;
+  padding: 0;
+  justify-content: flex-end;
+}
+
+.adm-summary-block-available .adm-summary-cell-total .adm-summary-cell-label { color: #dbe2ee; }
+.adm-summary-block-available .adm-summary-cell-total .adm-summary-cell-value {
+  font-size: 2.2rem;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+/* ---------- Tables ---------- */
+.adm-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--adm-border);
+  border-radius: var(--adm-radius-sm);
+}
+
+.adm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  min-width: 780px;
+}
+
+.adm-table thead th {
+  text-align: left;
+  padding: 11px 14px;
+  background: var(--adm-bg-soft);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--adm-text-soft);
+  border-bottom: 1px solid var(--adm-border-strong);
+  white-space: nowrap;
+}
+
+.adm-table tbody td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--adm-border);
+  color: var(--adm-text);
+  vertical-align: middle;
+}
+
+.adm-table tbody tr:last-child td { border-bottom: none; }
+.adm-table tbody tr:hover { background: var(--adm-bg-soft); }
+
+.adm-table .adm-td-right { text-align: right; white-space: nowrap; }
+.adm-table thead th.adm-td-right { text-align: right; }
+
+.adm-table .adm-td-strong {
+  font-weight: 600;
+  color: var(--adm-ink);
+  white-space: nowrap;
+}
+
+/* Amounts: green in sales tables, red in expenses tables (same as staff) */
+.adm-table-wrap.is-sales .adm-td-right.adm-td-strong { color: var(--adm-income); }
+.adm-table-wrap.is-expenses .adm-td-right.adm-td-strong { color: var(--adm-expense); }
+
+.adm-table .adm-td-time {
+  color: var(--adm-text-soft);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.adm-table .adm-td-actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.adm-table .adm-td-actions .adm-btn + .adm-btn { margin-left: 4px; }
+
+/* ---------- Badges (same as staff) ---------- */
+.adm-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 9px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  border-radius: var(--adm-radius-pill);
+  border: 1px solid var(--adm-border-strong);
+  background: var(--adm-white);
+  color: var(--adm-text-soft);
+  white-space: nowrap;
+}
+
+.adm-badge-inventory {
+  background: var(--adm-bg-soft-2);
+  color: var(--adm-ink-2);
+  border-color: var(--adm-border-strong);
+}
+
+.adm-badge-manual {
+  background: var(--adm-warn-soft);
+  color: var(--adm-warn);
+  border-color: var(--adm-warn-line);
+}
+
+.adm-badge-cash,
+.adm-badge-momo,
+.adm-badge-bank { padding-left: 8px; }
+
+.adm-badge-cash::before,
+.adm-badge-momo::before,
+.adm-badge-bank::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--adm-m-cash);
+}
+
+.adm-badge-momo::before { background: var(--adm-m-momo); }
+.adm-badge-bank::before { background: var(--adm-m-bank); }
+
+/* ---------- Empty state ---------- */
+.adm-empty {
+  text-align: center;
+  padding: 44px 24px;
+  color: var(--adm-text-soft);
+  border: 1px dashed var(--adm-border-strong);
+  border-radius: var(--adm-radius);
+  background: var(--adm-bg-soft);
+}
+
+.adm-empty-icon {
+  margin: 0 auto 12px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--adm-white);
+  border: 1px solid var(--adm-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--adm-text-muted);
+}
+
+.adm-empty-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--adm-ink);
+  margin-bottom: 2px;
+}
+
+.adm-empty-text {
+  font-size: 0.9rem;
+  color: var(--adm-text-soft);
+}
+
+/* ---------- Range filter ---------- */
+.adm-range-card { padding: 16px 18px; }
+
+.adm-range-row {
+  display: flex;
+  gap: 14px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.adm-range-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 160px;
+}
+
+.adm-range-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--adm-text-soft);
+}
+
+.adm-range-input {
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  border: 1px solid var(--adm-border-strong);
+  border-radius: var(--adm-radius-sm);
+  background: var(--adm-white);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.adm-range-input:focus {
+  outline: none;
+  border-color: var(--adm-focus);
+  box-shadow: 0 0 0 3px var(--adm-focus-ring);
+}
+
+.adm-range-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* ---------- Modal ---------- */
+.adm-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 26, 46, 0.55);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: adm-modal-fade 0.15s ease-out;
+}
+
+@keyframes adm-modal-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.adm-modal {
+  background: var(--adm-white);
+  border-radius: var(--adm-radius-lg);
+  box-shadow: var(--adm-shadow-elevated);
+  width: 100%;
+  max-width: 540px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: adm-modal-pop 0.18s ease-out;
+}
+
+/* Sale edits get a green edge, expense edits a red one */
+#saleModal .adm-modal { border-top: 4px solid var(--adm-income); }
+#expenseModal .adm-modal { border-top: 4px solid var(--adm-expense); }
+
+@keyframes adm-modal-pop {
+  from { transform: translateY(6px) scale(0.98); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+
+.adm-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 16px 22px;
+  border-bottom: 1px solid var(--adm-border);
+}
+
+.adm-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--adm-ink);
+}
+
+.adm-modal-title::before {
+  content: "";
+  width: 28px;
+  height: 28px;
+  border-radius: var(--adm-radius-sm);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 16px 16px;
+}
+
+#saleModalTitle::before { background-color: var(--adm-income-soft); background-image: var(--adm-icon-sales); }
+#expenseModalTitle::before { background-color: var(--adm-expense-soft); background-image: var(--adm-icon-expenses); }
+
+.adm-modal-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  color: var(--adm-text-muted);
+  border-radius: var(--adm-radius-sm);
+}
+
+.adm-modal-close svg { width: 18px; height: 18px; }
+.adm-modal-close:hover { background: var(--adm-bg-soft-2); color: var(--adm-ink); }
+
+.adm-modal-body {
+  padding: 20px 22px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.adm-modal-section-head {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--adm-ink);
+  margin-top: 4px;
+  padding-top: 14px;
+  border-top: 1px solid var(--adm-border);
+}
+
+.adm-modal-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 12px 14px;
+  background: var(--adm-income-soft);
+  border: 1px solid var(--adm-income-line);
+  border-radius: var(--adm-radius-sm);
+}
+
+.adm-modal-total-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--adm-income);
+}
+
+.adm-modal-total-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--adm-income);
+}
+
+.adm-modal-hint {
+  font-size: 0.85rem;
+  min-height: 1.1em;
+  color: var(--adm-text-muted);
+}
+
+.adm-modal-hint.adm-hint-error { color: var(--adm-expense); font-weight: 500; }
+.adm-modal-hint.adm-hint-success { color: var(--adm-income); font-weight: 500; }
+
+.adm-modal-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 22px;
+  border-top: 1px solid var(--adm-border);
+  background: var(--adm-bg-soft);
+}
+
+/* ---------- Form bits ---------- */
+.adm-form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.adm-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--adm-text-soft);
+}
+
+.adm-input {
+  width: 100%;
+  padding: 9px 12px;
+  font-size: 0.925rem;
+  color: var(--adm-text);
+  border: 1px solid var(--adm-border-strong);
+  border-radius: var(--adm-radius-sm);
+  background: var(--adm-white);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+select.adm-input {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 36px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5.5 8 10 12.5 14.5 8' fill='none' stroke='%234b5870' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 18px 18px;
+}
+
+.adm-input:focus {
+  outline: none;
+  border-color: var(--adm-focus);
+  box-shadow: 0 0 0 3px var(--adm-focus-ring);
+}
+
+.adm-input[readonly],
+.adm-input-readonly {
+  background: var(--adm-bg-soft);
+  color: var(--adm-ink);
+  font-weight: 500;
+  cursor: default;
+}
+
+.adm-input[readonly]:focus {
+  border-color: var(--adm-border-strong);
+  box-shadow: none;
+}
+
+/* Expense amount typed in red, like the staff Expenses page */
+#expenseModalAmount {
+  color: var(--adm-expense);
+  font-weight: 600;
+}
+
+.adm-payment-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.adm-payment-grid .adm-input {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Footer ---------- */
+.adm-footer {
+  margin-left: var(--adm-sidebar-w);
+  padding: 16px 36px 22px;
+  border-top: 1px solid var(--adm-border);
+  font-size: 0.8rem;
+  color: var(--adm-text-muted);
+  text-align: center;
+}
+
+/* ---------- Toast ---------- */
+.adm-toast-container {
+  position: fixed;
+  top: calc(var(--adm-topbar-h) + 16px);
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+  max-width: 360px;
+}
+
+.adm-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: var(--adm-radius-sm);
+  background: var(--adm-white);
+  border: 1px solid var(--adm-border);
+  box-shadow: 0 8px 24px rgba(20, 33, 58, 0.14);
+  font-size: 0.9rem;
+  color: var(--adm-text);
+  animation: adm-toast-in 0.2s ease-out;
+}
+
+@keyframes adm-toast-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.adm-toast.adm-toast-success { border-left: 4px solid var(--adm-income); }
+.adm-toast.adm-toast-error   { border-left: 4px solid var(--adm-expense); }
+.adm-toast.adm-toast-info    { border-left: 4px solid var(--adm-ink-2); }
+
+.adm-toast-icon { flex-shrink: 0; font-size: 1rem; line-height: 1.3; }
+.adm-toast-success .adm-toast-icon { color: var(--adm-income); }
+.adm-toast-error .adm-toast-icon   { color: var(--adm-expense); }
+.adm-toast-info .adm-toast-icon    { color: var(--adm-ink-2); }
+
+@media (prefers-reduced-motion: reduce) {
+  .adm-spinner,
+  .adm-toast,
+  .adm-modal,
+  .adm-modal-backdrop { animation: none; }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1180px) {
+  .adm-grand-value { font-size: 1.65rem; }
+  .adm-grand-cell-accent .adm-grand-value { font-size: 1.95rem; }
+}
+
+@media (max-width: 1024px) {
+  .adm-main { padding: 28px 24px 44px; }
+
+  .adm-grand-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .adm-grand-cell-accent { grid-column: 1 / -1; }
+
+  .adm-summary-block-available { grid-template-columns: minmax(0, 1fr); row-gap: 16px; }
+  .adm-summary-block-available .adm-summary-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .adm-summary-block-available .adm-summary-cell-total { grid-column: 1 / -1; }
+}
+
+@media (max-width: 960px) {
+  :where(.adm-subview, .adm-card, div):has(> .adm-summary-block) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Tablet and phone: sidebar becomes a navy strip under the top bar */
+@media (max-width: 860px) {
+  .adm-shell { background: var(--adm-paper); }
+
+  .adm-topbar {
+    height: auto;
+    min-height: var(--adm-topbar-h);
+    padding: 0 16px 0 0;
+    position: static;
+  }
+
+  .adm-brand {
+    width: auto;
+    padding: 0 16px;
+    align-self: stretch;
+    height: auto;
+    min-height: var(--adm-topbar-h);
+  }
+
+  .adm-body { grid-template-columns: minmax(0, 1fr); }
+
+  .adm-sidebar {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    height: auto;
+    padding: 0 8px;
+  }
+
+  .adm-side-list {
+    flex-direction: row;
+    overflow-x: auto;
+    scrollbar-width: none;
+    gap: 4px;
+    padding: 8px 0;
+  }
+
+  .adm-side-list::-webkit-scrollbar { display: none; }
+
+  .adm-side-heading { display: none; }
+
+  .adm-side-item {
+    width: auto;
+    white-space: nowrap;
+    padding: 8px 12px;
+  }
+
+  .adm-side-item.adm-side-active::before {
+    left: 12px;
+    right: 12px;
+    top: auto;
+    bottom: -8px;
+    width: auto;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+  }
+
+  .adm-footer { margin-left: 0; }
+
+  .adm-toast-container { top: 16px; }
+}
+
+@media (max-width: 640px) {
+  .adm-main { padding: 22px 16px 40px; }
+
+  .adm-page-title { font-size: 1.4rem; }
+
+  .adm-topbar-left { gap: 12px; }
+
+  .adm-user-badge { display: none; }
+
+  .adm-back-link span:last-child { display: none; }
+  .adm-back-link { padding: 8px 10px; }
+
+  .adm-card { padding: 18px 16px; }
+
+  .adm-grand-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+
+  .adm-grand-cell { padding: 16px 18px 18px; gap: 10px; }
+
+  .adm-grand-value { font-size: 1.6rem; }
+  .adm-grand-cell-accent .adm-grand-value { font-size: 1.85rem; }
+
+  .adm-grand-sub { grid-template-columns: minmax(0, 1fr); }
+
+  .adm-grand-sub-item { padding: 12px 16px; }
+
+  .adm-grand-sub-item + .adm-grand-sub-item {
+    border-left: none;
+    border-top: 1px solid var(--adm-border);
+  }
+
+  .adm-branch-grid { grid-template-columns: minmax(0, 1fr); }
+
+  .adm-summary-block { padding: 16px; }
+
+  .adm-summary-block-available { padding: 20px 16px; }
+
+  .adm-summary-block-available .adm-summary-grid { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+
+  .adm-summary-block-available .adm-summary-cell {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .adm-summary-block-available .adm-summary-cell-total {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .adm-summary-block-available .adm-summary-cell-total .adm-summary-cell-value { font-size: 1.85rem; }
+
+  .adm-payment-grid { grid-template-columns: minmax(0, 1fr); }
+
+  .adm-range-row { flex-direction: column; align-items: stretch; }
+  .adm-range-actions { margin-left: 0; }
+  .adm-range-actions .adm-btn { flex: 1; }
+
+  .adm-toast-container {
+    left: 16px;
+    right: 16px;
+    max-width: none;
+  }
+}

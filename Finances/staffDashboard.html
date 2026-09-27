@@ -3,10 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CICTech Finance · Staff Dashboard</title>
+  <title>CICTech Finance | Staff Dashboard</title>
+  <!-- Typeface (falls back to system fonts if offline) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <!-- Finance stylesheet -->
   <link rel="stylesheet" href="../stylesheet/staffDashboard.css">
-  <!-- No external libraries, vanilla only -->
 </head>
 <body>
   <!-- Main application shell -->
@@ -14,19 +17,19 @@
     <!-- ========== HEADER ========== -->
     <header class="finance-header">
       <div class="header-left">
-        <div class="brand">
-          <span class="brand-cic">CICTech</span>
-          <span class="brand-finance">Finance</span>
+        <div class="logo">
+          <img src="../assets/logo.jpg" alt="CICTech Electronics">
         </div>
         <div class="user-badge" id="userBadge">
-          <!-- dynamically filled: staff · Central -->
+          <!-- dynamically filled: staff / Central -->
           <span class="user-role">staff</span>
-          <span class="user-branch">· <span id="branchDisplay">—</span></span>
+          <span class="user-branch"><span id="branchDisplay">–</span></span>
         </div>
       </div>
       <div class="header-right">
         <a href="/" class="back-to-inventory" id="backToInventoryBtn" aria-label="Back to Inventory application">
-          ← Back to Inventory
+          <svg class="icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4.5 7 10l5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Back to Inventory
         </a>
       </div>
     </header>
@@ -53,104 +56,119 @@
           <div class="page-header-left">
             <h1 class="page-title">Finance Dashboard</h1>
             <div class="page-meta">
-              <span class="page-date" id="todayDate">—</span>
-              <span class="meta-separator">·</span>
-              <span class="page-branch" id="branchNameHeader">—</span>
+              <span class="page-date" id="todayDate">–</span>
+              <span class="meta-separator" aria-hidden="true"></span>
+              <span class="page-branch" id="branchNameHeader">–</span>
             </div>
           </div>
           <div class="page-header-right">
-            <span class="status-badge" id="accountStatus">—</span>
+            <span class="status-badge" id="accountStatus">–</span>
           </div>
         </section>
 
-        <!-- 6. SIMPLE FINANCIAL OVERVIEW (equation) -->
-        <section class="overview-equation" aria-label="Financial overview equation">
-          <div class="equation-item">
+        <!-- 6. DAILY RECONCILIATION (equation) -->
+        <section class="overview-equation" aria-label="Today's reconciliation: opening plus sales minus expenses equals available">
+          <div class="equation-item eq-opening">
             <span class="equation-label">Opening</span>
-            <span class="equation-value" id="eqOpening">—</span>
+            <span class="equation-value" id="eqOpening">–</span>
           </div>
-          <span class="equation-operator">+</span>
-          <div class="equation-item">
+          <span class="equation-operator" aria-hidden="true">+</span>
+          <div class="equation-item eq-sales">
             <span class="equation-label">Sales</span>
-            <span class="equation-value" id="eqSales">—</span>
+            <span class="equation-value" id="eqSales">–</span>
           </div>
-          <span class="equation-operator">−</span>
-          <div class="equation-item">
+          <span class="equation-operator" aria-hidden="true">&minus;</span>
+          <div class="equation-item eq-expenses">
             <span class="equation-label">Expenses</span>
-            <span class="equation-value" id="eqExpenses">—</span>
+            <span class="equation-value" id="eqExpenses">–</span>
           </div>
-          <span class="equation-operator">=</span>
-          <div class="equation-item highlight">
+          <span class="equation-operator" aria-hidden="true">=</span>
+          <div class="equation-item highlight eq-available">
             <span class="equation-label">Available</span>
-            <span class="equation-value" id="eqAvailable">—</span>
+            <span class="equation-value" id="eqAvailable">–</span>
           </div>
         </section>
 
         <!-- 2. OPENING BALANCE SECTION -->
-        <section class="section-card">
-          <h2 class="section-title">Opening Balance</h2>
+        <section class="section-card card-opening">
+          <h2 class="section-title">
+            <span class="title-icon" aria-hidden="true">
+              <svg viewBox="0 0 20 20"><path d="M3 7.5h14M5 7.5V15m3.3-7.5V15m3.4-7.5V15M15 7.5V15M2.5 16.5h15M10 3l7 3.5H3L10 3Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            </span>
+            Opening Balance
+          </h2>
           <div class="balance-grid">
-            <div class="balance-card">
+            <div class="balance-card method-cash">
               <span class="balance-label">Cash</span>
-              <span class="balance-amount" id="openingCash">—</span>
+              <span class="balance-amount" id="openingCash">–</span>
             </div>
-            <div class="balance-card">
+            <div class="balance-card method-momo">
               <span class="balance-label">MoMo</span>
-              <span class="balance-amount" id="openingMomo">—</span>
+              <span class="balance-amount" id="openingMomo">–</span>
             </div>
-            <div class="balance-card">
+            <div class="balance-card method-bank">
               <span class="balance-label">Bank/POS</span>
-              <span class="balance-amount" id="openingBank">—</span>
+              <span class="balance-amount" id="openingBank">–</span>
             </div>
           </div>
           <div class="total-line">
             <span class="total-label">Total Opening Balance</span>
-            <span class="total-amount" id="openingTotal">—</span>
+            <span class="total-amount" id="openingTotal">–</span>
           </div>
         </section>
 
         <!-- 3. TODAY'S SALES SECTION -->
-        <section class="section-card">
-          <h2 class="section-title">Today's Sales</h2>
+        <section class="section-card card-sales">
+          <h2 class="section-title">
+            <span class="title-icon" aria-hidden="true">
+              <svg viewBox="0 0 20 20"><path d="M10 15.5v-11m0 0-4.5 4.5M10 4.5l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            Today's Sales
+          </h2>
           <div class="total-line main-total">
             <span class="total-label">Total Sales</span>
-            <span class="total-amount" id="salesTotal">—</span>
+            <span class="total-amount" id="salesTotal">–</span>
           </div>
           <div class="breakdown-grid">
-            <div class="breakdown-item">
+            <div class="breakdown-item method-cash">
               <span class="breakdown-label">Cash</span>
-              <span class="breakdown-amount" id="salesCash">—</span>
+              <span class="breakdown-amount" id="salesCash">–</span>
             </div>
-            <div class="breakdown-item">
+            <div class="breakdown-item method-momo">
               <span class="breakdown-label">MoMo</span>
-              <span class="breakdown-amount" id="salesMomo">—</span>
+              <span class="breakdown-amount" id="salesMomo">–</span>
             </div>
-            <div class="breakdown-item">
+            <div class="breakdown-item method-bank">
               <span class="breakdown-label">Bank/POS</span>
-              <span class="breakdown-amount" id="salesBank">—</span>
+              <span class="breakdown-amount" id="salesBank">–</span>
             </div>
           </div>
         </section>
 
         <!-- 4. TODAY'S EXPENSES SECTION -->
-        <section class="section-card">
-          <h2 class="section-title">Today's Expenses</h2>
+        <section class="section-card card-expenses">
+          <h2 class="section-title">
+            <span class="title-icon" aria-hidden="true">
+              <svg viewBox="0 0 20 20"><path d="M10 4.5v11m0 0-4.5-4.5m4.5 4.5 4.5-4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            Today's Expenses
+          </h2>
           <div class="total-line main-total">
             <span class="total-label">Total Expenses</span>
-            <span class="total-amount" id="expensesTotal">—</span>
+            <span class="total-amount" id="expensesTotal">–</span>
           </div>
           <div class="breakdown-grid">
-            <div class="breakdown-item">
+            <div class="breakdown-item method-cash">
               <span class="breakdown-label">Cash</span>
-              <span class="breakdown-amount" id="expensesCash">—</span>
+              <span class="breakdown-amount" id="expensesCash">–</span>
             </div>
-            <div class="breakdown-item">
+            <div class="breakdown-item method-momo">
               <span class="breakdown-label">MoMo</span>
-              <span class="breakdown-amount" id="expensesMomo">—</span>
+              <span class="breakdown-amount" id="expensesMomo">–</span>
             </div>
-            <div class="breakdown-item">
+            <div class="breakdown-item method-bank">
               <span class="breakdown-label">Bank/POS</span>
-              <span class="breakdown-amount" id="expensesBank">—</span>
+              <span class="breakdown-amount" id="expensesBank">–</span>
             </div>
           </div>
         </section>
@@ -160,41 +178,47 @@
           <h2 class="section-title">Current Available Balance</h2>
           <div class="available-total">
             <span class="available-label">Total Available</span>
-            <span class="available-amount" id="availableTotal">—</span>
+            <span class="available-amount" id="availableTotal">–</span>
           </div>
           <div class="available-breakdown">
-            <div class="available-item">
+            <div class="available-item method-cash">
               <span class="available-method">Cash</span>
-              <span class="available-value" id="availableCash">—</span>
+              <span class="available-value" id="availableCash">–</span>
             </div>
-            <div class="available-item">
+            <div class="available-item method-momo">
               <span class="available-method">MoMo</span>
-              <span class="available-value" id="availableMomo">—</span>
+              <span class="available-value" id="availableMomo">–</span>
             </div>
-            <div class="available-item">
+            <div class="available-item method-bank">
               <span class="available-method">Bank/POS</span>
-              <span class="available-value" id="availableBank">—</span>
+              <span class="available-value" id="availableBank">–</span>
             </div>
           </div>
         </section>
 
-        <!-- 7. RECENT ACTIVITY PREVIEW (placeholder, no inventing) -->
+        <!-- 7. RECENT ACTIVITY PREVIEW -->
         <section class="section-card activity-preview">
           <h2 class="section-title">Recent Activity</h2>
           <div class="activity-placeholder">
-            <p class="activity-note">Transaction details are available on the Daily Sales and Expenses pages.</p>
+            <p class="activity-note">Individual transactions are listed on the Daily Sales and Expenses pages.</p>
             <div class="activity-links">
-              <a href="../components/dailySales.html" class="activity-link">View today's sales →</a>
-              <a href="../components/expenses.html" class="activity-link">View today's expenses →</a>
+              <a href="../components/dailySales.html" class="activity-link link-sales">
+                View today's sales
+                <svg class="icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M7.5 4.5 13 10l-5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </a>
+              <a href="../components/expenses.html" class="activity-link link-expenses">
+                View today's expenses
+                <svg class="icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M7.5 4.5 13 10l-5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </a>
             </div>
           </div>
         </section>
       </div>
     </main>
 
-    <!-- ========== FOOTER (subtle) ========== -->
+    <!-- ========== FOOTER ========== -->
     <footer class="finance-footer">
-      <span>CICTech Electronics · Finance</span>
+      <span>CICTech Electronics Finance</span>
     </footer>
   </div>
 
@@ -217,6 +241,6 @@
             window.location.href = "../index.html";
         }
     }
-</script>
+  </script>
 </body>
 </html>

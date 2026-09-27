@@ -1,15 +1,18 @@
 <!-- ============================================================
-     FILE 1: Finance/daily-sales.html
-     CICTech Electronics — Finance Module
-     Daily Sales Page
+     Finance/dailySales.html
+     CICTech Electronics Finance Module: Daily Sales page
      ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="CICTech Finance — Daily Sales recording and management">
-  <title>CICTech Finance · Daily Sales</title>
+  <meta name="description" content="CICTech Finance: Daily Sales recording and management">
+  <title>CICTech Finance | Daily Sales</title>
+  <!-- Typeface (falls back to system fonts if offline) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../stylesheet/dailySales.css">
 </head>
 <body>
@@ -20,19 +23,20 @@
     <header class="fin-header">
       <div class="fin-header-left">
         <div class="fin-brand">
+          <img class="fin-brand-logo" src="../assets/logo.jpg" alt="">
           <span class="fin-brand-cic">CICTech</span>
           <span class="fin-brand-fin">Finance</span>
           <span class="fin-brand-page">Daily Sales</span>
         </div>
         <div class="fin-user-badge" id="userBadge">
           <span class="fin-user-role" id="userRole">staff</span>
-          <span class="fin-user-sep">·</span>
-          <span class="fin-user-branch" id="userBranch">—</span>
+          <span class="fin-user-sep" aria-hidden="true"></span>
+          <span class="fin-user-branch" id="userBranch">–</span>
         </div>
       </div>
       <div class="fin-header-right">
         <a href="../Finances/staffDashboard.html" class="fin-back-link" id="backToDashboard">
-          <span class="fin-back-arrow">←</span>
+          <span class="fin-back-arrow" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M12.5 4.5 7 10l5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           <span>Back to Dashboard</span>
         </a>
       </div>
@@ -59,7 +63,7 @@
 
       <!-- Error state -->
       <div id="errorState" class="fin-state fin-state-error hidden">
-        <div class="fin-state-icon">⚠</div>
+        <div class="fin-state-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.5 2.5 20h19L12 3.5Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 10v4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="17.2" r="1.1" fill="currentColor"/></svg></div>
         <p id="errorMessage">Unable to load data.</p>
         <button class="fin-btn fin-btn-secondary" id="retryBtn">Retry</button>
       </div>
@@ -72,12 +76,12 @@
           <div class="fin-page-head-left">
             <h1 class="fin-page-title">Daily Sales</h1>
             <p class="fin-page-sub">Today's sales and payment activity</p>
-            <p class="fin-page-date" id="pageDate">—</p>
+            <p class="fin-page-date" id="pageDate">–</p>
           </div>
           <div class="fin-page-head-right">
             <span class="fin-status fin-status-open" id="accountStatus">
               <span class="fin-status-dot"></span>
-              <span class="fin-status-text">OPEN</span>
+              <span class="fin-status-text">Open</span>
             </span>
           </div>
         </section>
@@ -86,25 +90,25 @@
         <section class="fin-summary" aria-label="Today's sales summary">
           <div class="fin-summary-card fin-summary-card-primary">
             <span class="fin-summary-label">Today's Sales</span>
-            <span class="fin-summary-value" id="sumTotal">—</span>
+            <span class="fin-summary-value" id="sumTotal">–</span>
           </div>
-          <div class="fin-summary-card">
+          <div class="fin-summary-card fin-method-cash">
             <span class="fin-summary-label">Cash</span>
-            <span class="fin-summary-value" id="sumCash">—</span>
+            <span class="fin-summary-value" id="sumCash">–</span>
           </div>
-          <div class="fin-summary-card">
+          <div class="fin-summary-card fin-method-momo">
             <span class="fin-summary-label">MoMo</span>
-            <span class="fin-summary-value" id="sumMomo">—</span>
+            <span class="fin-summary-value" id="sumMomo">–</span>
           </div>
-          <div class="fin-summary-card">
+          <div class="fin-summary-card fin-method-bank">
             <span class="fin-summary-label">Bank / POS</span>
-            <span class="fin-summary-value" id="sumBank">—</span>
+            <span class="fin-summary-value" id="sumBank">–</span>
           </div>
         </section>
 
         <!-- ===== Closed account notice ===== -->
         <div id="closedNotice" class="fin-closed-notice hidden">
-          <div class="fin-closed-icon">🔒</div>
+          <div class="fin-closed-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><rect x="4" y="9" width="12" height="8.5" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6.8 9V6.6a3.2 3.2 0 0 1 6.4 0V9" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></div>
           <div class="fin-closed-body">
             <strong>Today's account is closed.</strong>
             <p>Sales can no longer be recorded for this day.</p>
@@ -167,31 +171,31 @@
             <div class="fin-product-preview-grid">
             <div class="fin-product-detail">
                 <span class="fin-product-detail-label">Brand</span>
-                <span class="fin-product-detail-value" id="pvBrand">—</span>
+                <span class="fin-product-detail-value" id="pvBrand">–</span>
             </div>
             <div class="fin-product-detail">
                 <span class="fin-product-detail-label">Model</span>
-                <span class="fin-product-detail-value" id="pvModel">—</span>
+                <span class="fin-product-detail-value" id="pvModel">–</span>
             </div>
             <div class="fin-product-detail">
                 <span class="fin-product-detail-label">Serial</span>
-                <span class="fin-product-detail-value" id="pvSerial">—</span>
+                <span class="fin-product-detail-value" id="pvSerial">–</span>
             </div>
             <div class="fin-product-detail">
                 <span class="fin-product-detail-label">Processor</span>
-                <span class="fin-product-detail-value" id="pvProcessor">—</span>
+                <span class="fin-product-detail-value" id="pvProcessor">–</span>
             </div>
             <div class="fin-product-detail">
                 <span class="fin-product-detail-label">RAM</span>
-                <span class="fin-product-detail-value" id="pvRam">—</span>
+                <span class="fin-product-detail-value" id="pvRam">–</span>
             </div>
             <div class="fin-product-detail">
                 <span class="fin-product-detail-label">Storage</span>
-                <span class="fin-product-detail-value" id="pvStorage">—</span>
+                <span class="fin-product-detail-value" id="pvStorage">–</span>
             </div>
             <div class="fin-product-detail fin-product-detail-price">
                 <span class="fin-product-detail-label">Price</span>
-                <span class="fin-product-detail-value" id="pvPrice">—</span>
+                <span class="fin-product-detail-value" id="pvPrice">–</span>
             </div>
             </div>
         </div>
@@ -213,15 +217,15 @@
         <div class="fin-payment-block">
             <h3 class="fin-payment-title">Payment</h3>
             <div class="fin-payment-grid">
-            <div class="fin-payment-item">
+            <div class="fin-payment-item fin-method-cash">
                 <label for="invCash" class="fin-pay-label">Cash</label>
                 <input type="number" id="invCash" class="fin-pay-input" min="0" step="0.01" placeholder="0.00">
             </div>
-            <div class="fin-payment-item">
+            <div class="fin-payment-item fin-method-momo">
                 <label for="invMomo" class="fin-pay-label">MoMo</label>
                 <input type="number" id="invMomo" class="fin-pay-input" min="0" step="0.01" placeholder="0.00">
             </div>
-            <div class="fin-payment-item">
+            <div class="fin-payment-item fin-method-bank">
                 <label for="invBank" class="fin-pay-label">Bank / POS</label>
                 <input type="number" id="invBank" class="fin-pay-input" min="0" step="0.01" placeholder="0.00">
             </div>
@@ -274,15 +278,15 @@
             <div class="fin-payment-block">
               <h3 class="fin-payment-title">Payment</h3>
               <div class="fin-payment-grid">
-                <div class="fin-payment-item">
+                <div class="fin-payment-item fin-method-cash">
                   <label for="manCash" class="fin-pay-label">Cash</label>
                   <input type="number" id="manCash" class="fin-pay-input" min="0" step="0.01" placeholder="0.00">
                 </div>
-                <div class="fin-payment-item">
+                <div class="fin-payment-item fin-method-momo">
                   <label for="manMomo" class="fin-pay-label">MoMo</label>
                   <input type="number" id="manMomo" class="fin-pay-input" min="0" step="0.01" placeholder="0.00">
                 </div>
-                <div class="fin-payment-item">
+                <div class="fin-payment-item fin-method-bank">
                   <label for="manBank" class="fin-pay-label">Bank / POS</label>
                   <input type="number" id="manBank" class="fin-pay-input" min="0" step="0.01" placeholder="0.00">
                 </div>
@@ -317,7 +321,7 @@
     </main>
 
     <footer class="fin-footer">
-      <span>CICTech Electronics · Finance</span>
+      <span>CICTech Electronics Finance</span>
     </footer>
   </div>
 

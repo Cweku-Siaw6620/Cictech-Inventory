@@ -1,15 +1,18 @@
 <!-- ============================================================
-     FILE 1: Finance/expenses.html
-     CICTech Electronics — Finance Module
-     Expenses Page
+     Finance/expenses.html
+     CICTech Electronics Finance Module: Expenses page
      ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="CICTech Finance — Record and review today's business expenses">
-  <title>CICTech Finance · Expenses</title>
+  <meta name="description" content="CICTech Finance: Record and review today's business expenses">
+  <title>CICTech Finance | Expenses</title>
+  <!-- Typeface (falls back to system fonts if offline) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../stylesheet/expenses.css">
 </head>
 <body>
@@ -20,19 +23,20 @@
     <header class="fin-header">
       <div class="fin-header-left">
         <div class="fin-brand">
+          <img class="fin-brand-logo" src="../assets/logo.jpg" alt="">
           <span class="fin-brand-cic">CICTech</span>
           <span class="fin-brand-fin">Finance</span>
           <span class="fin-brand-page">Expenses</span>
         </div>
         <div class="fin-user-badge">
           <span class="fin-user-role" id="userRole">staff</span>
-          <span class="fin-user-sep">·</span>
-          <span class="fin-user-branch" id="userBranch">—</span>
+          <span class="fin-user-sep" aria-hidden="true"></span>
+          <span class="fin-user-branch" id="userBranch">–</span>
         </div>
       </div>
       <div class="fin-header-right">
         <a href="../Finances/staffDashboard.html" class="fin-back-link" id="backToDashboard">
-          <span class="fin-back-arrow">←</span>
+          <span class="fin-back-arrow" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M12.5 4.5 7 10l5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           <span>Back to Dashboard</span>
         </a>
       </div>
@@ -59,7 +63,7 @@
 
       <!-- Error state -->
       <div id="errorState" class="fin-state fin-state-error hidden">
-        <div class="fin-state-icon">⚠</div>
+        <div class="fin-state-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.5 2.5 20h19L12 3.5Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 10v4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="17.2" r="1.1" fill="currentColor"/></svg></div>
         <p id="errorMessage">Unable to load data.</p>
         <button class="fin-btn fin-btn-secondary" id="retryBtn">Retry</button>
       </div>
@@ -72,12 +76,12 @@
           <div class="fin-page-head-left">
             <h1 class="fin-page-title">Expenses</h1>
             <p class="fin-page-sub">Record and review today's business expenses.</p>
-            <p class="fin-page-date" id="pageDate">—</p>
+            <p class="fin-page-date" id="pageDate">–</p>
           </div>
           <div class="fin-page-head-right">
             <span class="fin-status fin-status-open" id="accountStatus">
               <span class="fin-status-dot"></span>
-              <span class="fin-status-text">OPEN</span>
+              <span class="fin-status-text">Open</span>
             </span>
           </div>
         </section>
@@ -86,25 +90,25 @@
         <section class="fin-summary" aria-label="Today's expense summary">
           <div class="fin-summary-card fin-summary-card-primary">
             <span class="fin-summary-label">Today's Expenses</span>
-            <span class="fin-summary-value" id="sumTotal">—</span>
+            <span class="fin-summary-value" id="sumTotal">–</span>
           </div>
-          <div class="fin-summary-card">
+          <div class="fin-summary-card fin-method-cash">
             <span class="fin-summary-label">Cash</span>
-            <span class="fin-summary-value" id="sumCash">—</span>
+            <span class="fin-summary-value" id="sumCash">–</span>
           </div>
-          <div class="fin-summary-card">
+          <div class="fin-summary-card fin-method-momo">
             <span class="fin-summary-label">MoMo</span>
-            <span class="fin-summary-value" id="sumMomo">—</span>
+            <span class="fin-summary-value" id="sumMomo">–</span>
           </div>
-          <div class="fin-summary-card">
+          <div class="fin-summary-card fin-method-bank">
             <span class="fin-summary-label">Bank / POS</span>
-            <span class="fin-summary-value" id="sumBank">—</span>
+            <span class="fin-summary-value" id="sumBank">–</span>
           </div>
         </section>
 
         <!-- ===== Closed account notice ===== -->
         <div id="closedNotice" class="fin-closed-notice hidden">
-          <div class="fin-closed-icon">🔒</div>
+          <div class="fin-closed-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><rect x="4" y="9" width="12" height="8.5" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M6.8 9V6.6a3.2 3.2 0 0 1 6.4 0V9" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></div>
           <div class="fin-closed-body">
             <strong>Today's account is closed.</strong>
             <p>Expenses can no longer be recorded for this day.</p>
@@ -155,7 +159,7 @@
             <div class="fin-form-row">
               <label for="expPaymentMethod" class="fin-label">Payment Method</label>
               <select id="expPaymentMethod" class="fin-select" required>
-                <option value="">— Select payment method —</option>
+                <option value="">Select payment method</option>
                 <option value="Cash">Cash</option>
                 <option value="MoMo">MoMo</option>
                 <option value="Bank/POS">Bank/POS</option>
@@ -185,7 +189,7 @@
     </main>
 
     <footer class="fin-footer">
-      <span>CICTech Electronics · Finance</span>
+      <span>CICTech Electronics Finance</span>
     </footer>
   </div>
 

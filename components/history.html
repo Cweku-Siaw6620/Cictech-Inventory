@@ -1,15 +1,18 @@
 <!-- ============================================================
-     FILE 1: Finance/history.html
-     CICTech Electronics — Finance Module
-     History Page
+     Finance/history.html
+     CICTech Electronics Finance Module: History page
      ============================================================ -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="CICTech Finance — Review previous daily financial accounts and transactions">
-  <title>CICTech Finance · History</title>
+  <meta name="description" content="CICTech Finance: Review previous daily financial accounts and transactions">
+  <title>CICTech Finance | History</title>
+  <!-- Typeface (falls back to system fonts if offline) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../stylesheet/history.css">
 </head>
 <body>
@@ -20,19 +23,20 @@
     <header class="fin-header">
       <div class="fin-header-left">
         <div class="fin-brand">
+          <img class="fin-brand-logo" src="../assets/logo.jpg" alt="">
           <span class="fin-brand-cic">CICTech</span>
           <span class="fin-brand-fin">Finance</span>
           <span class="fin-brand-page">History</span>
         </div>
         <div class="fin-user-badge">
           <span class="fin-user-role" id="userRole">staff</span>
-          <span class="fin-user-sep">·</span>
-          <span class="fin-user-branch" id="userBranch">—</span>
+          <span class="fin-user-sep" aria-hidden="true"></span>
+          <span class="fin-user-branch" id="userBranch">–</span>
         </div>
       </div>
       <div class="fin-header-right">
         <a href="../Finances/staffDashboard.html" class="fin-back-link">
-          <span class="fin-back-arrow">←</span>
+          <span class="fin-back-arrow" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M12.5 4.5 7 10l5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           <span>Back to Dashboard</span>
         </a>
       </div>
@@ -42,7 +46,7 @@
     <nav class="fin-nav" aria-label="Finance navigation">
       <ul class="fin-nav-tabs">
         <li><a href="../Finances/staffDashboard.html" class="fin-nav-link">Dashboard</a></li>
-        <li><a href="daily-sales.html" class="fin-nav-link">Daily Sales</a></li>
+        <li><a href="dailySales.html" class="fin-nav-link">Daily Sales</a></li>
         <li><a href="expenses.html" class="fin-nav-link">Expenses</a></li>
         <li><a href="history.html" class="fin-nav-link fin-nav-active" aria-current="page">History</a></li>
       </ul>
@@ -59,7 +63,7 @@
 
       <!-- Error state -->
       <div id="errorState" class="fin-state fin-state-error hidden">
-        <div class="fin-state-icon">⚠</div>
+        <div class="fin-state-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.5 2.5 20h19L12 3.5Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 10v4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="17.2" r="1.1" fill="currentColor"/></svg></div>
         <p id="errorMessage">Unable to load data.</p>
         <button class="fin-btn fin-btn-secondary" id="retryBtn">Retry</button>
       </div>
@@ -72,7 +76,7 @@
           <div>
             <h1 class="fin-page-title">Finance History</h1>
             <p class="fin-page-sub">Review previous daily financial accounts and transactions.</p>
-            <p class="fin-page-branch" id="pageBranch">—</p>
+            <p class="fin-page-branch" id="pageBranch">–</p>
           </div>
         </section>
 
@@ -80,17 +84,17 @@
         <section class="fin-card fin-date-controls">
           <div class="fin-date-controls-inner">
             <button type="button" class="fin-date-nav-btn" id="prevDayBtn" aria-label="Previous day">
-              <span class="fin-arrow">‹</span> Previous Day
+              <span class="fin-arrow" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M12.5 4.5 7 10l5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Previous Day
             </button>
 
             <div class="fin-date-center">
               <label for="datePicker" class="fin-date-label">Selected Date</label>
               <input type="date" id="datePicker" class="fin-date-input">
-              <div class="fin-date-readable" id="dateReadable">—</div>
+              <div class="fin-date-readable" id="dateReadable">–</div>
             </div>
 
             <button type="button" class="fin-date-nav-btn" id="nextDayBtn" aria-label="Next day">
-              Next Day <span class="fin-arrow">›</span>
+              Next Day <span class="fin-arrow" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M7.5 4.5 13 10l-5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
             </button>
           </div>
         </section>
@@ -119,86 +123,89 @@
               <h2 class="fin-card-title">Daily Account Summary</h2>
               <span class="fin-status fin-status-open" id="accountStatus">
                 <span class="fin-status-dot"></span>
-                <span class="fin-status-text">OPEN</span>
+                <span class="fin-status-text">Open</span>
               </span>
             </div>
 
             <div class="fin-account-meta">
               <div class="fin-account-meta-item">
                 <span class="fin-account-meta-label">Date</span>
-                <span class="fin-account-meta-value" id="metaDate">—</span>
+                <span class="fin-account-meta-value" id="metaDate">–</span>
               </div>
               <div class="fin-account-meta-item">
                 <span class="fin-account-meta-label">Branch</span>
-                <span class="fin-account-meta-value" id="metaBranch">—</span>
+                <span class="fin-account-meta-value" id="metaBranch">–</span>
               </div>
             </div>
 
+            <!-- Statement: Opening + Sales - Expenses = Available, by payment method -->
+            <div class="fin-statement" role="group" aria-label="Opening plus sales minus expenses equals available, by payment method">
+
             <!-- Opening balance -->
-            <div class="fin-summary-block">
+            <div class="fin-summary-block fin-block-opening">
               <h3 class="fin-summary-block-title">Opening Balance</h3>
               <div class="fin-summary-grid">
-                <div class="fin-summary-cell">
+                <div class="fin-summary-cell fin-method-cash">
                   <span class="fin-summary-cell-label">Cash</span>
-                  <span class="fin-summary-cell-value" id="opCash">—</span>
+                  <span class="fin-summary-cell-value" id="opCash">–</span>
                 </div>
-                <div class="fin-summary-cell">
+                <div class="fin-summary-cell fin-method-momo">
                   <span class="fin-summary-cell-label">MoMo</span>
-                  <span class="fin-summary-cell-value" id="opMomo">—</span>
+                  <span class="fin-summary-cell-value" id="opMomo">–</span>
                 </div>
-                <div class="fin-summary-cell">
+                <div class="fin-summary-cell fin-method-bank">
                   <span class="fin-summary-cell-label">Bank/POS</span>
-                  <span class="fin-summary-cell-value" id="opBank">—</span>
+                  <span class="fin-summary-cell-value" id="opBank">–</span>
                 </div>
                 <div class="fin-summary-cell fin-summary-cell-total">
-                  <span class="fin-summary-cell-label">Total Opening</span>
-                  <span class="fin-summary-cell-value" id="opTotal">—</span>
+                  <span class="fin-summary-cell-label">Total</span>
+                  <span class="fin-summary-cell-value" id="opTotal">–</span>
                 </div>
               </div>
             </div>
 
             <!-- Sales -->
-            <div class="fin-summary-block">
+            <div class="fin-summary-block fin-block-sales">
               <h3 class="fin-summary-block-title">Sales</h3>
               <div class="fin-summary-grid">
-                <div class="fin-summary-cell">
+                <div class="fin-summary-cell fin-method-cash">
                   <span class="fin-summary-cell-label">Cash</span>
-                  <span class="fin-summary-cell-value" id="saCash">—</span>
+                  <span class="fin-summary-cell-value" id="saCash">–</span>
                 </div>
-                <div class="fin-summary-cell">
+                <div class="fin-summary-cell fin-method-momo">
                   <span class="fin-summary-cell-label">MoMo</span>
-                  <span class="fin-summary-cell-value" id="saMomo">—</span>
+                  <span class="fin-summary-cell-value" id="saMomo">–</span>
                 </div>
-                <div class="fin-summary-cell">
+                <div class="fin-summary-cell fin-method-bank">
                   <span class="fin-summary-cell-label">Bank/POS</span>
-                  <span class="fin-summary-cell-value" id="saBank">—</span>
+                  <span class="fin-summary-cell-value" id="saBank">–</span>
                 </div>
                 <div class="fin-summary-cell fin-summary-cell-total">
-                  <span class="fin-summary-cell-label">Total Sales</span>
-                  <span class="fin-summary-cell-value" id="saTotal">—</span>
+                  <span class="fin-summary-cell-label">Total</span>
+                  <span class="fin-summary-cell-value" id="saTotal">–</span>
                 </div>
               </div>
             </div>
 
             <!-- Expenses -->
-            <div class="fin-summary-block">
+            <div class="fin-summary-block fin-block-expenses">
               <h3 class="fin-summary-block-title">Expenses</h3>
               <div class="fin-summary-grid">
-                <div class="fin-summary-cell">
+                <div class="fin-summary-cell fin-method-cash">
                   <span class="fin-summary-cell-label">Cash</span>
-                  <span class="fin-summary-cell-value" id="exCash">—</span>
+                  <span class="fin-summary-cell-value" id="exCash">–</span>
                 </div>
-                <div class="fin-summary-cell">
+                <div class="fin-summary-cell fin-method-momo">
                   <span class="fin-summary-cell-label">MoMo</span>
-                  <span class="fin-summary-cell-value" id="exMomo">—</span>
+                  <span class="fin-summary-cell-value" id="exMomo">–</span>
                 </div>
-                <div class="fin-summary-cell">
+                <div class="fin-summary-cell fin-method-bank">
                   <span class="fin-summary-cell-label">Bank/POS</span>
-                  <span class="fin-summary-cell-value" id="exBank">—</span>
+                  <span class="fin-summary-cell-value" id="exBank">–</span>
                 </div>
                 <div class="fin-summary-cell fin-summary-cell-total">
-                  <span class="fin-summary-cell-label">Total Expenses</span>
-                  <span class="fin-summary-cell-value" id="exTotal">—</span>
+                  <span class="fin-summary-cell-label">Total</span>
+                  <span class="fin-summary-cell-value" id="exTotal">–</span>
                 </div>
               </div>
             </div>
@@ -207,38 +214,46 @@
             <div class="fin-summary-block fin-summary-block-available">
               <h3 class="fin-summary-block-title">Available Balance</h3>
               <div class="fin-summary-grid">
-                <div class="fin-summary-cell">
+                <div class="fin-summary-cell fin-method-cash">
                   <span class="fin-summary-cell-label">Cash</span>
-                  <span class="fin-summary-cell-value" id="avCash">—</span>
+                  <span class="fin-summary-cell-value" id="avCash">–</span>
                 </div>
-                <div class="fin-summary-cell">
+                <div class="fin-summary-cell fin-method-momo">
                   <span class="fin-summary-cell-label">MoMo</span>
-                  <span class="fin-summary-cell-value" id="avMomo">—</span>
+                  <span class="fin-summary-cell-value" id="avMomo">–</span>
                 </div>
-                <div class="fin-summary-cell">
+                <div class="fin-summary-cell fin-method-bank">
                   <span class="fin-summary-cell-label">Bank/POS</span>
-                  <span class="fin-summary-cell-value" id="avBank">—</span>
+                  <span class="fin-summary-cell-value" id="avBank">–</span>
                 </div>
                 <div class="fin-summary-cell fin-summary-cell-total">
-                  <span class="fin-summary-cell-label">Total Available</span>
-                  <span class="fin-summary-cell-value" id="avTotal">—</span>
+                  <span class="fin-summary-cell-label">Total</span>
+                  <span class="fin-summary-cell-value" id="avTotal">–</span>
                 </div>
               </div>
+            </div>
+
             </div>
           </section>
 
           <!-- ===== Sales transactions ===== -->
-          <section class="fin-card">
+          <section class="fin-card fin-history-sales">
             <div class="fin-card-head">
-              <h2 class="fin-card-title">Sales</h2>
+              <h2 class="fin-card-title">
+                <span class="fin-title-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M10 15.5v-11m0 0-4.5 4.5M10 4.5l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                Sales
+              </h2>
             </div>
             <div id="salesListWrap"></div>
           </section>
 
           <!-- ===== Expense transactions ===== -->
-          <section class="fin-card">
+          <section class="fin-card fin-history-expenses">
             <div class="fin-card-head">
-              <h2 class="fin-card-title">Expenses</h2>
+              <h2 class="fin-card-title">
+                <span class="fin-title-icon" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M10 4.5v11m0 0-4.5-4.5m4.5 4.5 4.5-4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                Expenses
+              </h2>
             </div>
             <div id="expensesListWrap"></div>
           </section>
@@ -248,7 +263,7 @@
     </main>
 
     <footer class="fin-footer">
-      <span>CICTech Electronics · Finance</span>
+      <span>CICTech Electronics Finance</span>
     </footer>
   </div>
 
