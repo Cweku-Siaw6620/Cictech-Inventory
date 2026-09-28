@@ -7,7 +7,7 @@
   "use strict";
 
   /* ---------- Constants ---------- */
-  const API_BASE = "https://cictech-inventory-2se4.vercel.app";
+  const API_BASE = "http://localhost:3000";
   const LOGIN_REDIRECT = "../index.html";
   const STAFF_REDIRECT = "staffDashboard.html";
 
@@ -594,7 +594,7 @@
       const closeBtn = document.createElement("button");
       closeBtn.type = "button";
       closeBtn.className = "adm-btn adm-btn-danger";
-      closeBtn.textContent = "Close Account";
+      closeBtn.textContent = "Close Today's Account";
       closeBtn.addEventListener("click", () => closeAccount(branch, today));
       branchActions.appendChild(closeBtn);
       return;
@@ -746,10 +746,12 @@
     subToday.appendChild(expCard);
 
     /* Render tables */
+    const isToday = (detail.account && detail.account.dateKey === todayKeyAccra());
+    const editable = canEdit && isToday;
     renderSalesTableInto($("todaySalesTable"), detail.sales || [], {
-      editable: canEdit,
-      branch,
-      dateKey: today,
+      editable: editable,
+      branch: state.user && state.user.branch,
+      dateKey: detail.account && detail.account.dateKey,
     });
     renderExpensesTableInto($("todayExpensesTable"), detail.expenses || [], {
       editable: canEdit,
@@ -1029,96 +1031,308 @@
     return '<span class="adm-badge adm-badge-bank">' + escapeHtml(m || "—") + "</span>";
   }
 
-  function renderSalesTableInto(container, sales, opts) {
-    container.innerHTML = "";
-    if (!sales.length) {
-      container.innerHTML =
-        '<div class="adm-empty">' +
-          '<div class="adm-empty-icon">' +
-            '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' +
-              '<rect x="3" y="4" width="18" height="16" rx="2"/>' +
-              '<path d="M3 10h18"/>' +
-            "</svg>" +
-          "</div>" +
-          '<p class="adm-empty-title">No sales</p>' +
-          '<p class="adm-empty-text">No sales recorded.</p>' +
-        "</div>";
+function renderSalesTableInto(container, sales, opts) {
+  container.innerHTML = "";
+  if (!sales.length) {
+    container.innerHTML =
+      '<div class="fin-empty">' +
+        '<div class="fin-empty-icon">' +
+          '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' +
+            '<rect x="3" y="4" width="18" height="16" rx="2"/>' +
+            '<path d="M3 10h18"/>' +
+          "</svg>" +
+        "</div>" +
+        '<p class="fin-empty-title">No sales recorded</p>' +
+        '<p class="fin-empty-text">Sales you record today will appear here.</p>' +
+      "</div>";
+    return;
+  }
+
+  const wrap = document.createElement("div");
+  wrap.className = "fin-table-wrap";
+  const table = document.createElement("table");
+  table.className = "fin-table";
+
+  const editable = !!(opts && opts.editable);
+  const actionHeader = editable ? '<th class="fin-td-actions">Actions</th>' : "";
+
+  table.innerHTML =
+    "<thead>" +
+      "<tr>" +
+        "<th>Time</th>" +
+        "<th>Product</th>" +
+        "<th>Type</th>" +
+        '<th class="fin-td-right">Price</th>' +
+        '<th class="fin-td-right">Cash</th>' +
+        '<th class="fin-td-right">MoMo</th>' +
+        '<th class="fin-td-right">Bank/POS</th>' +
+        '<th class="fin-td-right">Total</th>' +
+        actionHeader +
+      "</tr>" +
+    "</thead>" +
+    "<tbody></tbody>";
+
+  const tbody = table.querySelector("tbody");
+
+  sales.forEach((sale) => {
+    const tr = document.createElement("tr");
+    const time = formatTime(sale.date || sale.createdAt);
+    const name = (sale.product && sale.product.name) || "—";
+    const price = num(sale.totalAmount);
+    const cash  = num(sale.payment && sale.payment.cash);
+    const momo  = num(sale.payment && sale.payment.momo);
+    const bank  = num(sale.payment && sale.payment.bank);
+    const total = cash + momo + bank;
+
+    let actionCell = "";
+    if (editable) {
+      const isManual = String(sale.source || "").toLowerCase() === "manual";
+      const editBtn = isManual
+        ? '<button type="button" class="fin-btn fin-btn-secondary" data-edit-sale="' +
+            escapeHtml(sale._id || "") + '">Edit</button>'
+        : "";
+      const deleteBtn =
+        '<button type="button" class="fin-btn fin-btn-danger" data-delete-sale="' +
+          escapeHtml(sale._id || "") + '">Delete</button>';
+      actionCell = '<td class="fin-td-actions">' + editBtn + deleteBtn + "</td>";
+    }
+
+    tr.innerHTML =
+      '<td class="fin-td-time">' + escapeHtml(time) + "</td>" +
+      '<td class="fin-td-strong">' + escapeHtml(name) + "</td>" +
+      "<td>" + saleSourceBadge(sale) + "</td>" +
+      '<td class="fin-td-right">' + formatCurrencyCedi(price) + "</td>" +
+      '<td class="fin-td-right">' + formatCurrencyCedi(cash) + "</td>" +
+      '<td class="fin-td-right">' + formatCurrencyCedi(momo) + "</td>" +
+      '<td class="fin-td-right">' + formatCurrencyCedi(bank) + "</td>" +
+      '<td class="fin-td-right fin-td-strong">' + formatCurrencyCedi(total) + "</td>" +
+      actionCell;
+
+    tbody.appendChild(tr);
+  });
+
+  wrap.appendChild(table);
+  container.appendChild(wrap);
+
+  if (editable) {
+    container.querySelectorAll("[data-edit-sale]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.editSale;
+        const sale = sales.find((x) => (x._id || "") === id);
+        if (sale) openSaleEditModal(sale);
+      });
+    });
+    container.querySelectorAll("[data-delete-sale]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.deleteSale;
+        const sale = sales.find((x) => (x._id || "") === id);
+        if (sale) openDeleteConfirm(
+          "Delete this sale?",
+          "The sale will be marked as voided and removed from today's totals.",
+          () => deleteSale(id)
+        );
+      });
+    });
+  }
+}
+
+/* ---------- Sale edit modal ---------- */
+
+let _editingSale = null;
+
+function openSaleEditModal(sale) {
+  _editingSale = sale;
+  document.getElementById("saleEditName").value =
+    (sale.product && sale.product.name) || "";
+  document.getElementById("saleEditSerial").value =
+    (sale.product && sale.product.serial) || "";
+  document.getElementById("saleEditDetail").value =
+    (sale.product && sale.product.detail) || "";
+  document.getElementById("saleEditTotal").value = num(sale.totalAmount);
+  document.getElementById("saleEditCash").value = num(sale.payment && sale.payment.cash);
+  document.getElementById("saleEditMomo").value = num(sale.payment && sale.payment.momo);
+  document.getElementById("saleEditBank").value = num(sale.payment && sale.payment.bank);
+  document.getElementById("saleEditHint").textContent = "";
+  document.getElementById("saleEditHint").className = "fin-pay-hint";
+  updateSaleEditTotals();
+  document.getElementById("saleEditModal").classList.remove("hidden");
+  setTimeout(() => document.getElementById("saleEditName").focus(), 60);
+}
+
+function closeSaleEditModal() {
+  document.getElementById("saleEditModal").classList.add("hidden");
+  _editingSale = null;
+}
+
+function updateSaleEditTotals() {
+  const cash = num(document.getElementById("saleEditCash").value);
+  const momo = num(document.getElementById("saleEditMomo").value);
+  const bank = num(document.getElementById("saleEditBank").value);
+  const total = cash + momo + bank;
+  const price = num(document.getElementById("saleEditTotal").value);
+
+  document.getElementById("saleEditPayTotal").textContent = formatCurrencyCedi(total);
+
+  const hintEl = document.getElementById("saleEditHint");
+  const saveBtn = document.getElementById("saleEditSave");
+
+  if (!price || price <= 0) {
+    hintEl.textContent = "Enter a price greater than zero.";
+    hintEl.className = "fin-pay-hint fin-hint-error";
+    saveBtn.disabled = true;
+    return;
+  }
+  if (Math.abs(total - price) >= 0.005) {
+    hintEl.textContent =
+      "Payment total must equal " + formatCurrencyCedi(price) + ".";
+    hintEl.className = "fin-pay-hint fin-hint-error";
+    saveBtn.disabled = true;
+    return;
+  }
+  hintEl.textContent = "Payment matches.";
+  hintEl.className = "fin-pay-hint fin-hint-success";
+  saveBtn.disabled = false;
+}
+
+async function saveSaleEditModal() {
+  const sale = _editingSale;
+  if (!sale) return;
+
+  const name = document.getElementById("saleEditName").value.trim();
+  if (!name) {
+    showToast("Name is required.", "error");
+    return;
+  }
+
+  const body = {
+    name,
+    serial: document.getElementById("saleEditSerial").value.trim(),
+    detail: document.getElementById("saleEditDetail").value.trim(),
+    totalAmount: num(document.getElementById("saleEditTotal").value),
+    cash: num(document.getElementById("saleEditCash").value),
+    momo: num(document.getElementById("saleEditMomo").value),
+    bank: num(document.getElementById("saleEditBank").value),
+  };
+
+  const saveBtn = document.getElementById("saleEditSave");
+  saveBtn.disabled = true;
+  saveBtn.textContent = "Saving…";
+
+  try {
+    const res = await financeFetch("/finance/sales/" + sale._id, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (res.status === 401 || res.status === 403) throw new Error("UNAUTHORIZED");
+    if (!res.ok) {
+      let msg = "Unable to update sale.";
+      try { const d = await res.json(); if (d.message) msg = d.message; } catch {}
+      throw new Error(msg);
+    }
+    showToast("Sale updated successfully.", "success");
+    closeSaleEditModal();
+    await refreshAll();
+  } catch (err) {
+    if (err.message === "UNAUTHORIZED") {
+      showToast("Your session has expired.", "error");
+      localStorage.removeItem("pin"); localStorage.removeItem("user");
+      setTimeout(() => (window.location.href = LOGIN_REDIRECT), 900);
       return;
     }
-
-    const wrap = document.createElement("div");
-    wrap.className = "adm-table-wrap";
-    const table = document.createElement("table");
-    table.className = "adm-table";
-
-    const editable = !!(opts && opts.editable);
-    const actionHeader = editable ? '<th class="adm-td-actions">Actions</th>' : "";
-
-    table.innerHTML =
-      "<thead>" +
-        "<tr>" +
-          "<th>Time</th>" +
-          "<th>Product</th>" +
-          "<th>Type</th>" +
-          '<th class="adm-td-right">Price</th>' +
-          '<th class="adm-td-right">Cash</th>' +
-          '<th class="adm-td-right">MoMo</th>' +
-          '<th class="adm-td-right">Bank/POS</th>' +
-          '<th class="adm-td-right">Total</th>' +
-          actionHeader +
-        "</tr>" +
-      "</thead>" +
-      "<tbody></tbody>";
-
-    const tbody = table.querySelector("tbody");
-
-    sales.forEach((s) => {
-      const tr = document.createElement("tr");
-      const time = formatTime(s.date || s.createdAt);
-      const name = (s.product && s.product.name) || "—";
-      const price = num(s.totalAmount);
-      const cash  = num(s.payment && s.payment.cash);
-      const momo  = num(s.payment && s.payment.momo);
-      const bank  = num(s.payment && s.payment.bank);
-      const total = cash + momo + bank;
-
-      let actionCell = "";
-      if (editable) {
-        actionCell =
-          '<td class="adm-td-actions">' +
-            '<button type="button" class="adm-btn adm-btn-ghost" data-edit-sale="' +
-              escapeHtml(s._id || "") +
-            '">Edit</button>' +
-          "</td>";
-      }
-
-      tr.innerHTML =
-        '<td class="adm-td-time">' + escapeHtml(time) + "</td>" +
-        '<td class="adm-td-strong">' + escapeHtml(name) + "</td>" +
-        "<td>" + saleSourceBadge(s) + "</td>" +
-        '<td class="adm-td-right">' + formatCedi(price) + "</td>" +
-        '<td class="adm-td-right">' + formatCedi(cash) + "</td>" +
-        '<td class="adm-td-right">' + formatCedi(momo) + "</td>" +
-        '<td class="adm-td-right">' + formatCedi(bank) + "</td>" +
-        '<td class="adm-td-right adm-td-strong">' + formatCedi(total) + "</td>" +
-        actionCell;
-
-      tbody.appendChild(tr);
-    });
-
-    wrap.appendChild(table);
-    container.appendChild(wrap);
-
-    if (editable) {
-      container.querySelectorAll("[data-edit-sale]").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const id = btn.dataset.editSale;
-          const sale = sales.find((x) => (x._id || "") === id);
-          if (sale) openSaleModal(sale);
-        });
-      });
-    }
+    showToast(err.message || "Unable to update sale.", "error");
+  } finally {
+    saveBtn.textContent = "Save Changes";
+    updateSaleEditTotals();
   }
+}
+
+/* ---------- Delete confirmation modal ---------- */
+
+let _deleteAction = null;
+
+function openDeleteConfirm(title, message, action) {
+  _deleteAction = action;
+  document.getElementById("deleteConfirmTitle").textContent = title;
+  document.getElementById("deleteConfirmMessage").textContent = message;
+  document.getElementById("deleteConfirmModal").classList.remove("hidden");
+}
+
+function closeDeleteConfirm() {
+  document.getElementById("deleteConfirmModal").classList.add("hidden");
+  _deleteAction = null;
+}
+
+async function runDeleteConfirm() {
+  const action = _deleteAction;
+  if (!action) return;
+  const okBtn = document.getElementById("deleteConfirmOk");
+  okBtn.disabled = true;
+  okBtn.textContent = "Deleting…";
+  try {
+    await action();
+  } finally {
+    okBtn.disabled = false;
+    okBtn.textContent = "Delete";
+    closeDeleteConfirm();
+  }
+}
+
+/* ---------- Delete actions ---------- */
+
+async function deleteSale(saleId) {
+  try {
+    const res = await financeFetch("/finance/sales/" + saleId, {
+      method: "DELETE",
+    });
+    if (res.status === 401 || res.status === 403) throw new Error("UNAUTHORIZED");
+    if (!res.ok) {
+      let msg = "Unable to delete sale.";
+      try { const d = await res.json(); if (d.message) msg = d.message; } catch {}
+      throw new Error(msg);
+    }
+    showToast("Sale voided successfully.", "success");
+    await refreshAll();
+  } catch (err) {
+    if (err.message === "UNAUTHORIZED") {
+      showToast("Your session has expired.", "error");
+      localStorage.removeItem("pin"); localStorage.removeItem("user");
+      setTimeout(() => (window.location.href = LOGIN_REDIRECT), 900);
+      return;
+    }
+    showToast(err.message || "Unable to delete sale.", "error");
+  }
+}
+
+/* ---------- Wire the new modals ---------- */
+
+function wireEditAndDeleteModals() {
+  document.getElementById("saleEditClose").addEventListener("click", closeSaleEditModal);
+  document.getElementById("saleEditCancel").addEventListener("click", closeSaleEditModal);
+  document.getElementById("saleEditSave").addEventListener("click", saveSaleEditModal);
+  document.getElementById("saleEditModal").addEventListener("click", (e) => {
+    if (e.target.id === "saleEditModal") closeSaleEditModal();
+  });
+  ["saleEditCash", "saleEditMomo", "saleEditBank", "saleEditTotal"].forEach((id) => {
+    document.getElementById(id).addEventListener("input", updateSaleEditTotals);
+  });
+
+  document.getElementById("deleteConfirmClose").addEventListener("click", closeDeleteConfirm);
+  document.getElementById("deleteConfirmCancel").addEventListener("click", closeDeleteConfirm);
+  document.getElementById("deleteConfirmOk").addEventListener("click", runDeleteConfirm);
+  document.getElementById("deleteConfirmModal").addEventListener("click", (e) => {
+    if (e.target.id === "deleteConfirmModal") closeDeleteConfirm();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      if (!document.getElementById("saleEditModal").classList.contains("hidden")) closeSaleEditModal();
+      if (!document.getElementById("deleteConfirmModal").classList.contains("hidden")) closeDeleteConfirm();
+    }
+  });
+}
+
+
 
   function renderExpensesTableInto(container, expenses, opts) {
     container.innerHTML = "";

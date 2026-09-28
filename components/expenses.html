@@ -193,6 +193,23 @@
     </footer>
   </div>
 
+<!-- ==================== CONFIRM DELETE MODAL ==================== -->
+<div id="deleteConfirmModal" class="fin-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="deleteConfirmTitle">
+  <div class="fin-modal fin-modal-sm">
+    <div class="fin-modal-head">
+      <h3 class="fin-modal-title" id="deleteConfirmTitle">Confirm Delete</h3>
+      <button type="button" class="fin-modal-close" id="deleteConfirmClose" aria-label="Close">✕</button>
+    </div>
+    <div class="fin-modal-body">
+      <p class="fin-modal-message" id="deleteConfirmMessage">Are you sure?</p>
+    </div>
+    <div class="fin-modal-foot">
+      <button type="button" class="fin-btn fin-btn-secondary" id="deleteConfirmCancel">Cancel</button>
+      <button type="button" class="fin-btn fin-btn-danger" id="deleteConfirmOk">Delete</button>
+    </div>
+  </div>
+</div>
+
   <!-- Toast container -->
   <div id="toastContainer" class="fin-toast-container" aria-live="polite" aria-atomic="true"></div>
 

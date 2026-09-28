@@ -8,7 +8,7 @@
   "use strict";
 
   /* ---------- Constants ---------- */
-  const API_BASE = "https://cictech-inventory-2se4.vercel.app";
+  const API_BASE = "http://localhost:3000";
   const LOGIN_REDIRECT = "../index.html";
   const ADMIN_REDIRECT = "admin-dashboard.html";
 
@@ -55,6 +55,7 @@
 
   /* Toast */
   const toastContainer = $("toastContainer");
+  
 
   /* ---------- Local state ---------- */
   const state = {
@@ -318,19 +319,83 @@ function pickExpenseNumbers() {
     sumBank.textContent = formatCurrency(bank);
   }
 
+
+/* ---------- Delete confirmation modal (shared) ---------- */
+
+let _deleteAction = null;
+
+function openDeleteConfirm(title, message, action) {
+  _deleteAction = action;
+  document.getElementById("deleteConfirmTitle").textContent = title;
+  document.getElementById("deleteConfirmMessage").textContent = message;
+  document.getElementById("deleteConfirmModal").classList.remove("hidden");
+}
+
+function closeDeleteConfirm() {
+  document.getElementById("deleteConfirmModal").classList.add("hidden");
+  _deleteAction = null;
+}
+
+async function runDeleteConfirm() {
+  const action = _deleteAction;
+  if (!action) return;
+  const okBtn = document.getElementById("deleteConfirmOk");
+  okBtn.disabled = true;
+  okBtn.textContent = "Deleting…";
+  try {
+    await action();
+  } finally {
+    okBtn.disabled = false;
+    okBtn.textContent = "Delete";
+    closeDeleteConfirm();
+  }
+}
+
+async function deleteExpense(expenseId) {
+  try {
+    const res = await financeFetch("/finance/expenses/" + expenseId, {
+      method: "DELETE",
+    });
+    if (res.status === 401 || res.status === 403) throw new Error("UNAUTHORIZED");
+    if (!res.ok) {
+      let msg = "Unable to delete expense.";
+      try { const d = await res.json(); if (d.message) msg = d.message; } catch {}
+      throw new Error(msg);
+    }
+    showToast("Expense voided successfully.", "success");
+    await refreshAll();
+  } catch (err) {
+    if (err.message === "UNAUTHORIZED") {
+      showToast("Your session has expired.", "error");
+      localStorage.removeItem("pin"); localStorage.removeItem("user");
+      setTimeout(() => (window.location.href = LOGIN_REDIRECT), 900);
+      return;
+    }
+    showToast(err.message || "Unable to delete expense.", "error");
+  }
+}
+
+/* ---------- Wire the new modals ---------- */
+function wireEditAndDeleteModals() {
+  document.getElementById("deleteConfirmClose").addEventListener("click", closeDeleteConfirm);
+  document.getElementById("deleteConfirmCancel").addEventListener("click", closeDeleteConfirm);
+  document.getElementById("deleteConfirmOk").addEventListener("click", runDeleteConfirm);
+  document.getElementById("deleteConfirmModal").addEventListener("click", (e) => {
+    if (e.target.id === "deleteConfirmModal") closeDeleteConfirm();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      if (!document.getElementById("deleteConfirmModal").classList.contains("hidden")) {
+        closeDeleteConfirm();
+      }
+    }
+  });
+}
+
   /* ---------- Expense list ---------- */
 
-  function pickExpensesArray(payload) {
-    if (!payload) return [];
-    if (Array.isArray(payload)) return payload;
-    if (Array.isArray(payload.expenses)) return payload.expenses;
-    if (Array.isArray(payload.financialExpenses)) return payload.financialExpenses;
-    if (Array.isArray(payload.items)) return payload.items;
-    if (Array.isArray(payload.data)) return payload.data;
-    return [];
-  }
-
-  function paymentBadge(method) {
+  function paymentMethodBadge(method) {
     const m = String(method || "").toLowerCase();
     if (m === "cash") {
       return '<span class="fin-badge fin-badge-cash">Cash</span>';
@@ -344,73 +409,99 @@ function pickExpenseNumbers() {
     return '<span class="fin-badge fin-badge-bank">' + escapeHtml(method || "—") + "</span>";
   }
 
-  function renderExpensesList() {
-    expensesListWrap.innerHTML = "";
+  
 
-    const expenses = state.expenses || [];
-
-    if (!expenses.length) {
-      const empty = document.createElement("div");
-      empty.className = "fin-empty";
-      empty.innerHTML =
+function renderExpensesTableInto(container, expenses, opts) {
+  container.innerHTML = "";
+  if (!expenses.length) {
+    container.innerHTML =
+      '<div class="fin-empty">' +
         '<div class="fin-empty-icon">' +
-          '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' +
+          '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' +
             '<path d="M4 4h16v16H4z"/>' +
             '<path d="M8 9h8"/>' +
             '<path d="M8 13h5"/>' +
           "</svg>" +
         "</div>" +
-        '<p class="fin-empty-title">No expenses recorded today</p>' +
-        '<p class="fin-empty-text">Expenses recorded during the day will appear here.</p>';
-      expensesListWrap.appendChild(empty);
-      return;
+        '<p class="fin-empty-title">No expenses recorded</p>' +
+        '<p class="fin-empty-text">Expenses recorded during the day will appear here.</p>' +
+      "</div>";
+    return;
+  }
+
+  const wrap = document.createElement("div");
+  wrap.className = "fin-table-wrap";
+  const table = document.createElement("table");
+  table.className = "fin-table";
+  table.style.minWidth = "560px";
+
+  const editable = !!(opts && opts.editable);
+  const actionHeader = editable ? '<th class="fin-td-actions">Actions</th>' : "";
+
+  table.innerHTML =
+    "<thead>" +
+      "<tr>" +
+        "<th>Time</th>" +
+        "<th>Description</th>" +
+        "<th>Payment Method</th>" +
+        '<th class="fin-td-right">Amount</th>' +
+        actionHeader +
+      "</tr>" +
+    "</thead>" +
+    "<tbody></tbody>";
+
+  const tbody = table.querySelector("tbody");
+
+  expenses.forEach((exp) => {
+    const tr = document.createElement("tr");
+    const time = formatTime(exp.date || exp.createdAt);
+    const amount = formatNumber(exp.amount);
+
+    let actionCell = "";
+    if (editable) {
+      const expenseId = escapeHtml(exp._id || "");
+      actionCell =
+        '<td class="fin-td-actions">' +
+          '<button type="button" class="fin-btn fin-btn-danger" data-delete-expense="' +
+            expenseId + '">Delete</button>' +
+        "</td>";
     }
 
-    const wrap = document.createElement("div");
-    wrap.className = "fin-table-wrap";
+    tr.innerHTML =
+      '<td class="fin-td-time">' + escapeHtml(time) + "</td>" +
+      '<td class="fin-td-strong">' + escapeHtml(exp.description || "—") + "</td>" +
+      "<td>" + paymentMethodBadge(exp.paymentMethod || "—") + "</td>" +
+      '<td class="fin-td-right fin-td-strong">' + formatCurrencyCedi(amount) + "</td>" +
+      actionCell;
 
-    const table = document.createElement("table");
-    table.className = "fin-table";
+    tbody.appendChild(tr);
+  });
 
-    table.innerHTML =
-      "<thead>" +
-        "<tr>" +
-          "<th>Time</th>" +
-          "<th>Description</th>" +
-          "<th>Payment Method</th>" +
-          '<th class="fin-td-right">Amount</th>' +
-        "</tr>" +
-      "</thead>" +
-      "<tbody></tbody>";
+  wrap.appendChild(table);
+  container.appendChild(wrap);
 
-    const tbody = table.querySelector("tbody");
-
-    expenses.forEach((exp) => {
-      const tr = document.createElement("tr");
-
-      const time = formatTime(
-        exp.createdAt || exp.time || exp.timestamp || exp.date
-      );
-      const description =
-        exp.description || exp.name || exp.detail || "—";
-      const method =
-        exp.paymentMethod || exp.method || exp.payment || "—";
-      const amount = formatNumber(
-        exp.amount != null ? exp.amount : exp.total
-      );
-
-      tr.innerHTML =
-        '<td class="fin-td-time">' + escapeHtml(time) + "</td>" +
-        '<td class="fin-td-strong">' + escapeHtml(description) + "</td>" +
-        "<td>" + paymentBadge(method) + "</td>" +
-        '<td class="fin-td-right fin-td-strong">' + formatCurrencyCedi(amount) + "</td>";
-
-      tbody.appendChild(tr);
+  if (editable) {
+    container.querySelectorAll("[data-delete-expense]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const exp = expenses.find((item) => (item._id || "") === btn.dataset.deleteExpense);
+        if (exp) {
+          openDeleteConfirm(
+            "Delete this expense?",
+            "The expense will be marked as voided and removed from today's totals.",
+            () => deleteExpense(exp._id)
+          );
+        }
+      });
     });
-
-    wrap.appendChild(table);
-    expensesListWrap.appendChild(wrap);
   }
+}
+
+function renderExpensesList() {
+  const editable = !state.isClosed;
+  renderExpensesTableInto(expensesListWrap, state.expenses || [], {
+    editable: editable,
+  });
+}
 
   /* ---------- Form validation ---------- */
 
@@ -673,6 +764,8 @@ async function loadExpensesFromExistingPayload() {
   /* ---------- Event wiring ---------- */
 
   function wireEvents() {
+    wireEditAndDeleteModals();
+
     /* Live validation hints */
     expDescription.addEventListener("blur", validateDescription);
     expAmount.addEventListener("blur", validateAmount);
