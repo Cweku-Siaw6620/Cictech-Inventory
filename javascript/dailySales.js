@@ -34,7 +34,6 @@
 
   /* Summary cards */
   const sumTotal = $("sumTotal");
-  const sumCash = $("sumCash");
   const sumMomo = $("sumMomo");
   const sumBank = $("sumBank");
 
@@ -59,7 +58,6 @@
   const pvStorage = $("pvStorage");
   const pvPrice = $("pvPrice");
   const invPrice = $("invPrice");
-  const invCash = $("invCash");
   const invMomo = $("invMomo");
   const invBank = $("invBank");
   const invTotalPaid = $("invTotalPaid");
@@ -74,7 +72,6 @@
   const manSerialRow = $("manSerialRow");
   const manDetailRow = $("manDetailRow");
   const manPrice = $("manPrice");
-  const manCash = $("manCash");
   const manMomo = $("manMomo");
   const manBank = $("manBank");
   const manTotalPaid = $("manTotalPaid");
@@ -325,20 +322,18 @@
   const s = state.summary || {};
   const b = s.balances || {};
 
-  const cash = formatNumber(b.sales && b.sales.cash);
   const momo = formatNumber(b.sales && b.sales.momo);
   const bank = formatNumber(b.sales && b.sales.bank);
   const total = formatNumber(
-    b.totalSales != null ? b.totalSales : cash + momo + bank
+    b.totalSales != null ? b.totalSales : momo + bank
   );
 
-  return { cash, momo, bank, total };
+  return { momo, bank, total };
 }
 
   function renderSummaryCards() {
-    const { cash, momo, bank, total } = pickSummaryNumbers();
+    const { momo, bank, total } = pickSummaryNumbers();
     sumTotal.textContent = formatCurrency(total);
-    sumCash.textContent = formatCurrency(cash);
     sumMomo.textContent = formatCurrency(momo);
     sumBank.textContent = formatCurrency(bank);
   }
@@ -372,7 +367,6 @@
 
   function readInventoryPayments() {
     return {
-      cash: formatNumber(invCash.value),
       momo: formatNumber(invMomo.value),
       bank: formatNumber(invBank.value),
     };
@@ -380,7 +374,6 @@
 
   function readManualPayments() {
     return {
-      cash: formatNumber(manCash.value),
       momo: formatNumber(manMomo.value),
       bank: formatNumber(manBank.value),
     };
@@ -388,7 +381,7 @@
 
 function updateInventoryTotals() {
   const p = readInventoryPayments();
-  const totalPaid = p.cash + p.momo + p.bank;
+  const totalPaid = p.momo + p.bank;
   invTotalPaid.textContent = formatCurrency(totalPaid);
 
   const product = state.selectedProduct;
@@ -402,7 +395,7 @@ function updateInventoryTotals() {
     hintText = "Enter a serial number and search to load the product.";
   } else if (totalPaid === 0) {
     hintText =
-      "Enter payment amounts. Cash + MoMo + Bank/POS must equal " +
+      "Enter payment amounts. MoMo + Bank/POS must equal " +
       formatCurrency(productPrice) + ".";
   } else if (Math.abs(totalPaid - productPrice) < 0.005) {
     hintText = "Payment matches product price. Ready to record.";
@@ -422,7 +415,7 @@ function updateInventoryTotals() {
 
   function updateManualTotals() {
     const p = readManualPayments();
-    const totalPaid = p.cash + p.momo + p.bank;
+    const totalPaid = p.momo + p.bank;
     manTotalPaid.textContent = formatCurrency(totalPaid);
 
     const price = formatNumber(manPrice.value);
@@ -437,7 +430,7 @@ function updateInventoryTotals() {
     } else if (!price || price <= 0) {
       hintText = "Enter a price greater than zero.";
     } else if (totalPaid === 0) {
-      hintText = "Enter payment amounts. Cash + MoMo + Bank/POS must equal " + formatCurrency(price) + ".";
+      hintText = "Enter payment amounts. MoMo + Bank/POS must equal " + formatCurrency(price) + ".";
     } else if (Math.abs(totalPaid - price) < 0.005) {
       hintText = "Payment matches price. Ready to record.";
       hintClass = "fin-hint-success";
@@ -620,7 +613,6 @@ function renderSalesList() {
         "<th>Product</th>" +
         "<th>Type</th>" +
         '<th class="fin-td-right">Price</th>' +
-        '<th class="fin-td-right">Cash</th>' +
         '<th class="fin-td-right">MoMo</th>' +
         '<th class="fin-td-right">Bank/POS</th>' +
         '<th class="fin-td-right">Total</th>' +
@@ -637,10 +629,9 @@ function renderSalesList() {
     const time = formatTime(sale.date || sale.createdAt);
     const product = (sale.product && sale.product.name) || "—";
     const price = formatNumber(sale.totalAmount);
-    const cash  = formatNumber(sale.payment && sale.payment.cash);
     const momo  = formatNumber(sale.payment && sale.payment.momo);
     const bank  = formatNumber(sale.payment && sale.payment.bank);
-    const total = cash + momo + bank;
+    const total = momo + bank;
 
     let actionCell = "";
     if (canEdit) {
@@ -660,7 +651,6 @@ function renderSalesList() {
       '<td class="fin-td-strong">' + escapeHtml(product) + "</td>" +
       "<td>" + saleTypeBadge(sale) + "</td>" +
       '<td class="fin-td-right">' + formatCurrency(price) + "</td>" +
-      '<td class="fin-td-right">' + formatCurrency(cash) + "</td>" +
       '<td class="fin-td-right">' + formatCurrency(momo) + "</td>" +
       '<td class="fin-td-right">' + formatCurrency(bank) + "</td>" +
       '<td class="fin-td-right fin-td-strong">' + formatCurrency(total) + "</td>" +
@@ -707,7 +697,6 @@ function openSaleEditModal(sale) {
   document.getElementById("saleEditDetail").value =
     (sale.product && sale.product.detail) || "";
   document.getElementById("saleEditTotal").value = formatNumber(sale.totalAmount);
-  document.getElementById("saleEditCash").value = formatNumber(sale.payment && sale.payment.cash);
   document.getElementById("saleEditMomo").value = formatNumber(sale.payment && sale.payment.momo);
   document.getElementById("saleEditBank").value = formatNumber(sale.payment && sale.payment.bank);
   document.getElementById("saleEditHint").textContent = "";
@@ -723,10 +712,9 @@ function closeSaleEditModal() {
 }
 
 function updateSaleEditTotals() {
-  const cash = formatNumber(document.getElementById("saleEditCash").value);
   const momo = formatNumber(document.getElementById("saleEditMomo").value);
   const bank = formatNumber(document.getElementById("saleEditBank").value);
-  const total = cash + momo + bank;
+  const total = momo + bank;
   const price = formatNumber(document.getElementById("saleEditTotal").value);
 
   document.getElementById("saleEditPayTotal").textContent = formatCurrency(total);
@@ -767,7 +755,6 @@ async function saveSaleEditModal() {
     serial: document.getElementById("saleEditSerial").value.trim(),
     detail: document.getElementById("saleEditDetail").value.trim(),
     totalAmount: formatNumber(document.getElementById("saleEditTotal").value),
-    cash: formatNumber(document.getElementById("saleEditCash").value),
     momo: formatNumber(document.getElementById("saleEditMomo").value),
     bank: formatNumber(document.getElementById("saleEditBank").value),
   };
@@ -871,7 +858,7 @@ function wireEditAndDeleteModals() {
   document.getElementById("saleEditModal").addEventListener("click", (e) => {
     if (e.target.id === "saleEditModal") closeSaleEditModal();
   });
-  ["saleEditCash", "saleEditMomo", "saleEditBank", "saleEditTotal"].forEach((id) => {
+  ["saleEditMomo", "saleEditBank", "saleEditTotal"].forEach((id) => {
     document.getElementById(id).addEventListener("input", updateSaleEditTotals);
   });
 
@@ -940,7 +927,6 @@ function wireEditAndDeleteModals() {
   invSerialHint.textContent = "";
   invSerialHint.className = "fin-serial-hint";
   clearSelectedProduct();
-  invCash.value = "";
   invMomo.value = "";
   invBank.value = "";
   invHint.textContent = "";
@@ -953,7 +939,6 @@ function wireEditAndDeleteModals() {
     manSerial.value = "";
     manDetail.value = "";
     manPrice.value = "";
-    manCash.value = "";
     manMomo.value = "";
     manBank.value = "";
     manHint.textContent = "";
@@ -1051,7 +1036,7 @@ async function submitInventorySale(e) {
   }
 
   const p = readInventoryPayments();
-  const totalPaid = p.cash + p.momo + p.bank;
+  const totalPaid = p.momo + p.bank;
   const price = formatNumber(product.price);
 
   if (Math.abs(totalPaid - price) >= 0.005) {
@@ -1061,7 +1046,6 @@ async function submitInventorySale(e) {
 
   const payload = {
     productId: product._id || product.id,
-    cash: p.cash,
     momo: p.momo,
     bank: p.bank,
   };
@@ -1124,7 +1108,7 @@ async function submitInventorySale(e) {
       return;
     }
     const p = readManualPayments();
-    const totalPaid = p.cash + p.momo + p.bank;
+    const totalPaid = p.momo + p.bank;
 
     if (Math.abs(totalPaid - price) >= 0.005) {
       showToast("Payment amounts must equal the sale price.", "error");
@@ -1142,7 +1126,6 @@ async function submitInventorySale(e) {
     serial: (manSerial.value || "").trim(),
     detail: (manDetail.value || "").trim(),
     price: price,
-    cash: p.cash,
     momo: p.momo,
     bank: p.bank,
   };
@@ -1227,12 +1210,12 @@ function wireEvents() {
   });
 
   /* Inventory payment inputs */
-  [invCash, invMomo, invBank].forEach((el) => {
+  [invMomo, invBank].forEach((el) => {
     el.addEventListener("input", updateInventoryTotals);
   });
 
   /* Manual payment + price inputs */
-  [manCash, manMomo, manBank, manPrice, manName].forEach((el) => {
+  [manMomo, manBank, manPrice, manName].forEach((el) => {
     el.addEventListener("input", updateManualTotals);
   });
 

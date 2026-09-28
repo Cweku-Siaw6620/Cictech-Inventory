@@ -34,7 +34,6 @@
   const gtSales = $("gtSales");
   const gtExpenses = $("gtExpenses");
   const gtAvailable = $("gtAvailable");
-  const gtCash = $("gtCash");
   const gtMomo = $("gtMomo");
   const gtBank = $("gtBank");
   const branchCards = $("branchCards");
@@ -72,7 +71,6 @@
   const saleModalSerialRow = $("saleModalSerialRow");
   const saleModalDetail = $("saleModalDetail");
   const saleModalDetailRow = $("saleModalDetailRow");
-  const saleModalCash = $("saleModalCash");
   const saleModalMomo = $("saleModalMomo");
   const saleModalBank = $("saleModalBank");
   const saleModalPayTotal = $("saleModalPayTotal");
@@ -413,7 +411,7 @@
       /* Aggregate totals for today across all branches */
       const totals = {
         sales: 0, expenses: 0, available: 0,
-        cash: 0, momo: 0, bank: 0,
+        momo: 0, bank: 0,
       };
       const perBranch = {}; // branchName -> { totals, status, account }
 
@@ -454,7 +452,6 @@
       gtAvailable.textContent = formatCedi(totals.available);
 
       /* Per-method split is not available from this endpoint — show dashes */
-      gtCash.textContent = "—";
       gtMomo.textContent = "—";
       gtBank.textContent = "—";
 
@@ -663,15 +660,12 @@
       '<div class="adm-summary-block">' +
         '<h3 class="adm-summary-block-title">Opening Balance</h3>' +
         '<div class="adm-summary-grid">' +
-          '<div class="adm-summary-cell"><span class="adm-summary-cell-label">Cash</span>' +
-            '<span class="adm-summary-cell-value">' + formatCedi(num(balances.opening && balances.opening.cash)) + "</span></div>" +
           '<div class="adm-summary-cell"><span class="adm-summary-cell-label">MoMo</span>' +
             '<span class="adm-summary-cell-value">' + formatCedi(num(balances.opening && balances.opening.momo)) + "</span></div>" +
           '<div class="adm-summary-cell"><span class="adm-summary-cell-label">Bank/POS</span>' +
             '<span class="adm-summary-cell-value">' + formatCedi(num(balances.opening && balances.opening.bank)) + "</span></div>" +
           '<div class="adm-summary-cell adm-summary-cell-total"><span class="adm-summary-cell-label">Total Opening</span>' +
             '<span class="adm-summary-cell-value">' + formatCedi(
-              num(balances.opening && balances.opening.cash) +
               num(balances.opening && balances.opening.momo) +
               num(balances.opening && balances.opening.bank)
             ) + "</span></div>" +
@@ -682,8 +676,6 @@
       '<div class="adm-summary-block">' +
         '<h3 class="adm-summary-block-title">Sales</h3>' +
         '<div class="adm-summary-grid">' +
-          '<div class="adm-summary-cell"><span class="adm-summary-cell-label">Cash</span>' +
-            '<span class="adm-summary-cell-value">' + formatCedi(num(balances.sales && balances.sales.cash)) + "</span></div>" +
           '<div class="adm-summary-cell"><span class="adm-summary-cell-label">MoMo</span>' +
             '<span class="adm-summary-cell-value">' + formatCedi(num(balances.sales && balances.sales.momo)) + "</span></div>" +
           '<div class="adm-summary-cell"><span class="adm-summary-cell-label">Bank/POS</span>' +
@@ -697,8 +689,6 @@
       '<div class="adm-summary-block">' +
         '<h3 class="adm-summary-block-title">Expenses</h3>' +
         '<div class="adm-summary-grid">' +
-          '<div class="adm-summary-cell"><span class="adm-summary-cell-label">Cash</span>' +
-            '<span class="adm-summary-cell-value">' + formatCedi(num(balances.expenses && balances.expenses.cash)) + "</span></div>" +
           '<div class="adm-summary-cell"><span class="adm-summary-cell-label">MoMo</span>' +
             '<span class="adm-summary-cell-value">' + formatCedi(num(balances.expenses && balances.expenses.momo)) + "</span></div>" +
           '<div class="adm-summary-cell"><span class="adm-summary-cell-label">Bank/POS</span>' +
@@ -712,8 +702,6 @@
       '<div class="adm-summary-block adm-summary-block-available">' +
         '<h3 class="adm-summary-block-title">Available Balance</h3>' +
         '<div class="adm-summary-grid">' +
-          '<div class="adm-summary-cell"><span class="adm-summary-cell-label">Cash</span>' +
-            '<span class="adm-summary-cell-value">' + formatCedi(num(balances.available && balances.available.cash)) + "</span></div>" +
           '<div class="adm-summary-cell"><span class="adm-summary-cell-label">MoMo</span>' +
             '<span class="adm-summary-cell-value">' + formatCedi(num(balances.available && balances.available.momo)) + "</span></div>" +
           '<div class="adm-summary-cell"><span class="adm-summary-cell-label">Bank/POS</span>' +
@@ -902,15 +890,12 @@
       '<div class="adm-summary-block">' +
         '<h3 class="adm-summary-block-title">Opening</h3>' +
         '<div class="adm-summary-grid">' +
-          '<div class="adm-summary-cell"><span class="adm-summary-cell-label">Cash</span>' +
-            '<span class="adm-summary-cell-value">' + formatCedi(num(balances.opening && balances.opening.cash)) + "</span></div>" +
           '<div class="adm-summary-cell"><span class="adm-summary-cell-label">MoMo</span>' +
             '<span class="adm-summary-cell-value">' + formatCedi(num(balances.opening && balances.opening.momo)) + "</span></div>" +
           '<div class="adm-summary-cell"><span class="adm-summary-cell-label">Bank/POS</span>' +
             '<span class="adm-summary-cell-value">' + formatCedi(num(balances.opening && balances.opening.bank)) + "</span></div>" +
           '<div class="adm-summary-cell adm-summary-cell-total"><span class="adm-summary-cell-label">Total</span>' +
             '<span class="adm-summary-cell-value">' + formatCedi(
-              num(balances.opening && balances.opening.cash) +
               num(balances.opening && balances.opening.momo) +
               num(balances.opening && balances.opening.bank)
             ) + "</span></div>" +
@@ -922,8 +907,6 @@
         '<div class="adm-summary-grid">' +
           '<div class="adm-summary-cell"><span class="adm-summary-cell-label">Total Sales</span>' +
             '<span class="adm-summary-cell-value">' + formatCedi(num(balances.totalSales)) + "</span></div>" +
-          '<div class="adm-summary-cell"><span class="adm-summary-cell-label">Cash</span>' +
-            '<span class="adm-summary-cell-value">' + formatCedi(num(balances.sales && balances.sales.cash)) + "</span></div>" +
           '<div class="adm-summary-cell"><span class="adm-summary-cell-label">MoMo</span>' +
             '<span class="adm-summary-cell-value">' + formatCedi(num(balances.sales && balances.sales.momo)) + "</span></div>" +
           '<div class="adm-summary-cell"><span class="adm-summary-cell-label">Bank/POS</span>' +
@@ -936,8 +919,6 @@
         '<div class="adm-summary-grid">' +
           '<div class="adm-summary-cell"><span class="adm-summary-cell-label">Total Expenses</span>' +
             '<span class="adm-summary-cell-value">' + formatCedi(num(balances.totalExpenses)) + "</span></div>" +
-          '<div class="adm-summary-cell"><span class="adm-summary-cell-label">Cash</span>' +
-            '<span class="adm-summary-cell-value">' + formatCedi(num(balances.expenses && balances.expenses.cash)) + "</span></div>" +
           '<div class="adm-summary-cell"><span class="adm-summary-cell-label">MoMo</span>' +
             '<span class="adm-summary-cell-value">' + formatCedi(num(balances.expenses && balances.expenses.momo)) + "</span></div>" +
           '<div class="adm-summary-cell"><span class="adm-summary-cell-label">Bank/POS</span>' +
@@ -950,8 +931,6 @@
         '<div class="adm-summary-grid">' +
           '<div class="adm-summary-cell adm-summary-cell-total"><span class="adm-summary-cell-label">Total Available</span>' +
             '<span class="adm-summary-cell-value">' + formatCedi(num(balances.totalAvailable)) + "</span></div>" +
-          '<div class="adm-summary-cell"><span class="adm-summary-cell-label">Cash</span>' +
-            '<span class="adm-summary-cell-value">' + formatCedi(num(balances.available && balances.available.cash)) + "</span></div>" +
           '<div class="adm-summary-cell"><span class="adm-summary-cell-label">MoMo</span>' +
             '<span class="adm-summary-cell-value">' + formatCedi(num(balances.available && balances.available.momo)) + "</span></div>" +
           '<div class="adm-summary-cell"><span class="adm-summary-cell-label">Bank/POS</span>' +
@@ -1023,7 +1002,6 @@
 
   function methodBadge(m) {
     const k = String(m || "").toLowerCase();
-    if (k === "cash") return '<span class="adm-badge adm-badge-cash">Cash</span>';
     if (k === "momo") return '<span class="adm-badge adm-badge-momo">MoMo</span>';
     if (k === "bank" || k === "bank/pos" || k === "bankpos") {
       return '<span class="adm-badge adm-badge-bank">Bank/POS</span>';
@@ -1063,7 +1041,6 @@ function renderSalesTableInto(container, sales, opts) {
         "<th>Product</th>" +
         "<th>Type</th>" +
         '<th class="fin-td-right">Price</th>' +
-        '<th class="fin-td-right">Cash</th>' +
         '<th class="fin-td-right">MoMo</th>' +
         '<th class="fin-td-right">Bank/POS</th>' +
         '<th class="fin-td-right">Total</th>' +
@@ -1079,10 +1056,9 @@ function renderSalesTableInto(container, sales, opts) {
     const time = formatTime(sale.date || sale.createdAt);
     const name = (sale.product && sale.product.name) || "—";
     const price = num(sale.totalAmount);
-    const cash  = num(sale.payment && sale.payment.cash);
     const momo  = num(sale.payment && sale.payment.momo);
     const bank  = num(sale.payment && sale.payment.bank);
-    const total = cash + momo + bank;
+    const total = momo + bank;
 
     let actionCell = "";
     if (editable) {
@@ -1102,7 +1078,6 @@ function renderSalesTableInto(container, sales, opts) {
       '<td class="fin-td-strong">' + escapeHtml(name) + "</td>" +
       "<td>" + saleSourceBadge(sale) + "</td>" +
       '<td class="fin-td-right">' + formatCurrencyCedi(price) + "</td>" +
-      '<td class="fin-td-right">' + formatCurrencyCedi(cash) + "</td>" +
       '<td class="fin-td-right">' + formatCurrencyCedi(momo) + "</td>" +
       '<td class="fin-td-right">' + formatCurrencyCedi(bank) + "</td>" +
       '<td class="fin-td-right fin-td-strong">' + formatCurrencyCedi(total) + "</td>" +
@@ -1119,7 +1094,7 @@ function renderSalesTableInto(container, sales, opts) {
       btn.addEventListener("click", () => {
         const id = btn.dataset.editSale;
         const sale = sales.find((x) => (x._id || "") === id);
-        if (sale) openSaleEditModal(sale);
+        if (sale) openSaleModal(sale);
       });
     });
     container.querySelectorAll("[data-delete-sale]").forEach((btn) => {
@@ -1133,117 +1108,6 @@ function renderSalesTableInto(container, sales, opts) {
         );
       });
     });
-  }
-}
-
-/* ---------- Sale edit modal ---------- */
-
-let _editingSale = null;
-
-function openSaleEditModal(sale) {
-  _editingSale = sale;
-  document.getElementById("saleEditName").value =
-    (sale.product && sale.product.name) || "";
-  document.getElementById("saleEditSerial").value =
-    (sale.product && sale.product.serial) || "";
-  document.getElementById("saleEditDetail").value =
-    (sale.product && sale.product.detail) || "";
-  document.getElementById("saleEditTotal").value = num(sale.totalAmount);
-  document.getElementById("saleEditCash").value = num(sale.payment && sale.payment.cash);
-  document.getElementById("saleEditMomo").value = num(sale.payment && sale.payment.momo);
-  document.getElementById("saleEditBank").value = num(sale.payment && sale.payment.bank);
-  document.getElementById("saleEditHint").textContent = "";
-  document.getElementById("saleEditHint").className = "fin-pay-hint";
-  updateSaleEditTotals();
-  document.getElementById("saleEditModal").classList.remove("hidden");
-  setTimeout(() => document.getElementById("saleEditName").focus(), 60);
-}
-
-function closeSaleEditModal() {
-  document.getElementById("saleEditModal").classList.add("hidden");
-  _editingSale = null;
-}
-
-function updateSaleEditTotals() {
-  const cash = num(document.getElementById("saleEditCash").value);
-  const momo = num(document.getElementById("saleEditMomo").value);
-  const bank = num(document.getElementById("saleEditBank").value);
-  const total = cash + momo + bank;
-  const price = num(document.getElementById("saleEditTotal").value);
-
-  document.getElementById("saleEditPayTotal").textContent = formatCurrencyCedi(total);
-
-  const hintEl = document.getElementById("saleEditHint");
-  const saveBtn = document.getElementById("saleEditSave");
-
-  if (!price || price <= 0) {
-    hintEl.textContent = "Enter a price greater than zero.";
-    hintEl.className = "fin-pay-hint fin-hint-error";
-    saveBtn.disabled = true;
-    return;
-  }
-  if (Math.abs(total - price) >= 0.005) {
-    hintEl.textContent =
-      "Payment total must equal " + formatCurrencyCedi(price) + ".";
-    hintEl.className = "fin-pay-hint fin-hint-error";
-    saveBtn.disabled = true;
-    return;
-  }
-  hintEl.textContent = "Payment matches.";
-  hintEl.className = "fin-pay-hint fin-hint-success";
-  saveBtn.disabled = false;
-}
-
-async function saveSaleEditModal() {
-  const sale = _editingSale;
-  if (!sale) return;
-
-  const name = document.getElementById("saleEditName").value.trim();
-  if (!name) {
-    showToast("Name is required.", "error");
-    return;
-  }
-
-  const body = {
-    name,
-    serial: document.getElementById("saleEditSerial").value.trim(),
-    detail: document.getElementById("saleEditDetail").value.trim(),
-    totalAmount: num(document.getElementById("saleEditTotal").value),
-    cash: num(document.getElementById("saleEditCash").value),
-    momo: num(document.getElementById("saleEditMomo").value),
-    bank: num(document.getElementById("saleEditBank").value),
-  };
-
-  const saveBtn = document.getElementById("saleEditSave");
-  saveBtn.disabled = true;
-  saveBtn.textContent = "Saving…";
-
-  try {
-    const res = await financeFetch("/finance/sales/" + sale._id, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    if (res.status === 401 || res.status === 403) throw new Error("UNAUTHORIZED");
-    if (!res.ok) {
-      let msg = "Unable to update sale.";
-      try { const d = await res.json(); if (d.message) msg = d.message; } catch {}
-      throw new Error(msg);
-    }
-    showToast("Sale updated successfully.", "success");
-    closeSaleEditModal();
-    await refreshAll();
-  } catch (err) {
-    if (err.message === "UNAUTHORIZED") {
-      showToast("Your session has expired.", "error");
-      localStorage.removeItem("pin"); localStorage.removeItem("user");
-      setTimeout(() => (window.location.href = LOGIN_REDIRECT), 900);
-      return;
-    }
-    showToast(err.message || "Unable to update sale.", "error");
-  } finally {
-    saveBtn.textContent = "Save Changes";
-    updateSaleEditTotals();
   }
 }
 
@@ -1307,16 +1171,6 @@ async function deleteSale(saleId) {
 /* ---------- Wire the new modals ---------- */
 
 function wireEditAndDeleteModals() {
-  document.getElementById("saleEditClose").addEventListener("click", closeSaleEditModal);
-  document.getElementById("saleEditCancel").addEventListener("click", closeSaleEditModal);
-  document.getElementById("saleEditSave").addEventListener("click", saveSaleEditModal);
-  document.getElementById("saleEditModal").addEventListener("click", (e) => {
-    if (e.target.id === "saleEditModal") closeSaleEditModal();
-  });
-  ["saleEditCash", "saleEditMomo", "saleEditBank", "saleEditTotal"].forEach((id) => {
-    document.getElementById(id).addEventListener("input", updateSaleEditTotals);
-  });
-
   document.getElementById("deleteConfirmClose").addEventListener("click", closeDeleteConfirm);
   document.getElementById("deleteConfirmCancel").addEventListener("click", closeDeleteConfirm);
   document.getElementById("deleteConfirmOk").addEventListener("click", runDeleteConfirm);
@@ -1326,7 +1180,6 @@ function wireEditAndDeleteModals() {
 
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
-      if (!document.getElementById("saleEditModal").classList.contains("hidden")) closeSaleEditModal();
       if (!document.getElementById("deleteConfirmModal").classList.contains("hidden")) closeDeleteConfirm();
     }
   });
@@ -1478,7 +1331,6 @@ function wireEditAndDeleteModals() {
       (sale.product && sale.product.name) || "(unnamed)";
     saleModalTotal.value = formatCedi(num(sale.totalAmount));
 
-    saleModalCash.value = num(sale.payment && sale.payment.cash);
     saleModalMomo.value = num(sale.payment && sale.payment.momo);
     saleModalBank.value = num(sale.payment && sale.payment.bank);
 
@@ -1498,7 +1350,7 @@ function wireEditAndDeleteModals() {
 
     updateSaleModalTotals();
     saleModal.classList.remove("hidden");
-    setTimeout(() => saleModalCash.focus(), 60);
+    setTimeout(() => saleModalMomo.focus(), 60);
   }
 
   function closeSaleModal() {
@@ -1507,10 +1359,9 @@ function wireEditAndDeleteModals() {
   }
 
   function updateSaleModalTotals() {
-    const cash = num(saleModalCash.value);
     const momo = num(saleModalMomo.value);
     const bank = num(saleModalBank.value);
-    const total = cash + momo + bank;
+    const total = momo + bank;
     saleModalPayTotal.textContent = formatCedi(total);
 
     const sale = state.editingSale;
@@ -1535,10 +1386,9 @@ function wireEditAndDeleteModals() {
     const sale = state.editingSale;
     if (!sale) return;
 
-    const cash = num(saleModalCash.value);
     const momo = num(saleModalMomo.value);
     const bank = num(saleModalBank.value);
-    const total = cash + momo + bank;
+    const total = momo + bank;
     const saleTotal = num(sale.totalAmount);
 
     if (Math.abs(total - saleTotal) >= 0.005) {
@@ -1546,7 +1396,7 @@ function wireEditAndDeleteModals() {
       return;
     }
 
-    const body = { cash, momo, bank };
+    const body = { momo, bank };
     const isManual = String(sale.source || "").toLowerCase() !== "inventory";
     if (isManual) {
       body.totalAmount = saleTotal;
@@ -1580,7 +1430,7 @@ function wireEditAndDeleteModals() {
   }
 
   function wireSaleModal() {
-    [saleModalCash, saleModalMomo, saleModalBank].forEach((el) => {
+    [saleModalMomo, saleModalBank].forEach((el) => {
       el.addEventListener("input", updateSaleModalTotals);
     });
     saleModalClose.addEventListener("click", closeSaleModal);
@@ -1597,7 +1447,7 @@ function wireEditAndDeleteModals() {
     state.editingExpense = expense;
     expenseModalDesc.value = expense.description || "";
     expenseModalAmount.value = num(expense.amount);
-    expenseModalMethod.value = expense.paymentMethod || "Cash";
+    expenseModalMethod.value = expense.paymentMethod || "MoMo";
     expenseModalHint.textContent = "";
     expenseModalHint.className = "adm-modal-hint";
     expenseModal.classList.remove("hidden");
@@ -1630,7 +1480,7 @@ function wireEditAndDeleteModals() {
       expenseModalHint.classList.add("adm-hint-error");
       return;
     }
-    if (!["Cash", "MoMo", "Bank/POS"].includes(paymentMethod)) {
+    if (!["MoMo", "Bank/POS"].includes(paymentMethod)) {
       expenseModalHint.textContent = "Invalid payment method.";
       expenseModalHint.classList.add("adm-hint-error");
       return;

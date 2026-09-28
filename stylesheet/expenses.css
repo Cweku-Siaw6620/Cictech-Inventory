@@ -7,7 +7,7 @@
      green  = open account, success
      ink    = neutral actions and headings
    Payment method markers (identification only):
-     cash = slate, MoMo = amber-gold, Bank/POS = violet
+    MoMo = amber-gold, Bank/POS = violet
    All original class names and ids are kept.
    ============================================================ */
 
@@ -35,7 +35,6 @@
   --fin-expense-line: #f4c5bf;
 
   /* Payment methods */
-  --fin-m-cash: #64748b;
   --fin-m-momo: #d79a00;
   --fin-m-bank: #5b4fc4;
 
@@ -449,7 +448,6 @@ svg { display: block; }
 }
 
 /* Payment method markers */
-.fin-method-cash .fin-summary-label::before,
 .fin-method-momo .fin-summary-label::before,
 .fin-method-bank .fin-summary-label::before {
   content: "";
@@ -457,7 +455,7 @@ svg { display: block; }
   height: 8px;
   border-radius: 2px;
   flex-shrink: 0;
-  background: var(--fin-m-cash);
+  background: var(--fin-m-momo);
 }
 
 .fin-method-momo .fin-summary-label::before { background: var(--fin-m-momo); }
@@ -765,14 +763,13 @@ svg { display: block; }
   white-space: nowrap;
 }
 
-.fin-badge-cash::before,
 .fin-badge-momo::before,
 .fin-badge-bank::before {
   content: "";
   width: 7px;
   height: 7px;
   border-radius: 2px;
-  background: var(--fin-m-cash);
+  background: var(--fin-m-momo);
 }
 
 .fin-badge-momo::before { background: var(--fin-m-momo); }

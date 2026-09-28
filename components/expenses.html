@@ -92,10 +92,6 @@
             <span class="fin-summary-label">Today's Expenses</span>
             <span class="fin-summary-value" id="sumTotal">–</span>
           </div>
-          <div class="fin-summary-card fin-method-cash">
-            <span class="fin-summary-label">Cash</span>
-            <span class="fin-summary-value" id="sumCash">–</span>
-          </div>
           <div class="fin-summary-card fin-method-momo">
             <span class="fin-summary-label">MoMo</span>
             <span class="fin-summary-value" id="sumMomo">–</span>
@@ -160,7 +156,6 @@
               <label for="expPaymentMethod" class="fin-label">Payment Method</label>
               <select id="expPaymentMethod" class="fin-select" required>
                 <option value="">Select payment method</option>
-                <option value="Cash">Cash</option>
                 <option value="MoMo">MoMo</option>
                 <option value="Bank/POS">Bank/POS</option>
               </select>
@@ -193,22 +188,22 @@
     </footer>
   </div>
 
-<!-- ==================== CONFIRM DELETE MODAL ==================== -->
-<div id="deleteConfirmModal" class="fin-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="deleteConfirmTitle">
-  <div class="fin-modal fin-modal-sm">
-    <div class="fin-modal-head">
-      <h3 class="fin-modal-title" id="deleteConfirmTitle">Confirm Delete</h3>
-      <button type="button" class="fin-modal-close" id="deleteConfirmClose" aria-label="Close">✕</button>
-    </div>
-    <div class="fin-modal-body">
-      <p class="fin-modal-message" id="deleteConfirmMessage">Are you sure?</p>
-    </div>
-    <div class="fin-modal-foot">
-      <button type="button" class="fin-btn fin-btn-secondary" id="deleteConfirmCancel">Cancel</button>
-      <button type="button" class="fin-btn fin-btn-danger" id="deleteConfirmOk">Delete</button>
+    <!-- ==================== EDIT/DELETE CONFIRM MODAL ==================== -->
+  <div id="deleteConfirmModal" class="fin-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="deleteConfirmTitle">
+    <div class="fin-modal fin-modal-sm">
+      <div class="fin-modal-head">
+        <h3 class="fin-modal-title" id="deleteConfirmTitle">Confirm Delete</h3>
+        <button type="button" class="fin-modal-close" id="deleteConfirmClose" aria-label="Close">✕</button>
+      </div>
+      <div class="fin-modal-body">
+        <p class="fin-modal-message" id="deleteConfirmMessage">Are you sure?</p>
+      </div>
+      <div class="fin-modal-foot">
+        <button type="button" class="fin-btn fin-btn-secondary" id="deleteConfirmCancel">Cancel</button>
+        <button type="button" class="fin-btn fin-btn-danger" id="deleteConfirmOk">Delete</button>
+      </div>
     </div>
   </div>
-</div>
 
   <!-- Toast container -->
   <div id="toastContainer" class="fin-toast-container" aria-live="polite" aria-atomic="true"></div>
@@ -216,3 +211,4 @@
   <script src="../javascript/expenses.js"></script>
 </body>
 </html>
+

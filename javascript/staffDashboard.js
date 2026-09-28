@@ -26,26 +26,22 @@
   const backToInventoryBtn = document.getElementById("backToInventoryBtn");
 
   // Opening
-  const openingCash = document.getElementById("openingCash");
   const openingMomo = document.getElementById("openingMomo");
   const openingBank = document.getElementById("openingBank");
   const openingTotal = document.getElementById("openingTotal");
 
   // Sales
   const salesTotal = document.getElementById("salesTotal");
-  const salesCash = document.getElementById("salesCash");
   const salesMomo = document.getElementById("salesMomo");
   const salesBank = document.getElementById("salesBank");
 
   // Expenses
   const expensesTotal = document.getElementById("expensesTotal");
-  const expensesCash = document.getElementById("expensesCash");
   const expensesMomo = document.getElementById("expensesMomo");
   const expensesBank = document.getElementById("expensesBank");
 
   // Available
   const availableTotal = document.getElementById("availableTotal");
-  const availableCash = document.getElementById("availableCash");
   const availableMomo = document.getElementById("availableMomo");
   const availableBank = document.getElementById("availableBank");
 
@@ -197,54 +193,46 @@ function renderDashboard(account, summary) {
   const available = b.available || {};
 
   /* -------- Opening -------- */
-  const opCash = Number(opening.cash || 0);
   const opMomo = Number(opening.momo || 0);
   const opBank = Number(opening.bank || 0);
-  const opTotal = opCash + opMomo + opBank;
+  const opTotal = opMomo + opBank;
 
-  openingCash.textContent = formatCurrency(opCash);
   openingMomo.textContent = formatCurrency(opMomo);
   openingBank.textContent = formatCurrency(opBank);
   openingTotal.textContent = formatCurrency(opTotal);
 
   /* -------- Today's Sales -------- */
-  const saCash = Number(sales.cash || 0);
   const saMomo = Number(sales.momo || 0);
   const saBank = Number(sales.bank || 0);
   const saTotal = Number(
-    b.totalSales != null ? b.totalSales : saCash + saMomo + saBank
+    b.totalSales != null ? b.totalSales : saMomo + saBank
   );
 
   salesTotal.textContent = formatCurrency(saTotal);
-  salesCash.textContent = formatCurrency(saCash);
   salesMomo.textContent = formatCurrency(saMomo);
   salesBank.textContent = formatCurrency(saBank);
 
   /* -------- Today's Expenses -------- */
-  const exCash = Number(expenses.cash || 0);
   const exMomo = Number(expenses.momo || 0);
   const exBank = Number(expenses.bank || 0);
   const exTotal = Number(
-    b.totalExpenses != null ? b.totalExpenses : exCash + exMomo + exBank
+    b.totalExpenses != null ? b.totalExpenses : exMomo + exBank
   );
 
   expensesTotal.textContent = formatCurrency(exTotal);
-  expensesCash.textContent = formatCurrency(exCash);
   expensesMomo.textContent = formatCurrency(exMomo);
   expensesBank.textContent = formatCurrency(exBank);
 
   /* -------- Available -------- */
-  const avCash = Number(available.cash || 0);
   const avMomo = Number(available.momo || 0);
   const avBank = Number(available.bank || 0);
   const avTotal = Number(
     b.totalAvailable != null
       ? b.totalAvailable
-      : avCash + avMomo + avBank
+        : avMomo + avBank
   );
 
   availableTotal.textContent = formatCurrency(avTotal);
-  availableCash.textContent = formatCurrency(avCash);
   availableMomo.textContent = formatCurrency(avMomo);
   availableBank.textContent = formatCurrency(avBank);
 

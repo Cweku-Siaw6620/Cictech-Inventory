@@ -7,7 +7,7 @@
      slate               = opening balance (carried forward)
      navy                = available balance
    Status: open = green, closed = red, approved = navy.
-   Payment method squares: cash = slate, MoMo = amber, Bank/POS = violet.
+  Payment method squares: MoMo = amber, Bank/POS = violet.
 
    What makes admin look different from staff: a navy sidebar for
    moving between branches, and wider, denser overview panels.
@@ -55,7 +55,6 @@
   --adm-on-dark-active: rgba(255, 255, 255, 0.11);
 
   /* Payment methods */
-  --adm-m-cash: #64748b;
   --adm-m-momo: #d79a00;
   --adm-m-bank: #5b4fc4;
 
@@ -596,7 +595,7 @@ svg { display: block; }
 /* Payment method breakdown: one white strip */
 .adm-grand-sub {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   background: var(--adm-white);
   border: 1px solid var(--adm-border);
   border-radius: var(--adm-radius);
@@ -630,13 +629,10 @@ svg { display: block; }
 }
 
 /* Payment method squares (shared everywhere) */
-.adm-method-cash .adm-grand-sub-label::before,
 .adm-method-momo .adm-grand-sub-label::before,
 .adm-method-bank .adm-grand-sub-label::before,
-.adm-method-cash .adm-label::before,
 .adm-method-momo .adm-label::before,
 .adm-method-bank .adm-label::before,
-.adm-method-cash .adm-summary-cell-label::before,
 .adm-method-momo .adm-summary-cell-label::before,
 .adm-method-bank .adm-summary-cell-label::before {
   content: "";
@@ -644,7 +640,7 @@ svg { display: block; }
   width: 8px;
   height: 8px;
   border-radius: 2px;
-  background: var(--adm-m-cash);
+  background: var(--adm-m-momo);
   flex-shrink: 0;
 }
 
@@ -1220,18 +1216,16 @@ svg { display: block; }
   border-color: var(--adm-warn-line);
 }
 
-.adm-badge-cash,
 .adm-badge-momo,
 .adm-badge-bank { padding-left: 8px; }
 
-.adm-badge-cash::before,
 .adm-badge-momo::before,
 .adm-badge-bank::before {
   content: "";
   width: 7px;
   height: 7px;
   border-radius: 2px;
-  background: var(--adm-m-cash);
+  background: var(--adm-m-momo);
 }
 
 .adm-badge-momo::before { background: var(--adm-m-momo); }

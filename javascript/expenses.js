@@ -35,7 +35,6 @@
 
   /* Summary cards */
   const sumTotal = $("sumTotal");
-  const sumCash = $("sumCash");
   const sumMomo = $("sumMomo");
   const sumBank = $("sumBank");
 
@@ -301,20 +300,18 @@ function pickExpenseNumbers() {
   const b = s.balances || {};
   const e = b.expenses || {};
 
-  const cash = formatNumber(e.cash);
   const momo = formatNumber(e.momo);
   const bank = formatNumber(e.bank);
   const total = formatNumber(
-    b.totalExpenses != null ? b.totalExpenses : cash + momo + bank
+    b.totalExpenses != null ? b.totalExpenses : momo + bank
   );
 
-  return { cash, momo, bank, total };
+  return { momo, bank, total };
 }
 
   function renderSummaryCards() {
-    const { cash, momo, bank, total } = pickExpenseNumbers();
+    const { momo, bank, total } = pickExpenseNumbers();
     sumTotal.textContent = formatCurrency(total);
-    sumCash.textContent = formatCurrency(cash);
     sumMomo.textContent = formatCurrency(momo);
     sumBank.textContent = formatCurrency(bank);
   }
@@ -397,9 +394,6 @@ function wireEditAndDeleteModals() {
 
   function paymentMethodBadge(method) {
     const m = String(method || "").toLowerCase();
-    if (m === "cash") {
-      return '<span class="fin-badge fin-badge-cash">Cash</span>';
-    }
     if (m === "momo") {
       return '<span class="fin-badge fin-badge-momo">MoMo</span>';
     }
@@ -559,7 +553,7 @@ function renderExpensesList() {
       setHint(methodHint, "Please select a payment method.", "error");
       return false;
     }
-    const allowed = ["Cash", "MoMo", "Bank/POS"];
+    const allowed = ["MoMo", "Bank/POS"];
     if (!allowed.includes(v)) {
       setHint(methodHint, "Invalid payment method.", "error");
       return false;

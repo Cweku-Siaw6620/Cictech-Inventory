@@ -42,7 +42,6 @@
   --available: #14213a;
 
   /* Payment methods (identification only, not good/bad) */
-  --m-cash: #64748b;
   --m-momo: #d79a00;
   --m-bank: #5b4fc4;
 
@@ -585,7 +584,7 @@ button:focus-visible {
   width: 8px;
   height: 8px;
   border-radius: 2px;
-  background-color: var(--m-cash);
+  background-color: var(--m-momo);
   flex-shrink: 0;
 }
 
