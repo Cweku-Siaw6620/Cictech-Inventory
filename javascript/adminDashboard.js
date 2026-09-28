@@ -57,34 +57,6 @@
   const historyListWrap = $("historyListWrap");
   const historyDetailWrap = $("historyDetailWrap");
 
-  /* Modals */
-  const saleModal = $("saleModal");
-  const saleModalTitle = $("saleModalTitle");
-  const saleModalClose = $("saleModalClose");
-  const saleModalCancel = $("saleModalCancel");
-  const saleModalSave = $("saleModalSave");
-  const saleModalProduct = $("saleModalProduct");
-  const saleModalTotal = $("saleModalTotal");
-  const saleModalName = $("saleModalName");
-  const saleModalNameRow = $("saleModalNameRow");
-  const saleModalSerial = $("saleModalSerial");
-  const saleModalSerialRow = $("saleModalSerialRow");
-  const saleModalDetail = $("saleModalDetail");
-  const saleModalDetailRow = $("saleModalDetailRow");
-  const saleModalMomo = $("saleModalMomo");
-  const saleModalBank = $("saleModalBank");
-  const saleModalPayTotal = $("saleModalPayTotal");
-  const saleModalHint = $("saleModalHint");
-
-  const expenseModal = $("expenseModal");
-  const expenseModalClose = $("expenseModalClose");
-  const expenseModalCancel = $("expenseModalCancel");
-  const expenseModalSave = $("expenseModalSave");
-  const expenseModalDesc = $("expenseModalDesc");
-  const expenseModalAmount = $("expenseModalAmount");
-  const expenseModalMethod = $("expenseModalMethod");
-  const expenseModalHint = $("expenseModalHint");
-
   const toastContainer = $("toastContainer");
 
   /* ---------- State ---------- */
@@ -102,8 +74,6 @@
     branchTodayData: null,    // from GET /finance/admin/history/:branch/:date (today)
     branchHistory: [],        // filtered list for current branch
     currentDetail: null,      // from GET /finance/admin/history/:branch/:date
-    editingSale: null,
-    editingExpense: null,
   };
 
   /* ---------- Date utilities ---------- */
@@ -645,7 +615,6 @@
     const account = detail.account;
     const balances = pickBalances(detail);
     const statusKind = statusOfAccount(account);
-    const canEdit = statusKind === "open";
 
     /* Summary card */
     const summary = document.createElement("div");
@@ -734,18 +703,8 @@
     subToday.appendChild(expCard);
 
     /* Render tables */
-    const isToday = (detail.account && detail.account.dateKey === todayKeyAccra());
-    const editable = canEdit && isToday;
-    renderSalesTableInto($("todaySalesTable"), detail.sales || [], {
-      editable: editable,
-      branch: state.user && state.user.branch,
-      dateKey: detail.account && detail.account.dateKey,
-    });
-    renderExpensesTableInto($("todayExpensesTable"), detail.expenses || [], {
-      editable: canEdit,
-      branch,
-      dateKey: today,
-    });
+    renderSalesTableInto($("todaySalesTable"), detail.sales || []);
+    renderExpensesTableInto($("todayExpensesTable"), detail.expenses || []);
   }
 
   /* ---------- History list ---------- */
@@ -869,7 +828,6 @@
     const account = detail.account;
     const balances = pickBalances(detail);
     const kind = statusOfAccount(account);
-    const canEdit = kind === "open";
 
     /* Head card with actions */
     const headCard = document.createElement("div");
@@ -983,12 +941,8 @@
       '<div id="histExpensesTable"></div>';
     historyDetailWrap.appendChild(expCard);
 
-    renderSalesTableInto($("histSalesTable"), detail.sales || [], {
-      editable: canEdit, branch, dateKey,
-    });
-    renderExpensesTableInto($("histExpensesTable"), detail.expenses || [], {
-      editable: canEdit, branch, dateKey,
-    });
+    renderSalesTableInto($("histSalesTable"), detail.sales || []);
+    renderExpensesTableInto($("histExpensesTable"), detail.expenses || []);
   }
 
   /* ---------- Table renderers ---------- */
@@ -1009,30 +963,27 @@
     return '<span class="adm-badge adm-badge-bank">' + escapeHtml(m || "—") + "</span>";
   }
 
-function renderSalesTableInto(container, sales, opts) {
+function renderSalesTableInto(container, sales) {
   container.innerHTML = "";
   if (!sales.length) {
     container.innerHTML =
-      '<div class="fin-empty">' +
-        '<div class="fin-empty-icon">' +
+      '<div class="adm-empty">' +
+        '<div class="adm-empty-icon">' +
           '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' +
             '<rect x="3" y="4" width="18" height="16" rx="2"/>' +
             '<path d="M3 10h18"/>' +
           "</svg>" +
         "</div>" +
-        '<p class="fin-empty-title">No sales recorded</p>' +
-        '<p class="fin-empty-text">Sales you record today will appear here.</p>' +
+        '<p class="adm-empty-title">No sales recorded</p>' +
+        '<p class="adm-empty-text">Sales you record today will appear here.</p>' +
       "</div>";
     return;
   }
 
   const wrap = document.createElement("div");
-  wrap.className = "fin-table-wrap";
+  wrap.className = "adm-table-wrap";
   const table = document.createElement("table");
-  table.className = "fin-table";
-
-  const editable = !!(opts && opts.editable);
-  const actionHeader = editable ? '<th class="fin-td-actions">Actions</th>' : "";
+  table.className = "adm-table";
 
   table.innerHTML =
     "<thead>" +
@@ -1040,11 +991,10 @@ function renderSalesTableInto(container, sales, opts) {
         "<th>Time</th>" +
         "<th>Product</th>" +
         "<th>Type</th>" +
-        '<th class="fin-td-right">Price</th>' +
-        '<th class="fin-td-right">MoMo</th>' +
-        '<th class="fin-td-right">Bank/POS</th>' +
-        '<th class="fin-td-right">Total</th>' +
-        actionHeader +
+        '<th class="adm-td-right">Price</th>' +
+        '<th class="adm-td-right">MoMo</th>' +
+        '<th class="adm-td-right">Bank/POS</th>' +
+        '<th class="adm-td-right">Total</th>' +
       "</tr>" +
     "</thead>" +
     "<tbody></tbody>";
@@ -1060,28 +1010,14 @@ function renderSalesTableInto(container, sales, opts) {
     const bank  = num(sale.payment && sale.payment.bank);
     const total = momo + bank;
 
-    let actionCell = "";
-    if (editable) {
-      const isManual = String(sale.source || "").toLowerCase() === "manual";
-      const editBtn = isManual
-        ? '<button type="button" class="fin-btn fin-btn-secondary" data-edit-sale="' +
-            escapeHtml(sale._id || "") + '">Edit</button>'
-        : "";
-      const deleteBtn =
-        '<button type="button" class="fin-btn fin-btn-danger" data-delete-sale="' +
-          escapeHtml(sale._id || "") + '">Delete</button>';
-      actionCell = '<td class="fin-td-actions">' + editBtn + deleteBtn + "</td>";
-    }
-
     tr.innerHTML =
-      '<td class="fin-td-time">' + escapeHtml(time) + "</td>" +
-      '<td class="fin-td-strong">' + escapeHtml(name) + "</td>" +
+      '<td class="adm-td-time">' + escapeHtml(time) + "</td>" +
+      '<td class="adm-td-strong">' + escapeHtml(name) + "</td>" +
       "<td>" + saleSourceBadge(sale) + "</td>" +
-      '<td class="fin-td-right">' + formatCurrencyCedi(price) + "</td>" +
-      '<td class="fin-td-right">' + formatCurrencyCedi(momo) + "</td>" +
-      '<td class="fin-td-right">' + formatCurrencyCedi(bank) + "</td>" +
-      '<td class="fin-td-right fin-td-strong">' + formatCurrencyCedi(total) + "</td>" +
-      actionCell;
+      '<td class="adm-td-right">' + formatCedi(price) + "</td>" +
+      '<td class="adm-td-right">' + formatCedi(momo) + "</td>" +
+      '<td class="adm-td-right">' + formatCedi(bank) + "</td>" +
+      '<td class="adm-td-right adm-td-strong">' + formatCedi(total) + "</td>";
 
     tbody.appendChild(tr);
   });
@@ -1089,103 +1025,7 @@ function renderSalesTableInto(container, sales, opts) {
   wrap.appendChild(table);
   container.appendChild(wrap);
 
-  if (editable) {
-    container.querySelectorAll("[data-edit-sale]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const id = btn.dataset.editSale;
-        const sale = sales.find((x) => (x._id || "") === id);
-        if (sale) openSaleModal(sale);
-      });
-    });
-    container.querySelectorAll("[data-delete-sale]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const id = btn.dataset.deleteSale;
-        const sale = sales.find((x) => (x._id || "") === id);
-        if (sale) openDeleteConfirm(
-          "Delete this sale?",
-          "The sale will be marked as voided and removed from today's totals.",
-          () => deleteSale(id)
-        );
-      });
-    });
-  }
 }
-
-/* ---------- Delete confirmation modal ---------- */
-
-let _deleteAction = null;
-
-function openDeleteConfirm(title, message, action) {
-  _deleteAction = action;
-  document.getElementById("deleteConfirmTitle").textContent = title;
-  document.getElementById("deleteConfirmMessage").textContent = message;
-  document.getElementById("deleteConfirmModal").classList.remove("hidden");
-}
-
-function closeDeleteConfirm() {
-  document.getElementById("deleteConfirmModal").classList.add("hidden");
-  _deleteAction = null;
-}
-
-async function runDeleteConfirm() {
-  const action = _deleteAction;
-  if (!action) return;
-  const okBtn = document.getElementById("deleteConfirmOk");
-  okBtn.disabled = true;
-  okBtn.textContent = "Deleting…";
-  try {
-    await action();
-  } finally {
-    okBtn.disabled = false;
-    okBtn.textContent = "Delete";
-    closeDeleteConfirm();
-  }
-}
-
-/* ---------- Delete actions ---------- */
-
-async function deleteSale(saleId) {
-  try {
-    const res = await financeFetch("/finance/sales/" + saleId, {
-      method: "DELETE",
-    });
-    if (res.status === 401 || res.status === 403) throw new Error("UNAUTHORIZED");
-    if (!res.ok) {
-      let msg = "Unable to delete sale.";
-      try { const d = await res.json(); if (d.message) msg = d.message; } catch {}
-      throw new Error(msg);
-    }
-    showToast("Sale voided successfully.", "success");
-    await refreshAll();
-  } catch (err) {
-    if (err.message === "UNAUTHORIZED") {
-      showToast("Your session has expired.", "error");
-      localStorage.removeItem("pin"); localStorage.removeItem("user");
-      setTimeout(() => (window.location.href = LOGIN_REDIRECT), 900);
-      return;
-    }
-    showToast(err.message || "Unable to delete sale.", "error");
-  }
-}
-
-/* ---------- Wire the new modals ---------- */
-
-function wireEditAndDeleteModals() {
-  document.getElementById("deleteConfirmClose").addEventListener("click", closeDeleteConfirm);
-  document.getElementById("deleteConfirmCancel").addEventListener("click", closeDeleteConfirm);
-  document.getElementById("deleteConfirmOk").addEventListener("click", runDeleteConfirm);
-  document.getElementById("deleteConfirmModal").addEventListener("click", (e) => {
-    if (e.target.id === "deleteConfirmModal") closeDeleteConfirm();
-  });
-
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      if (!document.getElementById("deleteConfirmModal").classList.contains("hidden")) closeDeleteConfirm();
-    }
-  });
-}
-
-
 
   function renderExpensesTableInto(container, expenses, opts) {
     container.innerHTML = "";
@@ -1211,9 +1051,6 @@ function wireEditAndDeleteModals() {
     table.className = "adm-table";
     table.style.minWidth = "560px";
 
-    const editable = !!(opts && opts.editable);
-    const actionHeader = editable ? '<th class="adm-td-actions">Actions</th>' : "";
-
     table.innerHTML =
       "<thead>" +
         "<tr>" +
@@ -1221,7 +1058,6 @@ function wireEditAndDeleteModals() {
           "<th>Description</th>" +
           "<th>Payment Method</th>" +
           '<th class="adm-td-right">Amount</th>' +
-          actionHeader +
         "</tr>" +
       "</thead>" +
       "<tbody></tbody>";
@@ -1233,22 +1069,11 @@ function wireEditAndDeleteModals() {
       const time = formatTime(e.date || e.createdAt);
       const amount = num(e.amount);
 
-      let actionCell = "";
-      if (editable) {
-        actionCell =
-          '<td class="adm-td-actions">' +
-            '<button type="button" class="adm-btn adm-btn-ghost" data-edit-expense="' +
-              escapeHtml(e._id || "") +
-            '">Edit</button>' +
-          "</td>";
-      }
-
       tr.innerHTML =
         '<td class="adm-td-time">' + escapeHtml(time) + "</td>" +
         '<td class="adm-td-strong">' + escapeHtml(e.description || "—") + "</td>" +
         "<td>" + methodBadge(e.paymentMethod || "—") + "</td>" +
-        '<td class="adm-td-right adm-td-strong">' + formatCedi(amount) + "</td>" +
-        actionCell;
+        '<td class="adm-td-right adm-td-strong">' + formatCedi(amount) + "</td>";
 
       tbody.appendChild(tr);
     });
@@ -1256,15 +1081,6 @@ function wireEditAndDeleteModals() {
     wrap.appendChild(table);
     container.appendChild(wrap);
 
-    if (editable) {
-      container.querySelectorAll("[data-edit-expense]").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const id = btn.dataset.editExpense;
-          const exp = expenses.find((x) => (x._id || "") === id);
-          if (exp) openExpenseModal(exp);
-        });
-      });
-    }
   }
 
   /* ---------- Actions: close / reopen / approve ---------- */
@@ -1320,200 +1136,6 @@ function wireEditAndDeleteModals() {
     }
   }
 
-  /* ---------- Sale edit modal ---------- */
-
-  function openSaleModal(sale) {
-    state.editingSale = sale;
-    const isInventory = String(sale.source || "").toLowerCase() === "inventory";
-
-    saleModalTitle.textContent = isInventory ? "Edit Inventory Sale" : "Edit Manual Sale";
-    saleModalProduct.value =
-      (sale.product && sale.product.name) || "(unnamed)";
-    saleModalTotal.value = formatCedi(num(sale.totalAmount));
-
-    saleModalMomo.value = num(sale.payment && sale.payment.momo);
-    saleModalBank.value = num(sale.payment && sale.payment.bank);
-
-    /* Show/hide manual-only fields */
-    if (isInventory) {
-      saleModalNameRow.classList.add("hidden");
-      saleModalSerialRow.classList.add("hidden");
-      saleModalDetailRow.classList.add("hidden");
-    } else {
-      saleModalNameRow.classList.remove("hidden");
-      saleModalSerialRow.classList.remove("hidden");
-      saleModalDetailRow.classList.remove("hidden");
-      saleModalName.value = (sale.product && sale.product.name) || "";
-      saleModalSerial.value = (sale.product && sale.product.serial) || "";
-      saleModalDetail.value = (sale.product && sale.product.detail) || "";
-    }
-
-    updateSaleModalTotals();
-    saleModal.classList.remove("hidden");
-    setTimeout(() => saleModalMomo.focus(), 60);
-  }
-
-  function closeSaleModal() {
-    saleModal.classList.add("hidden");
-    state.editingSale = null;
-  }
-
-  function updateSaleModalTotals() {
-    const momo = num(saleModalMomo.value);
-    const bank = num(saleModalBank.value);
-    const total = momo + bank;
-    saleModalPayTotal.textContent = formatCedi(total);
-
-    const sale = state.editingSale;
-    const saleTotal = sale ? num(sale.totalAmount) : 0;
-
-    saleModalHint.textContent = "";
-    saleModalHint.className = "adm-modal-hint";
-    saleModalSave.disabled = false;
-
-    if (Math.abs(total - saleTotal) >= 0.005) {
-      saleModalHint.textContent =
-        "Payment total must equal " + formatCedi(saleTotal) + ".";
-      saleModalHint.classList.add("adm-hint-error");
-      saleModalSave.disabled = true;
-    } else {
-      saleModalHint.textContent = "Payment matches.";
-      saleModalHint.classList.add("adm-hint-success");
-    }
-  }
-
-  async function saveSaleModal() {
-    const sale = state.editingSale;
-    if (!sale) return;
-
-    const momo = num(saleModalMomo.value);
-    const bank = num(saleModalBank.value);
-    const total = momo + bank;
-    const saleTotal = num(sale.totalAmount);
-
-    if (Math.abs(total - saleTotal) >= 0.005) {
-      showToast("Payment total must equal the sale total.", "error");
-      return;
-    }
-
-    const body = { momo, bank };
-    const isManual = String(sale.source || "").toLowerCase() !== "inventory";
-    if (isManual) {
-      body.totalAmount = saleTotal;
-      body.name = saleModalName.value.trim();
-      body.serial = saleModalSerial.value.trim();
-      body.detail = saleModalDetail.value.trim();
-      if (!body.name) {
-        showToast("Name is required.", "error");
-        return;
-      }
-    }
-
-    saleModalSave.disabled = true;
-    saleModalSave.textContent = "Saving…";
-
-    try {
-      await financeJson("/finance/admin/sales/" + sale._id, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      showToast("Sale updated successfully.", "success");
-      closeSaleModal();
-      await refreshCurrentView();
-    } catch (err) {
-      handleActionError(err, "Unable to update sale.");
-    } finally {
-      saleModalSave.textContent = "Save Changes";
-      updateSaleModalTotals();
-    }
-  }
-
-  function wireSaleModal() {
-    [saleModalMomo, saleModalBank].forEach((el) => {
-      el.addEventListener("input", updateSaleModalTotals);
-    });
-    saleModalClose.addEventListener("click", closeSaleModal);
-    saleModalCancel.addEventListener("click", closeSaleModal);
-    saleModalSave.addEventListener("click", saveSaleModal);
-    saleModal.addEventListener("click", (e) => {
-      if (e.target === saleModal) closeSaleModal();
-    });
-  }
-
-  /* ---------- Expense edit modal ---------- */
-
-  function openExpenseModal(expense) {
-    state.editingExpense = expense;
-    expenseModalDesc.value = expense.description || "";
-    expenseModalAmount.value = num(expense.amount);
-    expenseModalMethod.value = expense.paymentMethod || "MoMo";
-    expenseModalHint.textContent = "";
-    expenseModalHint.className = "adm-modal-hint";
-    expenseModal.classList.remove("hidden");
-    setTimeout(() => expenseModalDesc.focus(), 60);
-  }
-
-  function closeExpenseModal() {
-    expenseModal.classList.add("hidden");
-    state.editingExpense = null;
-  }
-
-  async function saveExpenseModal() {
-    const e = state.editingExpense;
-    if (!e) return;
-
-    const description = (expenseModalDesc.value || "").trim();
-    const amount = num(expenseModalAmount.value);
-    const paymentMethod = expenseModalMethod.value;
-
-    expenseModalHint.textContent = "";
-    expenseModalHint.className = "adm-modal-hint";
-
-    if (!description) {
-      expenseModalHint.textContent = "Description is required.";
-      expenseModalHint.classList.add("adm-hint-error");
-      return;
-    }
-    if (!(amount > 0)) {
-      expenseModalHint.textContent = "Amount must be greater than zero.";
-      expenseModalHint.classList.add("adm-hint-error");
-      return;
-    }
-    if (!["MoMo", "Bank/POS"].includes(paymentMethod)) {
-      expenseModalHint.textContent = "Invalid payment method.";
-      expenseModalHint.classList.add("adm-hint-error");
-      return;
-    }
-
-    expenseModalSave.disabled = true;
-    expenseModalSave.textContent = "Saving…";
-
-    try {
-      await financeJson("/finance/admin/expenses/" + e._id, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ description, amount, paymentMethod }),
-      });
-      showToast("Expense updated successfully.", "success");
-      closeExpenseModal();
-      await refreshCurrentView();
-    } catch (err) {
-      handleActionError(err, "Unable to update expense.");
-    } finally {
-      expenseModalSave.textContent = "Save Changes";
-    }
-  }
-
-  function wireExpenseModal() {
-    expenseModalClose.addEventListener("click", closeExpenseModal);
-    expenseModalCancel.addEventListener("click", closeExpenseModal);
-    expenseModalSave.addEventListener("click", saveExpenseModal);
-    expenseModal.addEventListener("click", (e) => {
-      if (e.target === expenseModal) closeExpenseModal();
-    });
-  }
-
   /* ---------- Global error handlers ---------- */
 
   function handleLoadError(err, fallback) {
@@ -1542,17 +1164,6 @@ function wireEditAndDeleteModals() {
       fallback ||
       "Something went wrong.";
     showToast(msg, "error");
-  }
-
-  /* ---------- Global keyboard ---------- */
-
-  function wireKeyboard() {
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        if (!saleModal.classList.contains("hidden")) closeSaleModal();
-        if (!expenseModal.classList.contains("hidden")) closeExpenseModal();
-      }
-    });
   }
 
   /* ---------- History range filter ---------- */
@@ -1587,10 +1198,7 @@ function wireEditAndDeleteModals() {
     renderHeader();
     wireSidebar();
     wireBranchSubtabs();
-    wireSaleModal();
-    wireExpenseModal();
     wireHistoryFilter();
-    wireKeyboard();
 
     retryBtn.addEventListener("click", () => {
       if (state.view.section === "dashboard") renderDashboard();
