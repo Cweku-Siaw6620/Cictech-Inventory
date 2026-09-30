@@ -11,7 +11,7 @@
   "use strict";
 
   // ---------- Configuration ----------
-  const API_BASE = "https://cictech-inventory-2se4.vercel.app";
+  const API_BASE = "http://localhost:3000";
   const INVENTORY_FALLBACK = "/"; // existing inventory app home
 
   // ---------- DOM refs ----------

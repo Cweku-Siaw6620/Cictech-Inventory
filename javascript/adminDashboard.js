@@ -7,7 +7,7 @@
   "use strict";
 
   /* ---------- Constants ---------- */
-  const API_BASE = "https://cictech-inventory-2se4.vercel.app";
+  const API_BASE = "http://localhost:3000";
   const LOGIN_REDIRECT = "../index.html";
   const STAFF_REDIRECT = "staffDashboard.html";
 
@@ -378,40 +378,43 @@
 
       const today = todayKeyAccra();
 
-      /* Aggregate totals for today across all branches */
-      const totals = {
-        sales: 0, expenses: 0, available: 0,
-        momo: 0, bank: 0,
-      };
-      const perBranch = {}; // branchName -> { totals, status, account }
+  const totals = {
+    sales: 0, expenses: 0, available: 0,
+    momo: 0, bank: 0,
+};
+const perBranch = {};
 
-      FINANCE_BRANCHES.forEach((b) => {
-        perBranch[b] = {
-          status: "none",
-          totals: { sales: 0, expenses: 0, available: 0 },
-          account: null,
-        };
-      });
+FINANCE_BRANCHES.forEach((b) => {
+    perBranch[b] = {
+        status: "none",
+        totals: { sales: 0, expenses: 0, available: 0 },
+        account: null,
+    };
+});
 
-      history.forEach((entry) => {
-        const acc = entry.account || {};
-        if (acc.dateKey !== today) return;
-        const b = acc.branch;
-        if (!FINANCE_BRANCHES.includes(b)) return;
+history.forEach((entry) => {
+    const acc = entry.account || {};
+    if (acc.dateKey !== today) return;
+    const b = acc.branch;
+    if (!FINANCE_BRANCHES.includes(b)) return;
 
-        const t = entry.totals || {};
-        const s = num(t.sales);
-        const e = num(t.expenses);
-        const a = num(t.available);
+    const t = entry.totals || {};
+    const s = num(t.sales);
+    const e = num(t.expenses);
+    const a = num(t.available);
 
-        totals.sales += s;
-        totals.expenses += e;
-        totals.available += a;
+    totals.sales += s;
+    totals.expenses += e;
+    totals.available += a;
 
-        perBranch[b].status = statusOfAccount(acc);
-        perBranch[b].totals = { sales: s, expenses: e, available: a };
-        perBranch[b].account = acc;
-      });
+    /* Per-method sales split — now provided by the backend */
+    totals.momo += num(t.salesMomo);
+    totals.bank += num(t.salesBank);
+
+    perBranch[b].status = statusOfAccount(acc);
+    perBranch[b].totals = { sales: s, expenses: e, available: a };
+    perBranch[b].account = acc;
+});
 
       /* Available balance method split is not returned by /finance/admin/history.
          We display the combined available only; per-method totals are omitted
@@ -422,8 +425,8 @@
       gtAvailable.textContent = formatCedi(totals.available);
 
       /* Per-method split is not available from this endpoint — show dashes */
-      gtMomo.textContent = "—";
-      gtBank.textContent = "—";
+      gtMomo.textContent = formatCedi(totals.momo);
+      gtBank.textContent = formatCedi(totals.bank);
 
       grandDate.textContent = formatReadableDate(today);
       dashboardSubtitle.textContent = "Business date · " + formatReadableDate(today);
