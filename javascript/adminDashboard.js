@@ -7,7 +7,7 @@
   "use strict";
 
   /* ---------- Constants ---------- */
-  const API_BASE = "http://localhost:3000";
+  const API_BASE = "https://cictech-inventory-2se4.vercel.app";
   const LOGIN_REDIRECT = "../index.html";
   const STAFF_REDIRECT = "staffDashboard.html";
 
