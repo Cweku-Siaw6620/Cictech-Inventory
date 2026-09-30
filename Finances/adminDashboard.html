@@ -184,43 +184,62 @@
             <!-- Branch today content injected by JS -->
           </div>
 
-          <!-- ============ SUBTAB: HISTORY ============ -->
           <div id="subHistory" class="adm-subview hidden">
-            <!-- Range filter -->
-            <div class="adm-card adm-range-card">
-              <div class="adm-range-row">
-                <div class="adm-range-item">
-                  <label for="histStart" class="adm-range-label">Start Date</label>
-                  <input type="date" id="histStart" class="adm-range-input">
-                </div>
-                <div class="adm-range-item">
-                  <label for="histEnd" class="adm-range-label">End Date</label>
-                  <input type="date" id="histEnd" class="adm-range-input">
-                </div>
-                <div class="adm-range-item">
-                  <label for="histDate" class="adm-range-label">Specific Date</label>
-                  <input type="date" id="histDate" class="adm-range-input">
-                </div>
-                <div class="adm-range-actions">
-                  <button type="button"
-                          class="adm-btn adm-btn-secondary"
-                          id="histClearBtn">Clear</button>
-                  <button type="button"
-                          class="adm-btn adm-btn-primary"
-                          id="histApplyBtn">Apply</button>
+
+            <!-- ============ LIST VIEW ============ -->
+            <div id="historyListView">
+
+              <!-- Range filter -->
+              <div class="adm-card adm-range-card">
+                <div class="adm-range-row">
+                  <div class="adm-range-item">
+                    <label for="histStart" class="adm-range-label">Start Date</label>
+                    <input type="date" id="histStart" class="adm-range-input">
+                  </div>
+                  <div class="adm-range-item">
+                    <label for="histEnd" class="adm-range-label">End Date</label>
+                    <input type="date" id="histEnd" class="adm-range-input">
+                  </div>
+                  <div class="adm-range-item">
+                    <label for="histDate" class="adm-range-label">Specific Date</label>
+                    <input type="date" id="histDate" class="adm-range-input">
+                  </div>
+                  <div class="adm-range-actions">
+                    <button type="button" class="adm-btn adm-btn-secondary" id="histClearBtn">Clear</button>
+                    <button type="button" class="adm-btn adm-btn-primary" id="histApplyBtn">Apply</button>
+                  </div>
                 </div>
               </div>
+
+              <!-- History list -->
+              <div id="historyListWrap" class="adm-card">
+                <!-- injected by JS -->
+              </div>
+
             </div>
 
-            <!-- History list -->
-            <div id="historyListWrap" class="adm-card">
-              <!-- injected by JS -->
+            <!-- ============ DETAIL VIEW ============ -->
+            <div id="historyDetailView" class="hidden">
+
+              <!-- Breadcrumb -->
+              <nav class="adm-breadcrumb" aria-label="Breadcrumb">
+                <button type="button" class="adm-breadcrumb-back" id="histBackBtn">
+                  <span class="adm-breadcrumb-arrow" aria-hidden="true">←</span>
+                  <span>Back to History</span>
+                </button>
+                <span class="adm-breadcrumb-sep" aria-hidden="true">·</span>
+                <span class="adm-breadcrumb-branch" id="histCrumbBranch">—</span>
+                <span class="adm-breadcrumb-sep" aria-hidden="true">·</span>
+                <span class="adm-breadcrumb-date" id="histCrumbDate">—</span>
+              </nav>
+
+              <!-- Detail content -->
+              <div id="historyDetailWrap">
+                <!-- injected by JS -->
+              </div>
+
             </div>
 
-            <!-- Drill-down -->
-            <div id="historyDetailWrap" class="hidden">
-              <!-- injected by JS -->
-            </div>
           </div>
         </section>
 

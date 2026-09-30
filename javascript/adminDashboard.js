@@ -56,6 +56,11 @@
   const histClearBtn = $("histClearBtn");
   const historyListWrap = $("historyListWrap");
   const historyDetailWrap = $("historyDetailWrap");
+  const historyListView  = $("historyListView");
+  const historyDetailView = $("historyDetailView");
+  const histBackBtn      = $("histBackBtn");
+  const histCrumbBranch  = $("histCrumbBranch");
+  const histCrumbDate    = $("histCrumbDate");
 
   const toastContainer = $("toastContainer");
 
@@ -712,14 +717,36 @@ history.forEach((entry) => {
 
   /* ---------- History list ---------- */
 
+  function showHistoryListView() {
+  historyListView.classList.remove("hidden");
+  historyDetailView.classList.add("hidden");
+  historyDetailWrap.innerHTML = "";
+}
+
+function showHistoryDetailView(branch, dateKey) {
+  historyListView.classList.add("hidden");
+  historyDetailView.classList.remove("hidden");
+
+  histCrumbBranch.textContent = branch || "—";
+  histCrumbDate.textContent = isValidDateKey(dateKey)
+    ? formatReadableDate(dateKey)
+    : "—";
+
+  /* Scroll the branch view header into view so the breadcrumb is visible */
+  if (branchTitle && typeof branchTitle.scrollIntoView === "function") {
+    branchTitle.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
   async function renderHistoryList() {
     const branch = state.view.branch;
     if (!branch) return;
 
+    /* Make sure we're on the list view whenever we (re)render history */
+    showHistoryListView();
+
     historyListWrap.innerHTML =
       '<div class="adm-state adm-state-loading"><div class="adm-spinner"></div><p>Loading history…</p></div>';
-    historyDetailWrap.classList.add("hidden");
-    historyDetailWrap.innerHTML = "";
 
     const filters = { branch };
     if (histDate.value) {
@@ -802,7 +829,7 @@ history.forEach((entry) => {
   }
 
   async function openHistoryDetail(branch, dateKey) {
-    historyDetailWrap.classList.remove("hidden");
+    showHistoryDetailView(branch, dateKey);
     historyDetailWrap.innerHTML =
       '<div class="adm-card adm-state adm-state-loading"><div class="adm-spinner"></div><p>Loading day detail…</p></div>';
 
@@ -1184,6 +1211,10 @@ function renderSalesTableInto(container, sales) {
       if (state.view.section === "branch" && state.view.tab === "history") {
         renderHistoryList();
       }
+    });
+    histBackBtn.addEventListener("click", () => {
+      showHistoryListView();
+      renderHistoryList();
     });
 
     const today = todayKeyAccra();
